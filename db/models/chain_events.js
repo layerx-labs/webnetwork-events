@@ -1,7 +1,7 @@
 import _sequelize from 'sequelize';
 const { Model, Sequelize } = _sequelize;
 
-export default class chainEvents extends Model {
+export default class chain_events extends Model {
   static init(sequelize, DataTypes) {
   return super.init({
     id: {
@@ -13,7 +13,7 @@ export default class chainEvents extends Model {
     name: {
       type: DataTypes.STRING(255),
       allowNull: false,
-      unique: "chainEvents_name_key"
+      unique: "chain_events_name_key"
     },
     lastBlock: {
       type: DataTypes.INTEGER,
@@ -21,19 +21,19 @@ export default class chainEvents extends Model {
     }
   }, {
     sequelize,
-    tableName: 'chainEvents',
+    tableName: 'chain_events',
     schema: 'public',
-    timestamps: false,
+    timestamps: true,
     indexes: [
       {
-        name: "chainEvents_name_key",
+        name: "chain_events_name_key",
         unique: true,
         fields: [
           { name: "name" },
         ]
       },
       {
-        name: "chainEvents_pkey",
+        name: "chain_events_pkey",
         unique: true,
         fields: [
           { name: "id" },

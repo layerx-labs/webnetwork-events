@@ -29,6 +29,9 @@ export default class DAOService {
       if (!networkAddress)
         throw new Error("Missing Network_v2 Contract Address");
 
+      if (this._network?.contractAddress === networkAddress)
+        return this._network;
+
       const network = new Network_v2(this._web3Connection, networkAddress);
 
       await network.loadContract();

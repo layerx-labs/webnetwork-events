@@ -3,6 +3,7 @@ import db from "../db/index.js";
 import events from "../modules/retrieve-bulk-actions/index.js";
 import DAOService from "../services/dao-service.js";
 import { error, info } from "../utils/logger-handler.js";
+
 export const name = "retrieve-bulk-chain-events";
 export const schedule = "30 * * * * *";
 export const description = "retrieving bulk chain events";
@@ -39,7 +40,7 @@ export async function action() {
   for (const network of networks) {
     if (!network.name) return;
 
-    const bulk = await db.chainEvents.findOne({ where: { name: `Bulk` } });
+    const bulk = await db.chain_events.findOne({ where: { name: `Bulk` } });
 
     const fromBlock =
       +bulk?.dataValues?.lastBlock || +process.env.BULK_CHAIN_START_BLOCK || 0;

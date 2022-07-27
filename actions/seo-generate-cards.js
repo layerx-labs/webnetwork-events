@@ -16,7 +16,7 @@ export async function action() {
   const where = {
     [Op.or]: [
       { seoImage: null },
-      { updatedAt: { [Op.gte]: subMinutes(+new Date(), 25) } },
+      { updatedAt: { [Op.gte]: subMinutes(+new Date(), 29) } },
     ],
   };
 
@@ -29,24 +29,24 @@ export async function action() {
     { association: "token" },
   ];
 
-  const issues = await db.issues.findAll({
+  const bountys = await db.issues.findAll({
     where,
     include,
   });
 
-  info(`Found ${issues.length} issues to generate SEO cards`);
+  info(`Found ${bountys.length} bountys to generate SEO cards`);
 
-  for (const issue of issues) {
+  for (const bounty of bountys) {
     try {
-      const card = await generateCard(issue);
+      const card = await generateCard(bounty);
 
       const { path } = await ipfsService.add(card);
 
-      await issue.update({ seoImage: path });
+      await bounty.update({ seoImage: path });
 
-      info(`SEO card generated for issue ${issue.githubId}`);
+      info(`SEO card generated for bounty ${bounty.githubId}`);
     } catch (err) {
-      error(`Error generating SEO card for issue ${issue.githubId}`, err);
+      error(`Error generating SEO card for bounty ${bounty.githubId}`, err);
     }
   }
 }
