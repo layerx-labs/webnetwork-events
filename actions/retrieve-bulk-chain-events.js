@@ -2,7 +2,7 @@ import "dotenv/config";
 import db from "../db/index.js";
 import events from "../modules/retrieve-bulk-actions/index.js";
 import DAOService from "../services/dao-service.js";
-import { error, info } from "../utils/logger-handler.js";
+import logger from "../utils/logger-handler.js";
 
 export const name = "retrieve-bulk-chain-events";
 export const schedule = "30 * * * * *";
@@ -11,7 +11,7 @@ export const author = "clarkjoao";
 
 async function retriveEvents(network, contract, fromBlock, toBlock) {
   const arrEvents = Object.keys(events).map(async (action) => {
-    info(
+    logger.info(
       `Retrieving ${action} events from block ${fromBlock} to ${toBlock} at ${network.name}`
     );
 
@@ -32,7 +32,7 @@ async function retriveEvents(network, contract, fromBlock, toBlock) {
 }
 
 export async function action() {
-  info("Starting retrieving bulk chain events");
+  logger.info("Starting retrieving bulk chain events");
 
   const networks = await db.networks.findAll();
   const contract = new DAOService();
@@ -47,12 +47,20 @@ export async function action() {
 
     const atBlock = await contract.web3Connection.eth.getBlockNumber();
 
-    if (!atBlock) return error("No block found");
-    if (fromBlock >= atBlock) return error("No new block found");
-    if (!(await contract.loadNetwork(network.networkAddress)))
-      return error(`Error loading network contract ${network.name}`);
+    if (!atBlock) {
+      logger.error("No block found");
+      continue;
+    }
+    if (fromBlock >= atBlock) {
+      logger.error("No new block found");
+      continue;
+    }
+    if (!(await contract.loadNetwork(network.networkAddress))) {
+      logger.error(`Error loading network contract ${network.name}`);
+      continue;
+    }
 
-    info(`Retrieving events for network ${network.name}`);
+    logger.info(`Retrieving events for network ${network.name}`);
 
     // paginate blocks
     const blocksPerPages = 1500;

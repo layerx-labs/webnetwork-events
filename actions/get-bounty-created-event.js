@@ -1,7 +1,7 @@
 import { ERC20 } from "@taikai/dappkit";
 import db from "../db/index.js";
 import BlockChainService from "../services/block-chain-service.js";
-import { error, info } from "../utils/logger-handler.js";
+import logger from "../utils/logger-handler.js";
 
 export const name = "getBountyCreatedEvents";
 export const schedule = "1 * * * * *";
@@ -31,17 +31,21 @@ async function validateToken(transactionalToken) {
 }
 
 export async function action() {
+  logger.info("retrieving bounty created events");
+
   const service = new BlockChainService();
   await service.init(name);
 
   const events = await service.getAllEvents();
+
+  logger.info(`found ${events.length} events`);
 
   for (let event of events) {
     const { network, eventsOnBlock } = event;
 
     try {
       if (!(await service.DAO.loadNetwork(network.networkAddress))) {
-        error(`Error loading network contract ${network.name}`);
+        logger.error(`Error loading network contract ${network.name}`);
         continue;
       }
 
@@ -56,12 +60,12 @@ export async function action() {
         });
 
         if (!bounty) {
-          error(`Bounty cid: ${cid} not found`);
+          logger.error(`Bounty cid: ${cid} not found`);
           continue;
         }
 
         if (bounty.state !== "pending") {
-          error(`Bounty cid: ${cid} already in draft state`);
+          logger.error(`Bounty cid: ${cid} already in draft state`);
           continue;
         }
 
@@ -82,10 +86,10 @@ export async function action() {
         }
         await bounty.save();
 
-        info(`Bounty cid: ${cid} created`);
+        logger.info(`Bounty cid: ${cid} created`);
       }
     } catch (err) {
-      error(`Error creating bounty cid: ${cid}`, err);
+      logger.error(`Error creating bounty cid: ${cid}`, err);
     }
   }
 }

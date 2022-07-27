@@ -3,7 +3,7 @@ import { Op } from "sequelize";
 import db from "../db/index.js";
 import DAOService from "../services/dao-service.js";
 import GHService from "../services/github/index.js";
-import { error, info } from "../utils/logger-handler.js";
+import logger from "../utils/logger-handler.js";
 import { ghPathSplit } from "../utils/string.js";
 
 export const name = "move-bounties-to-open";
@@ -30,7 +30,7 @@ async function loadIssues(network, contract) {
   const repositoriesDetails = {};
 
   for (const issue of issues) {
-    info(`Moving issue ${issue.id} to open`);
+    logger.info(`Moving issue ${issue.id} to open`);
     try {
       const [owner, repo] = ghPathSplit(issue?.repository?.githubPath);
 
@@ -56,9 +56,9 @@ async function loadIssues(network, contract) {
 
       issue.state = "open";
       await issue.save();
-      info(`Issue ${issue.id} moved to open`);
+      logger.info(`Issue ${issue.id} moved to open`);
     } catch (err) {
-      error(`Error moving issue ${issue.id}: ${err.message}`);
+      logger.error(`Error moving issue ${issue.id}: ${err.message}`);
     }
   }
 
@@ -66,18 +66,18 @@ async function loadIssues(network, contract) {
 }
 
 export async function action() {
-  info("Starting move bounties to open");
+  logger.info("Starting move bounties to open");
 
   const networks = await db.networks.findAll();
   const contract = new DAOService();
 
   for (const network of networks) {
-    if (!network.name) return;
+    logger.info(`Moving bounties to open for network ${network.name}`);
 
-    info(`Moving bounties to open for network ${network.name}`);
-
-    if (!(await contract.loadNetwork(network.networkAddress)))
-      return error(`Error loading network contract ${network.name}`);
+    if (!(await contract.loadNetwork(network.networkAddress))) {
+      logger.error(`Error loading network contract ${network.name}`);
+      continue;
+    }
 
     await loadIssues(network, contract);
   }
