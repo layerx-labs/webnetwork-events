@@ -1,6 +1,6 @@
 import { Network_v2, Web3Connection } from "@taikai/dappkit";
 import "dotenv/config";
-import { error } from "../utils/logger-handler.js";
+import logger from "../utils/logger-handler.js";
 
 const { CHAIN_RPC: web3Host, CHAIN_PRIVATE_KEY: privateKey } = process.env;
 export default class DAOService {
@@ -40,7 +40,9 @@ export default class DAOService {
 
       return network;
     } catch (e) {
-      error(`Error loading Network_v2 (${networkAddress}): ${e.message}`);
+      logger.error(
+        `Error loading Network_v2 (${networkAddress}): ${e.message}`
+      );
     }
 
     return false;

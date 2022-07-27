@@ -11,8 +11,11 @@ const output = (level, message, ...rest) => {
   if (process.env.LOGS_ACTIVE) console.log(string, rest);
 };
 
-const info = (message = null, ...rest) => output(Levels.info, message, rest);
-const error = (message = null, ...rest) => output(Levels.error, message, rest);
-const log = (message = null, ...rest) => output(Levels.log, message, rest);
+export const info = (message = null, ...rest) =>
+  output(Levels.info, message, rest);
+export const error = (message = null, ...rest) =>
+  output(Levels.error, message, rest);
+export const log = (message = null, ...rest) =>
+  output(Levels.log, message, rest);
 
-export { info, error, log };
+export default { info, error, log };
