@@ -16,11 +16,10 @@ export async function action() {
   const events = await service.getAllEvents();
 
   logger.info(`found ${events.length} events`);
+  try {
+    for (let event of events) {
+      const { network, eventsOnBlock } = event;
 
-  for (let event of events) {
-    const { network, eventsOnBlock } = event;
-
-    try {
       if (!(await service.DAO.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
         continue;
@@ -52,12 +51,11 @@ export async function action() {
         bounty.amount = networkBounty.tokenAmount;
         await bounty.save();
 
-        logger.info(`Bounty cid: ${cid} uodated`);
+        logger.info(`Bounty cid: ${networkBounty.cid} uodated`);
       }
-    } catch (err) {
-      logger.error(`Error creating bounty cid: ${cid}`, err);
     }
+    await service.saveLastBlock();
+  } catch (err) {
+    logger.error(`Error update bounty amount:`, err);
   }
 }
-
-action();

@@ -54,10 +54,10 @@ export async function action() {
 
       _network.councilMembers = new_members;
       await _network.save();
+
+      await service.saveLastBlock();
     } catch (err) {
-      logger.error(`Error update ammount oracles: ${err.message}`);
+      logger.error(`Error ${name}: ${err.message}`);
     }
   }
 }
-
-action();

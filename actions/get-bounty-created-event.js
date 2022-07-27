@@ -39,11 +39,10 @@ export async function action() {
   const events = await service.getAllEvents();
 
   logger.info(`found ${events.length} events`);
+  try {
+    for (let event of events) {
+      const { network, eventsOnBlock } = event;
 
-  for (let event of events) {
-    const { network, eventsOnBlock } = event;
-
-    try {
       if (!(await service.DAO.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
         continue;
@@ -88,10 +87,9 @@ export async function action() {
 
         logger.info(`Bounty cid: ${cid} created`);
       }
-    } catch (err) {
-      logger.error(`Error creating bounty cid: ${cid}`, err);
     }
+    await service.saveLastBlock();
+  } catch (err) {
+    logger.error(`Error ${name}:`, err);
   }
 }
-
-action();

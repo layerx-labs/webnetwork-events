@@ -19,10 +19,10 @@ export async function action() {
 
   logger.info(`found ${events.length} events`);
 
-  for (let event of events) {
-    const { network, eventsOnBlock } = event;
+  try {
+    for (let event of events) {
+      const { network, eventsOnBlock } = event;
 
-    try {
       if (!(await service.DAO.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
         continue;
@@ -48,12 +48,14 @@ export async function action() {
         });
 
         if (!bounty) {
-          logger.error(`Bounty cid: ${cid} not found`);
+          logger.error(`Bounty cid: ${networkBounty.cid} not found`);
           continue;
         }
 
         if (bounty.state !== "draft") {
-          logger.error(`Bounty cid: ${cid} already in draft state`);
+          logger.error(
+            `Bounty cid: ${networkBounty.cid} already in draft state`
+          );
           continue;
         }
 
@@ -66,12 +68,11 @@ export async function action() {
         await bounty.save();
 
         //TODO: must post a new twitter card;
-        logger.info(`Bounty cid: ${cid} created`);
+        logger.info(`Bounty cid: ${networkBounty.cid} canceled`);
       }
-    } catch (err) {
-      logger.error(`Error creating bounty cid: ${cid}`, err);
     }
+    await service.saveLastBlock();
+  } catch (err) {
+    logger.error(`Error ${name}: `, err);
   }
 }
-
-action();
