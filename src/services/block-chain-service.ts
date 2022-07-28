@@ -1,10 +1,16 @@
-import database from "../db/index.js";
-import DAOService from "../services/dao-service.js";
+import database from "src/db";
+import { networksAttributes as networkProps } from "src/db/models/networks";
+import DAOService from "src/services/dao-service";
+import logger from "src/utils/logger-handler";
 
+export interface EventsPerNetwork {
+  network: Partial<networkProps>;
+  eventsOnBlock: any[];
+}
 export default class BlockChainService {
   _eventName = "";
   _DAO;
-  _networks = [];
+  _networks: networkProps[] = [];
   _db;
   _block = {
     currentBlock: 0, // Latest block mined
@@ -29,7 +35,7 @@ export default class BlockChainService {
     return this._block;
   }
 
-  async init(name) {
+  async init(name: string) {
     this._eventName = name;
     return await Promise.all([
       (this._DAO = new DAOService()),
@@ -43,7 +49,7 @@ export default class BlockChainService {
     this._networks = networks;
   }
 
-  async _instaceDB(name) {
+  async _instaceDB(name: string) {
     let instance = await database.chain_events.findOne({
       where: { name },
     });
@@ -79,24 +85,20 @@ export default class BlockChainService {
     return values;
   }
 
-  async getAllEvents() {
-    const allEvents = [];
+  async getAllEvents(): Promise<EventsPerNetwork[]> {
+    const allEvents: EventsPerNetwork[] = [];
 
     for (const network of this.networks) {
-      const event = {
-        network: {
-          id: network.id,
-          name: network.name,
-          networkAddress: network.networkAddress,
-        },
+      const event: EventsPerNetwork = {
+        network,
         eventsOnBlock: [],
       };
 
       if (!(await this.DAO.loadNetwork(network.networkAddress))) {
-        error(`Error loading network contract ${network.name}`);
+        logger.error(`Error loading network contract ${network.name}`);
         continue;
       }
-
+      debugger;
       const { lastBlock, currentBlock, totalPages, blocksPerPages } =
         await this._getChainValues();
 
@@ -107,7 +109,7 @@ export default class BlockChainService {
         const cursor = start + blocksPerPages;
 
         end = cursor > currentBlock ? currentBlock : cursor;
-
+        debugger;
         const eventsBlock = await this.DAO.network[this._eventName]({
           fromBlock: start,
           toBlock: end,
@@ -127,7 +129,7 @@ export default class BlockChainService {
     return allEvents;
   }
 
-  async saveLastBlock(block = null) {
+  async saveLastBlock(block = 0) {
     const lastBlock = +block || this.block.lastBlock;
     this._db.update({ lastBlock });
   }

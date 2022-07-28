@@ -1,9 +1,33 @@
-import _sequelize from 'sequelize';
-const { Model, Sequelize } = _sequelize;
+import * as Sequelize from 'sequelize';
+import { DataTypes, Model, Optional } from 'sequelize';
 
-export default class users extends Model {
-  static init(sequelize, DataTypes) {
-  return super.init({
+export interface usersAttributes {
+  id: number;
+  githubHandle?: string;
+  address?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  githubLogin?: string;
+  accessToken?: string;
+}
+
+export type usersPk = "id";
+export type usersId = users[usersPk];
+export type usersOptionalAttributes = "id" | "githubHandle" | "address" | "createdAt" | "updatedAt" | "githubLogin" | "accessToken";
+export type usersCreationAttributes = Optional<usersAttributes, usersOptionalAttributes>;
+
+export class users extends Model<usersAttributes, usersCreationAttributes> implements usersAttributes {
+  id!: number;
+  githubHandle?: string;
+  address?: string;
+  createdAt!: Date;
+  updatedAt!: Date;
+  githubLogin?: string;
+  accessToken?: string;
+
+
+  static initModel(sequelize: Sequelize.Sequelize): typeof users {
+    return users.init({
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,

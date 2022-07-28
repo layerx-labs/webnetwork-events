@@ -1,6 +1,6 @@
-import db from "../db/index.js";
-import BlockChainService from "../services/block-chain-service.js";
-import logger from "../utils/logger-handler.js";
+import db from "src/db";
+import BlockChainService from "src/services/block-chain-service";
+import logger from "src/utils/logger-handler";
 
 export const name = "getBountyAmountUpdatedEvents";
 export const schedule = "1 * * * * *";
@@ -8,6 +8,8 @@ export const description = "retrieving bounty created events";
 export const author = "clarkjoao";
 
 export async function action() {
+  const bountyUpdatedAmount: any[] = [];
+
   logger.info("retrieving bounty created events");
 
   const service = new BlockChainService();
@@ -16,6 +18,7 @@ export async function action() {
   const events = await service.getAllEvents();
 
   logger.info(`found ${events.length} events`);
+
   try {
     for (let event of events) {
       const { network, eventsOnBlock } = event;
@@ -44,12 +47,14 @@ export async function action() {
         });
 
         if (!bounty) {
-          logger.error(`Bounty cid: ${cid} not found`);
+          logger.error(`Bounty cid: ${networkBounty.cid} not found`);
           continue;
         }
 
         bounty.amount = networkBounty.tokenAmount;
         await bounty.save();
+
+        bountyUpdatedAmount.push({ bounty, networkBounty });
 
         logger.info(`Bounty cid: ${networkBounty.cid} updated`);
       }
@@ -58,4 +63,8 @@ export async function action() {
   } catch (err) {
     logger.error(`Error update bounty amount:`, err);
   }
+
+  return bountyUpdatedAmount;
 }
+
+export default action;

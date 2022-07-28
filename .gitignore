@@ -3,6 +3,6 @@ dev/
 node_modules/
 *.env
 !.env.example
-
+dist/
 # ignore models inside database folder so we can keep the truth on the database
 db/*.cjs

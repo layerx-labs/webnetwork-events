@@ -2,15 +2,17 @@
   "compilerOptions": {
     "target": "ES2021",
     "module": "commonjs",
-    "baseUrl": "./src",
+    "baseUrl": "./",
     "outDir": "./dist",
-    "sourceMap": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "strictPropertyInitialization": false
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["src/**/*"]
+  "include": ["./src/**/*"]
 }

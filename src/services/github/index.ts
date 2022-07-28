@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Octokit } from "octokit";
-import { GraphQlResponse } from "types/octokit";
+import { GraphQlResponse } from "src/types/octokit";
 import * as CommentsQueries from "./graphql/comments.js";
 import * as IssueQueries from "./graphql/issue.js";
 import * as PullRequestQueries from "./graphql/pull-request.js";

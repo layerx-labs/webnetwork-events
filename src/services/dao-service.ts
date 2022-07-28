@@ -1,11 +1,11 @@
 import { Network_v2, Web3Connection } from "@taikai/dappkit";
 import "dotenv/config";
-import logger from "../utils/logger-handler.js";
+import logger from "src/utils/logger-handler";
 
 const { CHAIN_RPC: web3Host, CHAIN_PRIVATE_KEY: privateKey } = process.env;
 export default class DAOService {
-  _web3Connection;
-  _network;
+  private _web3Connection: Web3Connection;
+  private _network: Network_v2;
 
   get web3Connection() {
     return this._web3Connection;
@@ -24,7 +24,7 @@ export default class DAOService {
     this._web3Connection.start();
   }
 
-  async loadNetwork(networkAddress) {
+  async loadNetwork(networkAddress: string) {
     try {
       if (!networkAddress)
         throw new Error("Missing Network_v2 Contract Address");
@@ -40,9 +40,7 @@ export default class DAOService {
 
       return network;
     } catch (e) {
-      logger.error(
-        `Error loading Network_v2 (${networkAddress}): ${e.message}`
-      );
+      logger.error(`Error loading Network_v2 (${networkAddress}): ${e}`);
     }
 
     return false;
