@@ -24,7 +24,7 @@ export default class DAOService {
     this._web3Connection.start();
   }
 
-  async loadNetwork(networkAddress: string) {
+  async loadNetwork(networkAddress: string | undefined) {
     try {
       if (!networkAddress)
         throw new Error("Missing Network_v2 Contract Address");

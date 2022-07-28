@@ -1,10 +1,10 @@
 import "dotenv/config";
 import { Octokit } from "octokit";
 import { GraphQlResponse } from "src/types/octokit";
-import * as CommentsQueries from "./graphql/comments.js";
-import * as IssueQueries from "./graphql/issue.js";
-import * as PullRequestQueries from "./graphql/pull-request.js";
-import * as RepositoryQueries from "./graphql/repository.js";
+import * as CommentsQueries from "./graphql/comments";
+import * as IssueQueries from "./graphql/issue";
+import * as PullRequestQueries from "./graphql/pull-request";
+import * as RepositoryQueries from "./graphql/repository";
 
 const { GITHUB_TOKEN: token } = process.env;
 
