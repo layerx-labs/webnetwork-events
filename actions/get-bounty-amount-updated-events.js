@@ -51,7 +51,7 @@ export async function action() {
         bounty.amount = networkBounty.tokenAmount;
         await bounty.save();
 
-        logger.info(`Bounty cid: ${networkBounty.cid} uodated`);
+        logger.info(`Bounty cid: ${networkBounty.cid} updated`);
       }
     }
     await service.saveLastBlock();

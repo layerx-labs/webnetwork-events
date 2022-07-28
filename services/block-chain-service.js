@@ -81,50 +81,50 @@ export default class BlockChainService {
 
   async getAllEvents() {
     const allEvents = [];
-    return new Promise(async (resolve) => {
-      for (const network of this.networks) {
-        const event = {
-          network: {
-            id: network.id,
-            name: network.name,
-            networkAddress: network.networkAddress,
-          },
-          eventsOnBlock: [],
-        };
 
-        if (!(await this.DAO.loadNetwork(network.networkAddress))) {
-          error(`Error loading network contract ${network.name}`);
-          continue;
-        }
+    for (const network of this.networks) {
+      const event = {
+        network: {
+          id: network.id,
+          name: network.name,
+          networkAddress: network.networkAddress,
+        },
+        eventsOnBlock: [],
+      };
 
-        const { lastBlock, currentBlock, totalPages, blocksPerPages } =
-          await this._getChainValues();
+      if (!(await this.DAO.loadNetwork(network.networkAddress))) {
+        error(`Error loading network contract ${network.name}`);
+        continue;
+      }
 
-        let start = +lastBlock;
-        let end = +lastBlock;
+      const { lastBlock, currentBlock, totalPages, blocksPerPages } =
+        await this._getChainValues();
 
-        for (let page = 0; page < totalPages; page++) {
-          const cursor = start + blocksPerPages;
+      let start = +lastBlock;
+      let end = +lastBlock;
 
-          end = cursor > currentBlock ? currentBlock : cursor;
+      for (let page = 0; page < totalPages; page++) {
+        const cursor = start + blocksPerPages;
 
-          const eventsBlock = await this.DAO.network[this._eventName]({
-            fromBlock: start,
-            toBlock: end,
-          });
+        end = cursor > currentBlock ? currentBlock : cursor;
 
-          if (eventsBlock.length) {
-            event.eventsOnBlock = eventsBlock;
-          }
-        }
+        const eventsBlock = await this.DAO.network[this._eventName]({
+          fromBlock: start,
+          toBlock: end,
+        });
 
-        allEvents.push(event);
-        if (end > 0) {
-          this._block.lastBlock = end;
+        if (eventsBlock.length) {
+          event.eventsOnBlock = eventsBlock;
         }
       }
-      resolve(allEvents);
-    });
+
+      allEvents.push(event);
+      if (end > 0) {
+        this._block.lastBlock = end;
+      }
+    }
+
+    return allEvents;
   }
 
   async saveLastBlock(block = null) {

@@ -61,14 +61,20 @@ export async function action() {
 
         const [owner, repo] = ghPathSplit(bounty?.repository?.githubPath);
 
-        await GHService.issueClose(repo, owner, bounty?.issueId);
+        const isClosed = await GHService.issueClose(
+          repo,
+          owner,
+          +bounty?.githubId
+        ).catch(console.error);
 
-        bounty.state = "canceled";
+        if (isClosed) {
+          bounty.state = "canceled";
 
-        await bounty.save();
+          await bounty.save();
 
-        //TODO: must post a new twitter card;
-        logger.info(`Bounty cid: ${networkBounty.cid} canceled`);
+          //TODO: must post a new twitter card;
+          logger.info(`Bounty cid: ${networkBounty.cid} canceled`);
+        }
       }
     }
     await service.saveLastBlock();
