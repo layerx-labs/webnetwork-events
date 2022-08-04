@@ -40,7 +40,7 @@ export async function getBountyAmountUpdate(
         const networkBounty = await service.DAO?.network?.getBounty(id);
 
         if (!networkBounty) {
-          logger.error(`Bounty id: ${id} not found`);
+          logger.info(`Bounty id: ${id} not found`);
           continue;
         }
 
@@ -53,7 +53,7 @@ export async function getBountyAmountUpdate(
         });
 
         if (!bounty) {
-          logger.error(`Bounty cid: ${networkBounty.cid} not found`);
+          logger.info(`Bounty cid: ${networkBounty.cid} not found`);
           continue;
         }
 

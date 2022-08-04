@@ -41,7 +41,7 @@ export async function getBountyCanceledEvents(
         const networkBounty = await service.DAO?.network?.getBounty(+id);
 
         if (!networkBounty) {
-          logger.error(`Bounty id: ${id} not found`);
+          logger.info(`Bounty id: ${id} not found`);
           continue;
         }
 
@@ -55,12 +55,12 @@ export async function getBountyCanceledEvents(
         });
 
         if (!bounty || !bounty.githubId) {
-          logger.error(`Bounty cid: ${networkBounty.cid} not found`);
+          logger.info(`Bounty cid: ${networkBounty.cid} not found`);
           continue;
         }
 
         if (bounty.state !== "draft") {
-          logger.error(
+          logger.info(
             `Bounty cid: ${networkBounty.cid} already in draft state`
           );
           continue;

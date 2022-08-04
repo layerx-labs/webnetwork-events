@@ -91,7 +91,7 @@ export async function getBountyClosedEvents(
         const networkBounty = await service.DAO?.network?.getBounty(id);
 
         if (!networkBounty) {
-          logger.error(`Bounty id: ${id} not found`);
+          logger.info(`Bounty id: ${id} not found`);
           continue;
         }
 
@@ -115,7 +115,7 @@ export async function getBountyClosedEvents(
         });
 
         if (!bounty) {
-          logger.error(`Bounty cid: ${id} not found`);
+          logger.info(`Bounty cid: ${id} not found`);
           continue;
         }
 

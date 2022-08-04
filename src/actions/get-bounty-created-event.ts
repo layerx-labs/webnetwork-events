@@ -65,12 +65,12 @@ export async function getBountyCreatedEvents(
         });
 
         if (!bounty) {
-          logger.error(`Bounty cid: ${cid} not found`);
+          logger.info(`Bounty cid: ${cid} not found`);
           continue;
         }
 
         if (bounty.state !== "pending") {
-          logger.error(`Bounty cid: ${cid} already in draft state`);
+          logger.info(`Bounty cid: ${cid} already in draft state`);
           continue;
         }
 

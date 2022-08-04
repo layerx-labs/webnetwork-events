@@ -79,7 +79,7 @@ export async function getBountyMovedToOpen(networkName?: string) {
   if (networkName) {
     const network = await db.networks.findOne({ where: { name: networkName } });
     if (!network) {
-      logger.error(`Network ${networkName} not found`);
+      logger.info(`Network ${networkName} not found`);
       return;
     }
     networks.push(network);

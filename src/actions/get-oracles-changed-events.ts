@@ -69,7 +69,7 @@ export async function getOraclesChangedEvents(
       });
 
       if (!_network) {
-        logger.error(`Network ${event.network.networkAddress} not found`);
+        logger.info(`Network ${event.network.networkAddress} not found`);
         continue;
       }
 
