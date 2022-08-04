@@ -1,13 +1,13 @@
 import { subMilliseconds } from "date-fns";
 import { Op } from "sequelize";
-import { networksAttributes as NetworkProps } from "src/db/models/networks";
 import db from "src/db";
+import { networksAttributes as NetworkProps } from "src/db/models/networks";
 import DAOService from "src/services/dao-service";
 import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
 import { ghPathSplit } from "src/utils/string";
 
-export const name = "move-bounties-to-open";
+export const name = "get-bounty-moved-to-open";
 export const schedule = "1 * * * * *";
 export const description = "moving draft bounties to open";
 export const author = "clarkjoao";
@@ -69,13 +69,23 @@ async function loadIssues(network: NetworkProps, DAO: DAOService) {
   return issues;
 }
 
-export async function action() {
+export async function getBountyMovedToOpen(networkName?: string) {
   logger.info("Starting move bounties to open");
+  const bountiesPerNetworks: any = [];
 
-  const networks: NetworkProps[] = await db.networks.findAll();
+  const networks: NetworkProps[] = [];
   const DAO = new DAOService();
 
-  const bountysPerNetworks: any = [];
+  if (networkName) {
+    const network = await db.networks.findOne({ where: { name: networkName } });
+    if (!network) {
+      logger.error(`Network ${networkName} not found`);
+      return;
+    }
+    networks.push(network);
+  } else {
+    networks.push(...(await db.networks.findAll()));
+  }
 
   for (const network of networks) {
     logger.info(`Moving bounties to open for network ${network.name}`);
@@ -85,11 +95,12 @@ export async function action() {
       continue;
     }
 
-    const bountys = await loadIssues(network, DAO);
-    bountysPerNetworks.push({ network, bountys });
+    const bounties = await loadIssues(network, DAO);
+    if (bounties?.length) bountiesPerNetworks.push({ network, bounties });
   }
 
-  return bountysPerNetworks;
+  return bountiesPerNetworks;
 }
 
+export const action = getBountyMovedToOpen;
 export default action;

@@ -1,14 +1,16 @@
 import { ERC20 } from "@taikai/dappkit";
-import db from "../db/index.js";
-import BlockChainService from "../services/block-chain-service.js";
-import logger from "../utils/logger-handler.js";
+import db from "src/db";
+import { EventsQuery } from "src/interfaces/block-chain-service";
+import BlockChainService from "src/services/block-chain-service";
+import logger from "src/utils/logger-handler";
+import { BountiesProcessed } from "./../interfaces/block-chain-service";
 
 export const name = "getBountyCreatedEvents";
 export const schedule = "1 * * * * *";
 export const description = "retrieving bounty created events";
 export const author = "clarkjoao";
 
-async function validateToken(transactionalToken) {
+async function validateToken(DAO, transactionalToken): Promise<number> {
   var token = await db.tokens.findOne({
     where: {
       address: transactionalToken,
@@ -16,7 +18,7 @@ async function validateToken(transactionalToken) {
   });
 
   if (!token?.id) {
-    const erc20 = new ERC20(contract?.network?.connection, transactionalToken);
+    const erc20 = new ERC20(DAO?.network?.connection, transactionalToken);
 
     await erc20.loadContract();
 
@@ -30,15 +32,19 @@ async function validateToken(transactionalToken) {
   return token.id;
 }
 
-export async function action() {
+export async function getBountyCreatedEvents(
+  query?: EventsQuery
+): Promise<BountiesProcessed[]> {
+  const bountiesProcessed: BountiesProcessed[] = [];
   logger.info("retrieving bounty created events");
 
   const service = new BlockChainService();
   await service.init(name);
 
-  const events = await service.getAllEvents();
+  const events = await service.getEvents(query);
 
   logger.info(`found ${events.length} events`);
+
   try {
     for (let event of events) {
       const { network, eventsOnBlock } = event;
@@ -80,16 +86,27 @@ export async function action() {
           bounty.title = networkBounty.title;
           bounty.contractId = id;
 
-          const tokeId = await validateToken(networkBounty.transactional);
-          if (tokeId) bounty.token = tokeId;
+          const tokeId = await validateToken(
+            service.DAO,
+            networkBounty.transactional
+          );
+
+          if (tokeId) bounty.tokenId = tokeId;
         }
         await bounty.save();
+
+        bountiesProcessed.push({ bounty, networkBounty });
 
         logger.info(`Bounty cid: ${cid} created`);
       }
     }
-    await service.saveLastBlock();
+    if (!query) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error ${name}:`, err);
   }
+  return bountiesProcessed;
 }
+
+export const action = getBountyCreatedEvents;
+
+export default action;

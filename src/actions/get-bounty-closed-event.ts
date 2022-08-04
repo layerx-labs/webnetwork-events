@@ -1,8 +1,12 @@
-import db from "../db/index.js";
-import BlockChainService from "../services/block-chain-service.js";
-import GHService from "../services/github/index.js";
-import logger from "../utils/logger-handler.js";
-import { ghPathSplit } from "../utils/string.js";
+import db from "src/db";
+import {
+  BountiesProcessed,
+  EventsQuery,
+} from "src/interfaces/block-chain-service.js";
+import BlockChainService from "src/services/block-chain-service";
+import GHService from "src/services/github";
+import logger from "src/utils/logger-handler";
+import { ghPathSplit } from "src/utils/string";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "1 * * * * *";
@@ -58,20 +62,24 @@ async function updateUserPayments(bounty, event, networkBounty) {
   );
 }
 
-export async function action() {
+export async function getBountyClosedEvents(
+  query?: EventsQuery
+): Promise<BountiesProcessed[]> {
+  const bountiesProcessed: BountiesProcessed[] = [];
+
   logger.info("retrieving bounty closed events");
 
   const service = new BlockChainService();
   await service.init(name);
 
-  const events = await service.getAllEvents();
+  const events = await service.getEvents(query);
 
   logger.info(`found ${events.length} events`);
 
-  for (let event of events) {
-    const { network, eventsOnBlock } = event;
+  try {
+    for (let event of events) {
+      const { network, eventsOnBlock } = event;
 
-    try {
       if (!(await service.DAO.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
         continue;
@@ -96,14 +104,18 @@ export async function action() {
           include: [
             {
               association: "token",
+            },
+            {
               association: "repository",
+            },
+            {
               association: "merge_proposals",
             },
           ],
         });
 
         if (!bounty) {
-          logger.error(`Bounty cid: ${cid} not found`);
+          logger.error(`Bounty cid: ${id} not found`);
           continue;
         }
 
@@ -116,21 +128,29 @@ export async function action() {
           if (prMerged) await closePullRequests(bounty, prMerged);
         }
 
-        bounty.merged = proposal.scMergeId;
+        bounty.merged = proposal?.scMergeId;
         bounty.state = "closed";
 
         await bounty.save();
 
         await updateUserPayments(bounty, event, networkBounty);
+        bountiesProcessed.push({
+          bounty,
+          networkBounty,
+        });
 
         //TODO: must post a new twitter card;
 
-        logger.info(`Bounty cid: ${cid} closed`);
+        logger.info(`Bounty id: ${id} closed`);
       }
-    } catch (err) {
-      logger.error(`Error to close bounty cid: ${cid}`, err);
     }
+  } catch (err) {
+    logger.error(`Error to close bounty:`, err);
   }
+  if (query) service.saveLastBlock();
+
+  return bountiesProcessed;
 }
 
-action();
+export const aciton = getBountyClosedEvents;
+export default aciton;

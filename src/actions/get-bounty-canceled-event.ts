@@ -1,21 +1,28 @@
-import db from "../db/index.js";
-import BlockChainService from "../services/block-chain-service.js";
-import GHService from "../services/github/index.js";
-import logger from "../utils/logger-handler.js";
-import { ghPathSplit } from "../utils/string.js";
+import db from "src/db";
+import {
+  BountiesProcessed,
+  EventsQuery,
+} from "src/interfaces/block-chain-service";
+import BlockChainService from "src/services/block-chain-service";
+import GHService from "src/services/github";
+import logger from "src/utils/logger-handler";
+import { ghPathSplit } from "src/utils/string";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "1 * * * * *";
 export const description = "retrieving bounty canceled events";
 export const author = "clarkjoao";
 
-export async function action() {
+export async function getBountyCanceledEvents(
+  query?: EventsQuery
+): Promise<BountiesProcessed[]> {
+  const bountiesProcessed: BountiesProcessed[] = [];
   logger.info("retrieving bounty canceled events");
 
   const service = new BlockChainService();
   await service.init(name);
 
-  const events = await service.getAllEvents();
+  const events = await service.getEvents(query);
 
   logger.info(`found ${events.length} events`);
 
@@ -31,7 +38,7 @@ export async function action() {
       for (let eventBlock of eventsOnBlock) {
         const { id } = eventBlock.returnValues;
 
-        const networkBounty = await service?.DAO?.network?.getBounty(id);
+        const networkBounty = await service.DAO?.network?.getBounty(+id);
 
         if (!networkBounty) {
           logger.error(`Bounty id: ${id} not found`);
@@ -44,10 +51,10 @@ export async function action() {
             issueId: networkBounty.cid,
             network_id: network.id,
           },
-          include: [{ association: "token", association: "repository" }],
+          include: [{ association: "token" }, { association: "repository" }],
         });
 
-        if (!bounty) {
+        if (!bounty || !bounty.githubId) {
           logger.error(`Bounty cid: ${networkBounty.cid} not found`);
           continue;
         }
@@ -64,21 +71,27 @@ export async function action() {
         const isClosed = await GHService.issueClose(
           repo,
           owner,
-          +bounty?.githubId
+          bounty.githubId
         ).catch(console.error);
 
         if (isClosed) {
           bounty.state = "canceled";
 
           await bounty.save();
+          bountiesProcessed.push({ bounty, networkBounty });
 
           //TODO: must post a new twitter card;
           logger.info(`Bounty cid: ${networkBounty.cid} canceled`);
         }
       }
     }
-    await service.saveLastBlock();
+    if (!query) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error ${name}: `, err);
   }
+
+  return bountiesProcessed;
 }
+
+export const action = getBountyCanceledEvents;
+export default action;

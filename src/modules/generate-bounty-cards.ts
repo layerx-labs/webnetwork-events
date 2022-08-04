@@ -1,29 +1,29 @@
 import fs from "fs";
 import nodeHtmlToImage from "node-html-to-image";
 import path from "path";
-import { ghPathSplit } from "../utils/string";
+import { ghPathSplit } from "src/utils/string";
 
-function image2base64(imagePathName) {
+function image2base64(imagePathName: string) {
   return new Promise((resolve) => {
-    const filePath = path.resolve("assets", "images", imagePathName);
+    const filePath = path.resolve("src", "assets", "images", imagePathName);
     const file = fs.readFileSync(filePath);
-    const base64 = new Buffer.from(file).toString("base64");
+    const base64 = Buffer.from(file).toString("base64");
     resolve(`data:image/png;base64,${base64}`);
   });
 }
 
-function font2base64(fontPathName) {
+function font2base64(fontPathName: string) {
   return new Promise((resolve) => {
-    const filePath = path.resolve("assets", "fonts", fontPathName);
+    const filePath = path.resolve("src", "assets", "fonts", fontPathName);
     const file = fs.readFileSync(filePath);
-    const base64 = new Buffer.from(file).toString("base64");
-    resolve(`data:font/ttf;base64, ${base64}`);
+    const base64 = Buffer.from(file).toString("base64");
+    resolve(`data:font/ttf;base64,${base64}`);
   });
 }
 
-function importHtml(htmlPathName) {
+function importHtml(htmlPathName: string) {
   return new Promise((resolve) => {
-    const filePath = path.resolve("assets", "templates", htmlPathName);
+    const filePath = path.resolve("src", "assets", "templates", htmlPathName);
     const file = fs.readFileSync(filePath, { encoding: "utf8" });
     resolve(file);
   });
@@ -35,7 +35,7 @@ export default async function generateBountyCards(issue) {
   const background = await image2base64("bg-bounty-card.png");
   const logo = await image2base64("bepro-icon.png");
   const font = await font2base64("SpaceGrotesk.ttf");
-  const html = await importHtml("seo-bounty-cards.hbs");
+  const html = (await importHtml("seo-bounty-cards.hbs")) as string;
 
   const content = {
     githubId: issue?.githubId,
@@ -52,11 +52,11 @@ export default async function generateBountyCards(issue) {
     font,
   };
 
-  const card = await nodeHtmlToImage({
+  const card = (await nodeHtmlToImage({
     html,
     content,
     type: "jpeg",
-  });
+  })) as string;
 
-  return Buffer.from(card).toString("base64");
+  return Buffer.from(card);
 }
