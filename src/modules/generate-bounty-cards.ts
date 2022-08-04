@@ -32,7 +32,7 @@ function importHtml(htmlPathName: string) {
 export default async function generateBountyCards(issue) {
   if (!issue) throw new Error("issue is required");
 
-  const background = await image2base64("bg-bounty-card.png");
+  const background = await image2base64("pattern.png");
   const logo = await image2base64("bepro-icon.png");
   const font = await font2base64("SpaceGrotesk.ttf");
   const html = (await importHtml("seo-bounty-cards.hbs")) as string;

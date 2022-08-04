@@ -10,26 +10,33 @@ export const schedule = "30 * * * * *";
 export const description = "generating SEO cards for all updated issues";
 export const author = "clarkjoao";
 
-export async function seoGenerateCard() {
+export async function seoGenerateCard(issueId?: string) {
   const bountiesProcessed: any[] = [];
   logger.info("Starting SEO cards generation");
 
   const service = new BlockChainService();
   await service.init(name);
 
-  const lastUpdated =
-    service?.db?.updatedAt || service?.db?.createdAt || new Date();
+  let where;
+  if (issueId) {
+    where = {
+      issueId,
+    };
+  } else {
+    const lastUpdated =
+      service?.db?.updatedAt || service?.db?.createdAt || new Date();
 
-  const where = {
-    [Op.or]: [
-      { seoImage: null },
-      {
-        updatedAt: {
-          [Op.gt]: lastUpdated,
+    where = {
+      [Op.or]: [
+        { seoImage: null },
+        {
+          updatedAt: {
+            [Op.gt]: lastUpdated,
+          },
         },
-      },
-    ],
-  };
+      ],
+    };
+  }
 
   const include = [
     { association: "developers" },
@@ -54,6 +61,8 @@ export async function seoGenerateCard() {
       const { hash } = await ipfsService.add(card);
 
       await bounty.update({ seoImage: hash });
+
+      bountiesProcessed.push({ issueId: bounty.issueId, hash });
 
       logger.info(`SEO card generated for bounty ${bounty.githubId}`);
     }
