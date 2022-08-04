@@ -1,3 +1,4 @@
+import { Op } from "sequelize/types";
 import db from "src/db";
 import {
   BountiesProcessed,
@@ -32,7 +33,7 @@ async function mergeProposal(bounty, proposal) {
 }
 
 async function closePullRequests(bounty, pullRequest) {
-  const pullRequests = await models.pullRequest.findAll({
+  const pullRequests = await db.pull_requests.findAll({
     where: {
       issueId: bounty.id,
       githubId: { [Op.not]: pullRequest.githubId },
