@@ -8,10 +8,10 @@ import DAOService from "src/services/dao-service";
 import logger from "src/utils/logger-handler";
 
 export default class BlockChainService {
-  _eventName = "";
+  _eventName: string = "";
   _DAO: DAOService;
   _networks: NetworkProps[] = [];
-  _db;
+  _db; // database instance
   _block = {
     currentBlock: 0, // Latest block mined
     lastBlock: 0, // Last block saved

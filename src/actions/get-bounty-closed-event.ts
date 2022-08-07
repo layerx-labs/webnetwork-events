@@ -1,4 +1,4 @@
-import { Op } from "sequelize/types";
+import { Op } from "sequelize";
 import db from "src/db";
 import {
   BountiesProcessed,
@@ -26,7 +26,7 @@ async function mergeProposal(bounty, proposal) {
 
   const [owner, repo] = ghPathSplit(bounty?.repository?.githubPath);
 
-  await GHService.mergeProposal(owner, repo, pullRequest?.githubId);
+  await GHService.mergeProposal(owner, repo, pullRequest?.githubId as string);
   await GHService.issueClose(repo, owner, bounty?.issueId);
 
   return pullRequest;
@@ -44,7 +44,7 @@ async function closePullRequests(bounty, pullRequest) {
   const [owner, repo] = ghPathSplit(bounty?.repository?.githubPath);
 
   for (const pr of pullRequests) {
-    await GHService.pullrequestClose(owner, repo, pr.githubId);
+    await GHService.pullrequestClose(owner, repo, pr.githubId as string);
   }
 }
 
