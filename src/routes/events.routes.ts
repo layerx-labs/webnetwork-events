@@ -4,9 +4,11 @@ import { getBountyCanceledEvents } from "src/actions/get-bounty-canceled-event";
 import { getBountyCreatedEvents } from "src/actions/get-bounty-created-event";
 import { getBountyMovedToOpen } from "src/actions/get-bounty-moved-to-open";
 import { getOraclesChangedEvents } from "src/actions/get-oracles-changed-events";
+import { getProposalCreated } from "src/actions/get-proposal-created-event";
 import { getPullRequestCanceled } from "src/actions/get-pullrequest-canceled-event";
 import { getPullRequestCreated } from "src/actions/get-pullrequest-created-event";
 import { getPullRequestReadyForReview } from "src/actions/get-pullrequest-ready-for-review";
+
 import eventQuery from "src/middlewares/event-query";
 
 const eventsRouter = Router();
@@ -23,7 +25,9 @@ const events = {
   oracles: {
     changed: getOraclesChangedEvents,
   },
-  proposal: {},
+  proposal: {
+    created: getProposalCreated,
+  },
   "pull-request": {
     created: getPullRequestCreated,
     ready: getPullRequestReadyForReview,
