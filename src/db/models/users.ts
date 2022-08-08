@@ -27,7 +27,7 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
 
 
   static initModel(sequelize: Sequelize.Sequelize): typeof users {
-    return users.init({
+    return sequelize.define('users', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -53,7 +53,6 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
       allowNull: true
     }
   }, {
-    sequelize,
     tableName: 'users',
     schema: 'public',
     timestamps: true,
@@ -80,6 +79,6 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
         ]
       },
     ]
-  });
+  }) as typeof users;
   }
 }

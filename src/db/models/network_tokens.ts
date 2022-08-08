@@ -31,7 +31,7 @@ export class network_tokens extends Model<network_tokensAttributes, network_toke
   createToken!: Sequelize.BelongsToCreateAssociationMixin<tokens>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof network_tokens {
-    return network_tokens.init({
+    return sequelize.define('network_tokens', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -55,7 +55,6 @@ export class network_tokens extends Model<network_tokensAttributes, network_toke
       }
     }
   }, {
-    sequelize,
     tableName: 'network_tokens',
     schema: 'public',
     timestamps: false,
@@ -68,6 +67,6 @@ export class network_tokens extends Model<network_tokensAttributes, network_toke
         ]
       },
     ]
-  });
+  }) as typeof network_tokens;
   }
 }

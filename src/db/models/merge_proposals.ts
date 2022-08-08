@@ -43,7 +43,7 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
   createPullRequest!: Sequelize.BelongsToCreateAssociationMixin<pull_requests>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof merge_proposals {
-    return merge_proposals.init({
+    return sequelize.define('merge_proposals', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -83,7 +83,6 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
       allowNull: true
     }
   }, {
-    sequelize,
     tableName: 'merge_proposals',
     schema: 'public',
     timestamps: true,
@@ -96,6 +95,6 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
         ]
       },
     ]
-  });
+  }) as typeof merge_proposals;
   }
 }

@@ -56,7 +56,7 @@ export class pull_requests extends Model<pull_requestsAttributes, pull_requestsC
   countMerge_proposals!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof pull_requests {
-    return pull_requests.init({
+    return sequelize.define('pull_requests', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -105,7 +105,6 @@ export class pull_requests extends Model<pull_requestsAttributes, pull_requestsC
       allowNull: true
     }
   }, {
-    sequelize,
     tableName: 'pull_requests',
     schema: 'public',
     timestamps: true,
@@ -118,6 +117,6 @@ export class pull_requests extends Model<pull_requestsAttributes, pull_requestsC
         ]
       },
     ]
-  });
+  }) as typeof pull_requests;
   }
 }

@@ -31,7 +31,7 @@ export class developers extends Model<developersAttributes, developersCreationAt
   createIssue!: Sequelize.BelongsToCreateAssociationMixin<issues>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof developers {
-    return developers.init({
+    return sequelize.define('developers', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -55,7 +55,6 @@ export class developers extends Model<developersAttributes, developersCreationAt
       }
     }
   }, {
-    sequelize,
     tableName: 'developers',
     schema: 'public',
     timestamps: true,
@@ -68,6 +67,6 @@ export class developers extends Model<developersAttributes, developersCreationAt
         ]
       },
     ]
-  });
+  }) as typeof developers;
   }
 }

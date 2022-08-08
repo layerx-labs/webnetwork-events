@@ -33,7 +33,7 @@ export class users_payments extends Model<users_paymentsAttributes, users_paymen
   createIssue!: Sequelize.BelongsToCreateAssociationMixin<issues>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof users_payments {
-    return users_payments.init({
+    return sequelize.define('users_payments', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -61,7 +61,6 @@ export class users_payments extends Model<users_paymentsAttributes, users_paymen
       allowNull: true
     }
   }, {
-    sequelize,
     tableName: 'users_payments',
     schema: 'public',
     timestamps: true,
@@ -74,6 +73,6 @@ export class users_payments extends Model<users_paymentsAttributes, users_paymen
         ]
       },
     ]
-  });
+  }) as typeof users_payments;
   }
 }

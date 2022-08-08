@@ -28,11 +28,12 @@ export interface issuesAttributes {
   network_id?: number;
   contractId?: number;
   tokenId?: number;
+  fundingAmount?: number;
 }
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "tokenId";
+export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "tokenId" | "fundingAmount";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
@@ -55,6 +56,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   network_id?: number;
   contractId?: number;
   tokenId?: number;
+  fundingAmount?: number;
 
   // issues hasMany developers via issueId
   developers!: developers[];
@@ -121,7 +123,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   createToken!: Sequelize.BelongsToCreateAssociationMixin<tokens>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof issues {
-    return issues.init({
+    return sequelize.define('issues', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -204,9 +206,12 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
         model: 'tokens',
         key: 'id'
       }
+    },
+    fundingAmount: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
-    sequelize,
     tableName: 'issues',
     schema: 'public',
     timestamps: true,
@@ -219,6 +224,6 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
         ]
       },
     ]
-  });
+  }) as typeof issues;
   }
 }

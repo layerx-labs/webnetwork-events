@@ -23,7 +23,7 @@ export class chain_events extends Model<chain_eventsAttributes, chain_eventsCrea
 
 
   static initModel(sequelize: Sequelize.Sequelize): typeof chain_events {
-    return chain_events.init({
+    return sequelize.define('chain_events', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -40,7 +40,6 @@ export class chain_events extends Model<chain_eventsAttributes, chain_eventsCrea
       allowNull: true
     }
   }, {
-    sequelize,
     tableName: 'chain_events',
     schema: 'public',
     timestamps: true,
@@ -60,6 +59,6 @@ export class chain_events extends Model<chain_eventsAttributes, chain_eventsCrea
         ]
       },
     ]
-  });
+  }) as typeof chain_events;
   }
 }

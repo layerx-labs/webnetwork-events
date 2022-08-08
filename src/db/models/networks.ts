@@ -78,7 +78,7 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
   countRepositories!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof networks {
-    return networks.init({
+    return sequelize.define('networks', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -129,7 +129,6 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
       allowNull: true
     }
   }, {
-    sequelize,
     tableName: 'networks',
     schema: 'public',
     timestamps: true,
@@ -149,6 +148,6 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
         ]
       },
     ]
-  });
+  }) as typeof networks;
   }
 }

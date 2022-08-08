@@ -47,7 +47,7 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   countNetwork_tokens!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof tokens {
-    return tokens.init({
+    return sequelize.define('tokens', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -68,7 +68,6 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
       unique: "tokens_address_key"
     }
   }, {
-    sequelize,
     tableName: 'tokens',
     schema: 'public',
     timestamps: false,
@@ -88,6 +87,6 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
         ]
       },
     ]
-  });
+  }) as typeof tokens;
   }
 }

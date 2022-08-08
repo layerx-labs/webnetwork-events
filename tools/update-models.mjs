@@ -16,6 +16,6 @@ if ([d, h, x, p, u].some((v) => !v))
 const command = `-h ${h} -d ${d} -u ${u} -x ${x} -p ${p} --dialect ${
   dialect || "postgres"
 }`;
-const commandPaths = `-l ts -o ./src/db/models/`;
+const commandPaths = `-l ts --useDefine --schema -o ./src/db/models/`;
 
 execSync(`npx sequelize-auto ${command} ${commandPaths}`);

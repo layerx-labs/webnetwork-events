@@ -14,14 +14,13 @@ export class SequelizeMeta extends Model<SequelizeMetaAttributes, SequelizeMetaC
 
 
   static initModel(sequelize: Sequelize.Sequelize): typeof SequelizeMeta {
-    return SequelizeMeta.init({
+    return sequelize.define('SequelizeMeta', {
     name: {
       type: DataTypes.STRING(255),
       allowNull: false,
       primaryKey: true
     }
   }, {
-    sequelize,
     tableName: 'SequelizeMeta',
     schema: 'public',
     timestamps: false,
@@ -34,6 +33,6 @@ export class SequelizeMeta extends Model<SequelizeMetaAttributes, SequelizeMetaC
         ]
       },
     ]
-  });
+  }) as typeof SequelizeMeta;
   }
 }

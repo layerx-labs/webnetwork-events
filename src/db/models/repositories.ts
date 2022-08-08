@@ -38,7 +38,7 @@ export class repositories extends Model<repositoriesAttributes, repositoriesCrea
   countIssues!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof repositories {
-    return repositories.init({
+    return sequelize.define('repositories', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -59,7 +59,6 @@ export class repositories extends Model<repositoriesAttributes, repositoriesCrea
       }
     }
   }, {
-    sequelize,
     tableName: 'repositories',
     schema: 'public',
     timestamps: false,
@@ -79,6 +78,6 @@ export class repositories extends Model<repositoriesAttributes, repositoriesCrea
         ]
       },
     ]
-  });
+  }) as typeof repositories;
   }
 }
