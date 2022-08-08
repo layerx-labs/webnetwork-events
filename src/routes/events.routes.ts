@@ -5,6 +5,8 @@ import { getBountyCreatedEvents } from "src/actions/get-bounty-created-event";
 import { getBountyMovedToOpen } from "src/actions/get-bounty-moved-to-open";
 import { getOraclesChangedEvents } from "src/actions/get-oracles-changed-events";
 import { getProposalCreated } from "src/actions/get-proposal-created-event";
+import { getProposalDisputed } from "src/actions/get-proposal-disputed-event";
+import { getProposalRefused } from "src/actions/get-proposal-refused-event";
 import { getPullRequestCanceled } from "src/actions/get-pullrequest-canceled-event";
 import { getPullRequestCreated } from "src/actions/get-pullrequest-created-event";
 import { getPullRequestReadyForReview } from "src/actions/get-pullrequest-ready-for-review";
@@ -27,6 +29,8 @@ const events = {
   },
   proposal: {
     created: getProposalCreated,
+    disputed: getProposalDisputed,
+    refused: getProposalRefused,
   },
   "pull-request": {
     created: getPullRequestCreated,
