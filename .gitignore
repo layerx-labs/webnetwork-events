@@ -3,6 +3,15 @@ dev/
 node_modules/
 *.env
 !.env.example
+dist/
+
+.vscode
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
 
 # ignore models inside database folder so we can keep the truth on the database
 db/*.cjs
