@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { seoGenerateCard } from "src/actions/seo-generate-cards";
+import seoGenerateCard from "src/actions/seo-generate-cards";
 
 const seoRoutes = Router();
 
