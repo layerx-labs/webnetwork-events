@@ -20,7 +20,7 @@ const events = {
   bounty: {
     created: getBountyCreatedEvents,
     canceled: getBountyCanceledEvents,
-    closed: async () => {},
+    closed: getBountyCanceledEvents,
     updated: getBountyAmountUpdate,
     "moved-to-open": getBountyMovedToOpen,
   },
