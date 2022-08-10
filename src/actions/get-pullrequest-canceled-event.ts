@@ -6,7 +6,7 @@ import { BountiesProcessed } from "./../interfaces/block-chain-service";
 
 import { Bounty, PullRequest } from "src/interfaces/bounties";
 import GHService from "src/services/github";
-import { ghPathSplit } from "src/utils/string";
+import { slashSplit } from "src/utils/string";
 
 export const name = "getBountyPullRequestCanceledEvents";
 export const schedule = "1 * * * * *";
@@ -14,7 +14,7 @@ export const description = "Get bounty pull request created events";
 export const author = "clarkjoao";
 
 async function closePullRequest(bounty: Bounty, pullRequest: PullRequest) {
-  const [owner, repo] = ghPathSplit(bounty?.repository?.githubPath as string);
+  const [owner, repo] = slashSplit(bounty?.repository?.githubPath as string);
   await GHService.pullrequestClose(
     repo,
     owner,
@@ -30,7 +30,7 @@ async function closePullRequest(bounty: Bounty, pullRequest: PullRequest) {
   );
 }
 
-export async function getPullRequestCanceled(
+export default async function action(
   query?: EventsQuery
 ): Promise<BountiesProcessed[]> {
   const bountiesProcessed: BountiesProcessed[] = [];
@@ -115,7 +115,3 @@ export async function getPullRequestCanceled(
   }
   return bountiesProcessed;
 }
-
-export const action = getPullRequestCanceled;
-
-export default action;

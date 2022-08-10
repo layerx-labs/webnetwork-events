@@ -11,7 +11,7 @@ export const schedule = "1 * * * * *";
 export const description = "retrieving bounty created events";
 export const author = "clarkjoao";
 
-export async function getBountyAmountUpdate(
+export default async function action(
   query?: EventsQuery
 ): Promise<BountiesProcessed[]> {
   const bountiesProcessed: BountiesProcessed[] = [];
@@ -75,7 +75,3 @@ export async function getBountyAmountUpdate(
 
   return bountiesProcessed;
 }
-
-export const action = getBountyAmountUpdate;
-
-export default action;

@@ -6,14 +6,14 @@ import {
 import BlockChainService from "src/services/block-chain-service";
 import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
-import { ghPathSplit } from "src/utils/string";
+import { slashSplit } from "src/utils/string";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "1 * * * * *";
 export const description = "retrieving bounty canceled events";
 export const author = "clarkjoao";
 
-export async function getBountyCanceledEvents(
+export default async function action(
   query?: EventsQuery
 ): Promise<BountiesProcessed[]> {
   const bountiesProcessed: BountiesProcessed[] = [];
@@ -66,7 +66,7 @@ export async function getBountyCanceledEvents(
           continue;
         }
 
-        const [owner, repo] = ghPathSplit(bounty?.repository?.githubPath);
+        const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
 
         const isClosed = await GHService.issueClose(
           repo,
@@ -92,6 +92,3 @@ export async function getBountyCanceledEvents(
 
   return bountiesProcessed;
 }
-
-export const action = getBountyCanceledEvents;
-export default action;

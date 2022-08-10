@@ -12,7 +12,7 @@ export const author = "clarkjoao";
 const getPRStatus = (prStatus): string =>
   prStatus?.canceled ? "canceled" : prStatus?.ready ? "ready" : "draft";
 
-export async function getPullRequestReadyForReview(
+export default async function action(
   query?: EventsQuery
 ): Promise<BountiesProcessed[]> {
   const bountiesProcessed: BountiesProcessed[] = [];
@@ -95,7 +95,3 @@ export async function getPullRequestReadyForReview(
   }
   return bountiesProcessed;
 }
-
-export const action = getPullRequestReadyForReview;
-
-export default action;

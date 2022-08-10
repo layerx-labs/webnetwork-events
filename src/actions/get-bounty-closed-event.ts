@@ -7,7 +7,7 @@ import {
 import BlockChainService from "src/services/block-chain-service";
 import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
-import { ghPathSplit } from "src/utils/string";
+import { slashSplit } from "src/utils/string";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "1 * * * * *";
@@ -24,7 +24,7 @@ async function mergeProposal(bounty, proposal) {
 
   if (!pullRequest) return;
 
-  const [owner, repo] = ghPathSplit(bounty?.repository?.githubPath);
+  const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
 
   await GHService.mergeProposal(owner, repo, pullRequest?.githubId as string);
   await GHService.issueClose(repo, owner, bounty?.issueId);
@@ -41,7 +41,7 @@ async function closePullRequests(bounty, pullRequest) {
     raw: true,
   });
 
-  const [owner, repo] = ghPathSplit(bounty?.repository?.githubPath);
+  const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
 
   for (const pr of pullRequests) {
     await GHService.pullrequestClose(owner, repo, pr.githubId as string);
@@ -63,7 +63,7 @@ async function updateUserPayments(bounty, event, networkBounty) {
   );
 }
 
-export async function getBountyClosedEvents(
+export default async function action(
   query?: EventsQuery
 ): Promise<BountiesProcessed[]> {
   const bountiesProcessed: BountiesProcessed[] = [];
@@ -152,6 +152,3 @@ export async function getBountyClosedEvents(
 
   return bountiesProcessed;
 }
-
-export const aciton = getBountyClosedEvents;
-export default aciton;

@@ -1,1 +1,1 @@
-export const ghPathSplit = (path: string) => path?.split("/");
+export const slashSplit = (path: string) => path?.split("/");

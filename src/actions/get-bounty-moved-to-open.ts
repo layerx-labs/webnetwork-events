@@ -5,7 +5,7 @@ import { networksAttributes as NetworkProps } from "src/db/models/networks";
 import DAOService from "src/services/dao-service";
 import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
-import { ghPathSplit } from "src/utils/string";
+import { slashSplit } from "src/utils/string";
 
 export const name = "get-bounty-moved-to-open";
 export const schedule = "1 * * * * *";
@@ -36,7 +36,7 @@ async function loadIssues(network: NetworkProps, DAO: DAOService) {
     logger.info(`Moving issue ${issue.id} to open`);
 
     try {
-      const [owner, repo] = ghPathSplit(issue?.repository?.githubPath);
+      const [owner, repo] = slashSplit(issue?.repository?.githubPath);
 
       if (!repositoriesDetails[`${owner}/${repo}`]) {
         repositoriesDetails[`${owner}/${repo}`] =
@@ -69,7 +69,7 @@ async function loadIssues(network: NetworkProps, DAO: DAOService) {
   return issues;
 }
 
-export async function getBountyMovedToOpen(networkName?: string) {
+export default async function action(networkName?: string) {
   logger.info("Starting move bounties to open");
   const bountiesPerNetworks: any = [];
 
@@ -101,6 +101,3 @@ export async function getBountyMovedToOpen(networkName?: string) {
 
   return bountiesPerNetworks;
 }
-
-export const action = getBountyMovedToOpen;
-export default action;

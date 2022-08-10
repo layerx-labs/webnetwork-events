@@ -10,7 +10,7 @@ export const schedule = "30 * * * * *";
 export const description = "generating SEO cards for all updated issues";
 export const author = "clarkjoao";
 
-export async function seoGenerateCard(issueId?: string) {
+export default async function action(issueId?: string) {
   const bountiesProcessed: any[] = [];
   logger.info("Starting SEO cards generation");
 
@@ -72,6 +72,3 @@ export async function seoGenerateCard(issueId?: string) {
 
   return bountiesProcessed;
 }
-
-export const action = seoGenerateCard;
-export default action;

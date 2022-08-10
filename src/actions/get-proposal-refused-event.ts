@@ -10,7 +10,7 @@ export const schedule = "1 * * * * *";
 export const description = "";
 export const author = "clarkjoao";
 
-export async function getProposalRefused(
+export default async function action(
   query?: EventsQuery
 ): Promise<BountiesProcessed[]> {
   const bountiesProcessed: BountiesProcessed[] = [];
@@ -117,7 +117,3 @@ export async function getProposalRefused(
   }
   return bountiesProcessed;
 }
-
-export const action = getProposalRefused;
-
-export default action;

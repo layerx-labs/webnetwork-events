@@ -43,9 +43,7 @@ async function _validateBlockQuery(
   return newQuery;
 }
 
-export async function getOraclesChangedEvents(
-  query?: EventsQuery
-): Promise<string[]> {
+export default async function action(query?: EventsQuery): Promise<string[]> {
   const addressProcessed: string[] = [];
   logger.info("retrieving oracles changed events");
 
@@ -103,6 +101,3 @@ export async function getOraclesChangedEvents(
 
   return addressProcessed;
 }
-
-export const action = getOraclesChangedEvents;
-export default action;

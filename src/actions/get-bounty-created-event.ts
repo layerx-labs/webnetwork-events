@@ -32,7 +32,7 @@ async function validateToken(DAO, transactionalToken): Promise<number> {
   return token.id;
 }
 
-export async function getBountyCreatedEvents(
+export default async function action(
   query?: EventsQuery
 ): Promise<BountiesProcessed[]> {
   const bountiesProcessed: BountiesProcessed[] = [];
@@ -106,7 +106,3 @@ export async function getBountyCreatedEvents(
   }
   return bountiesProcessed;
 }
-
-export const action = getBountyCreatedEvents;
-
-export default action;

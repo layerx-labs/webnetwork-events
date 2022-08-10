@@ -7,7 +7,7 @@ import { BountiesProcessed } from "./../interfaces/block-chain-service";
 import "dotenv/config";
 import { Bounty, PullRequest } from "src/interfaces/bounties";
 import GHService from "src/services/github";
-import { ghPathSplit } from "src/utils/string";
+import { slashSplit } from "src/utils/string";
 const webAppUrl = process.env.WEBAPP_URL || "http://localhost:3000";
 
 export const name = "getBountyPullRequestCreatedEvents";
@@ -21,7 +21,7 @@ const getPRStatus = (prStatus): string =>
 async function createCommentOnIssue(bounty: Bounty, pullRequest: PullRequest) {
   const issueLink = `${webAppUrl}/bounty?id=${bounty.githubId}&repoId=${bounty.repository_id}`;
   const body = `@${bounty.creatorGithub}, @${pullRequest.githubLogin} has a solution - [check your bounty](${issueLink})`;
-  const [owner, repo] = ghPathSplit(bounty?.repository?.githubPath as string);
+  const [owner, repo] = slashSplit(bounty?.repository?.githubPath as string);
   return await GHService.createCommentOnIssue(
     repo,
     owner,
@@ -30,7 +30,7 @@ async function createCommentOnIssue(bounty: Bounty, pullRequest: PullRequest) {
   );
 }
 
-export async function getPullRequestCreated(
+export default async function action(
   query?: EventsQuery
 ): Promise<BountiesProcessed[]> {
   const bountiesProcessed: BountiesProcessed[] = [];
@@ -109,7 +109,3 @@ export async function getPullRequestCreated(
   }
   return bountiesProcessed;
 }
-
-export const action = getPullRequestCreated;
-
-export default action;
