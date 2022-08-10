@@ -3,7 +3,8 @@ import "dotenv/config";
 import logger from "src/utils/logger-handler";
 
 const { CHAIN_RPC: web3Host, CHAIN_PRIVATE_KEY: privateKey } = process.env;
-export default class DAOService {
+
+export default class NetworkService {
   private _web3Connection: Web3Connection;
   private _network: Network_v2;
 

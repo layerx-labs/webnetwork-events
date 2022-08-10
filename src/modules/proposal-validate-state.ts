@@ -1,8 +1,8 @@
-import DAOService from "src/services/dao-service";
+import NetworkService from "src/services/network-service";
 
 async function bountyReadyPRsHasNoInvalidProposals(
   networkBounty: any,
-  dao: DAOService
+  networkService: NetworkService
 ): Promise<number> {
   const readyPRsIds = networkBounty.pullRequests
     .filter((pr) => pr.ready)
@@ -21,7 +21,7 @@ async function bountyReadyPRsHasNoInvalidProposals(
       .filter((p) => readyPRsIds.includes(p.prId))
       .map(async (p) => ({
         ...p,
-        isDisputed: await dao.network?.isProposalDisputed(
+        isDisputed: await networkService.network?.isProposalDisputed(
           networkBounty.id,
           p.id
         ),
@@ -44,11 +44,11 @@ async function bountyReadyPRsHasNoInvalidProposals(
 export default async function validateProposalState(
   currentState: string,
   networkBounty: any,
-  dao: DAOService
+  networkService: NetworkService
 ): Promise<string> {
   const validation = await bountyReadyPRsHasNoInvalidProposals(
     networkBounty,
-    dao
+    networkService
   ).catch((error) => {
     console.error(error);
     return -1;

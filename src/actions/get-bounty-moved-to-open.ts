@@ -2,8 +2,8 @@ import { subMilliseconds } from "date-fns";
 import { Op } from "sequelize";
 import db from "src/db";
 import { networksAttributes as NetworkProps } from "src/db/models/networks";
-import DAOService from "src/services/dao-service";
 import GHService from "src/services/github";
+import NetworkService from "src/services/network-service";
 import logger from "src/utils/logger-handler";
 import { slashSplit } from "src/utils/string";
 
@@ -12,8 +12,11 @@ export const schedule = "1 * * * * *";
 export const description = "moving draft bounties to open";
 export const author = "clarkjoao";
 
-async function loadIssues(network: NetworkProps, DAO: DAOService) {
-  const redeemTime = await DAO.network.draftTime();
+async function loadIssues(
+  network: NetworkProps,
+  networkService: NetworkService
+) {
+  const redeemTime = await networkService.network.draftTime();
 
   const where = {
     createdAt: { [Op.lt]: subMilliseconds(+new Date(), redeemTime) },
@@ -74,7 +77,7 @@ export default async function action(networkName?: string) {
   const bountiesPerNetworks: any = [];
 
   const networks: NetworkProps[] = [];
-  const DAO = new DAOService();
+  const networkService = new NetworkService();
 
   if (networkName) {
     const network = await db.networks.findOne({ where: { name: networkName } });
@@ -90,12 +93,12 @@ export default async function action(networkName?: string) {
   for (const network of networks) {
     logger.info(`Moving bounties to open for network ${network.name}`);
 
-    if (!(await DAO.loadNetwork(network?.networkAddress))) {
-      logger.error(`Error loading network DAO ${network.name}`);
+    if (!(await networkService.loadNetwork(network?.networkAddress))) {
+      logger.error(`Error loading network networkService ${network.name}`);
       continue;
     }
 
-    const bounties = await loadIssues(network, DAO);
+    const bounties = await loadIssues(network, networkService);
     if (bounties?.length) bountiesPerNetworks.push({ network, bounties });
   }
 

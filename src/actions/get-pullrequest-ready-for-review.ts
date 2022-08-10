@@ -29,14 +29,16 @@ export default async function action(
     for (let event of events) {
       const { network, eventsOnBlock } = event;
 
-      if (!(await service.DAO.loadNetwork(network.networkAddress))) {
+      if (!(await service.networkService.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
         continue;
       }
 
       for (let eventBlock of eventsOnBlock) {
         const { bountyId: id, pullRequestId } = eventBlock.returnValues;
-        const networkBounty = await service.DAO?.network?.getBounty(id);
+        const networkBounty = await service.networkService?.network?.getBounty(
+          id
+        );
 
         if (!networkBounty) {
           logger.info(`Bounty id: ${id} not found`);

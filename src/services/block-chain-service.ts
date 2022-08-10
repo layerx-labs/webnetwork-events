@@ -4,12 +4,12 @@ import {
   EventsPerNetwork,
   EventsQuery,
 } from "src/interfaces/block-chain-service";
-import DAOService from "src/services/dao-service";
+import NetworkService from "src/services/network-service";
 import logger from "src/utils/logger-handler";
 
 export default class BlockChainService {
   _eventName: string = "";
-  _DAO: DAOService;
+  _networkService: NetworkService;
   _networks: NetworkProps[] = [];
   _db; // database instance
   _block = {
@@ -19,8 +19,8 @@ export default class BlockChainService {
     blocksPerPages: 1500,
   };
 
-  get DAO() {
-    return this._DAO;
+  get networkService() {
+    return this._networkService;
   }
 
   get networks() {
@@ -38,7 +38,7 @@ export default class BlockChainService {
   async init(name: string) {
     this._eventName = name;
     return await Promise.all([
-      (this._DAO = new DAOService()),
+      (this._networkService = new NetworkService()),
       this._instaceDB(name),
     ]);
   }
@@ -56,7 +56,7 @@ export default class BlockChainService {
 
     if (!instance) {
       const lastBlock =
-        (await this.DAO.web3Connection.eth.getBlockNumber()) || 0;
+        (await this.networkService.web3Connection.eth.getBlockNumber()) || 0;
 
       instance = await database.chain_events.create({
         name,
@@ -72,7 +72,7 @@ export default class BlockChainService {
     const blocksPerPages = 1500;
 
     const currentBlock =
-      (await this?.DAO.web3Connection?.eth?.getBlockNumber()) || 0;
+      (await this?.networkService.web3Connection?.eth?.getBlockNumber()) || 0;
 
     const lastBlock = +(await this._db?.lastBlock) || 0;
 
@@ -103,7 +103,7 @@ export default class BlockChainService {
         eventsOnBlock: [],
       };
 
-      if (!(await this.DAO.loadNetwork(network.networkAddress))) {
+      if (!(await this.networkService.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
         continue;
       }
@@ -119,7 +119,7 @@ export default class BlockChainService {
 
         end = cursor > currentBlock ? currentBlock : cursor;
 
-        const eventsBlock = await this.DAO.network[this._eventName]({
+        const eventsBlock = await this.networkService.network[this._eventName]({
           fromBlock: start,
           toBlock: end,
         });
@@ -169,7 +169,7 @@ export default class BlockChainService {
 
     networkEvent.network = network;
 
-    if (!(await this.DAO.loadNetwork(network.networkAddress))) {
+    if (!(await this.networkService.loadNetwork(network.networkAddress))) {
       throw Error(`Error loading network contract ${network.name}`);
     }
     const toBlock = +blockQuery.to;
@@ -179,7 +179,7 @@ export default class BlockChainService {
         : +blockQuery.from
       : toBlock - 1;
 
-    const eventsBlock = await this.DAO.network[this._eventName]({
+    const eventsBlock = await this.networkService.network[this._eventName]({
       fromBlock,
       toBlock,
     });

@@ -71,7 +71,8 @@ export default async function action(query?: EventsQuery): Promise<string[]> {
         continue;
       }
 
-      const councilAmount = await service?.DAO?.network?.councilAmount();
+      const councilAmount =
+        await service?.networkService?.network?.councilAmount();
       const existing_members = [...(_network?.councilMembers || [])];
       const remove_members: string[] = [];
 

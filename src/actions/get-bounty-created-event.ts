@@ -2,6 +2,7 @@ import { ERC20 } from "@taikai/dappkit";
 import db from "src/db";
 import { EventsQuery } from "src/interfaces/block-chain-service";
 import BlockChainService from "src/services/block-chain-service";
+import NetworkService from "src/services/network-service";
 import logger from "src/utils/logger-handler";
 import { BountiesProcessed } from "./../interfaces/block-chain-service";
 
@@ -10,7 +11,10 @@ export const schedule = "1 * * * * *";
 export const description = "retrieving bounty created events";
 export const author = "clarkjoao";
 
-async function validateToken(DAO, transactionalToken): Promise<number> {
+async function validateToken(
+  networkService: NetworkService,
+  transactionalToken
+): Promise<number> {
   var token = await db.tokens.findOne({
     where: {
       address: transactionalToken,
@@ -18,7 +22,10 @@ async function validateToken(DAO, transactionalToken): Promise<number> {
   });
 
   if (!token?.id) {
-    const erc20 = new ERC20(DAO?.network?.connection, transactionalToken);
+    const erc20 = new ERC20(
+      networkService?.network?.connection,
+      transactionalToken
+    );
 
     await erc20.loadContract();
 
@@ -49,7 +56,7 @@ export default async function action(
     for (let event of events) {
       const { network, eventsOnBlock } = event;
 
-      if (!(await service.DAO.loadNetwork(network.networkAddress))) {
+      if (!(await service.networkService.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
         continue;
       }
@@ -76,7 +83,9 @@ export default async function action(
 
         bounty.state = "draft";
 
-        const networkBounty = await service.DAO?.network?.getBounty(id);
+        const networkBounty = await service.networkService?.network?.getBounty(
+          id
+        );
 
         if (networkBounty) {
           bounty.creatorAddress = networkBounty.creator;
@@ -87,7 +96,7 @@ export default async function action(
           bounty.contractId = id;
 
           const tokeId = await validateToken(
-            service.DAO,
+            service.networkService,
             networkBounty.transactional
           );
 
