@@ -1,10 +1,13 @@
 import { ERC20 } from "@taikai/dappkit";
 import db from "src/db";
-import { EventsQuery } from "src/interfaces/block-chain-service";
+import {
+  BountiesProcessed,
+  BountiesProcessedPerNetwork,
+  EventsQuery,
+} from "src/interfaces/block-chain-service";
 import BlockChainService from "src/services/block-chain-service";
 import NetworkService from "src/services/network-service";
 import logger from "src/utils/logger-handler";
-import { BountiesProcessed } from "./../interfaces/block-chain-service";
 
 export const name = "getBountyCreatedEvents";
 export const schedule = "1 * * * * *";
@@ -41,8 +44,8 @@ async function validateToken(
 
 export default async function action(
   query?: EventsQuery
-): Promise<BountiesProcessed[]> {
-  const bountiesProcessed: BountiesProcessed[] = [];
+): Promise<BountiesProcessedPerNetwork[]> {
+  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] = [];
   logger.info("retrieving bounty created events");
 
   const service = new BlockChainService();
@@ -55,6 +58,8 @@ export default async function action(
   try {
     for (let event of events) {
       const { network, eventsOnBlock } = event;
+
+      const bountiesProcessed: BountiesProcessed[] = [];
 
       if (!(await service.networkService.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
@@ -104,14 +109,15 @@ export default async function action(
         }
         await bounty.save();
 
-        bountiesProcessed.push({ bounty, networkBounty });
+        bountiesProcessed.push({ bounty, eventBlock });
 
         logger.info(`Bounty cid: ${cid} created`);
       }
+      bountiesProcessedPerNetwork.push({ network, bountiesProcessed });
     }
     if (!query) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error ${name}:`, err);
   }
-  return bountiesProcessed;
+  return bountiesProcessedPerNetwork;
 }

@@ -10,6 +10,7 @@ import getProposalRefused from "src/actions/get-proposal-refused-event";
 import getPullRequestCanceled from "src/actions/get-pullrequest-canceled-event";
 import getPullRequestCreated from "src/actions/get-pullrequest-created-event";
 import getPullRequestReadyForReview from "src/actions/get-pullrequest-ready-for-review";
+import { BountiesProcessedPerNetwork } from "src/interfaces/block-chain-service";
 
 import eventQuery from "src/middlewares/event-query";
 
@@ -46,9 +47,10 @@ eventsRouter.use("/:entity/:event", async (req, res) => {
   if (!events[entity][event])
     return res.status(404).json({ error: "Event not found" });
 
-  const bounties = await events[entity][event](req?.eventQuery);
+  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] =
+    await events[entity][event](req?.eventQuery);
 
-  return res.status(200).json(bounties);
+  return res.status(200).json(bountiesProcessedPerNetwork);
 });
 
 export { eventsRouter };

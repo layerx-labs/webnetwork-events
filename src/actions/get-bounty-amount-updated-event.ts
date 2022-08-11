@@ -1,6 +1,7 @@
 import db from "src/db";
 import {
   BountiesProcessed,
+  BountiesProcessedPerNetwork,
   EventsQuery,
 } from "src/interfaces/block-chain-service";
 import BlockChainService from "src/services/block-chain-service";
@@ -13,8 +14,8 @@ export const author = "clarkjoao";
 
 export default async function action(
   query?: EventsQuery
-): Promise<BountiesProcessed[]> {
-  const bountiesProcessed: BountiesProcessed[] = [];
+): Promise<BountiesProcessedPerNetwork[]> {
+  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] = [];
 
   logger.info("retrieving bounty created events");
 
@@ -28,6 +29,8 @@ export default async function action(
   try {
     for (let event of events) {
       const { network, eventsOnBlock } = event;
+
+      const bountiesProcessed: BountiesProcessed[] = [];
 
       if (!(await service.networkService.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
@@ -62,10 +65,12 @@ export default async function action(
         bounty.amount = networkBounty.tokenAmount;
         await bounty.save();
 
-        bountiesProcessed.push({ bounty, networkBounty });
+        bountiesProcessed.push({ bounty, eventBlock });
 
         logger.info(`Bounty cid: ${networkBounty.cid} updated`);
       }
+
+      bountiesProcessedPerNetwork.push({ network, bountiesProcessed });
     }
   } catch (err) {
     logger.error(`Error update bounty amount:`, err);
@@ -75,5 +80,5 @@ export default async function action(
     await service.saveLastBlock();
   }
 
-  return bountiesProcessed;
+  return bountiesProcessedPerNetwork;
 }

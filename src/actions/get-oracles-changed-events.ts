@@ -1,6 +1,10 @@
 import { fromSmartContractDecimals } from "@taikai/dappkit";
 import db from "src/db";
-import { BlockQuery, EventsQuery } from "src/interfaces/block-chain-service";
+import {
+  BlockQuery,
+  BountiesProcessedPerNetwork,
+  EventsQuery,
+} from "src/interfaces/block-chain-service";
 import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
 
@@ -45,6 +49,8 @@ async function _validateBlockQuery(
 
 export default async function action(query?: EventsQuery): Promise<string[]> {
   const addressProcessed: string[] = [];
+  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] = [];
+
   logger.info("retrieving oracles changed events");
 
   const service = new BlockChainService();
@@ -93,7 +99,10 @@ export default async function action(query?: EventsQuery): Promise<string[]> {
 
       _network.councilMembers = new_members;
       addressProcessed.push(...new_members);
+
       await _network.save();
+
+      bountiesProcessedPerNetwork.push({ network, addressProcessed });
     }
   } catch (err) {
     logger.error(`Error ${name}: ${err}`);

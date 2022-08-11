@@ -201,4 +201,15 @@ export default class BlockChainService {
 
     return events;
   }
+
+  async getNetworks(query?: EventsQuery): Promise<NetworkProps[]> {
+    const networks: NetworkProps[] = [];
+    if (query?.networkName) {
+      networks.push(await this._getNetwork(query.networkName));
+    } else {
+      networks.push(...(await this._loadAllNetworks()));
+    }
+
+    return networks;
+  }
 }

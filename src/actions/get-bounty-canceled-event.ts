@@ -1,6 +1,7 @@
 import db from "src/db";
 import {
   BountiesProcessed,
+  BountiesProcessedPerNetwork,
   EventsQuery,
 } from "src/interfaces/block-chain-service";
 import BlockChainService from "src/services/block-chain-service";
@@ -15,8 +16,9 @@ export const author = "clarkjoao";
 
 export default async function action(
   query?: EventsQuery
-): Promise<BountiesProcessed[]> {
-  const bountiesProcessed: BountiesProcessed[] = [];
+): Promise<BountiesProcessedPerNetwork[]> {
+  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] = [];
+
   logger.info("retrieving bounty canceled events");
 
   const service = new BlockChainService();
@@ -29,6 +31,8 @@ export default async function action(
   try {
     for (let event of events) {
       const { network, eventsOnBlock } = event;
+
+      const bountiesProcessed: BountiesProcessed[] = [];
 
       if (!(await service.networkService.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
@@ -80,17 +84,18 @@ export default async function action(
           bounty.state = "canceled";
 
           await bounty.save();
-          bountiesProcessed.push({ bounty, networkBounty });
 
-          //TODO: must post a new twitter card;
+          bountiesProcessed.push({ bounty, eventBlock });
+
           logger.info(`Bounty cid: ${networkBounty.cid} canceled`);
         }
       }
+      bountiesProcessedPerNetwork.push({ network, bountiesProcessed });
     }
     if (!query) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error ${name}: `, err);
   }
 
-  return bountiesProcessed;
+  return bountiesProcessedPerNetwork;
 }

@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import db from "src/db";
 import {
   BountiesProcessed,
+  BountiesProcessedPerNetwork,
   EventsQuery,
 } from "src/interfaces/block-chain-service.js";
 import BlockChainService from "src/services/block-chain-service";
@@ -65,8 +66,8 @@ async function updateUserPayments(bounty, event, networkBounty) {
 
 export default async function action(
   query?: EventsQuery
-): Promise<BountiesProcessed[]> {
-  const bountiesProcessed: BountiesProcessed[] = [];
+): Promise<BountiesProcessedPerNetwork[]> {
+  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] = [];
 
   logger.info("retrieving bounty closed events");
 
@@ -85,6 +86,7 @@ export default async function action(
         logger.error(`Error loading network contract ${network.name}`);
         continue;
       }
+      const bountiesProcessed: BountiesProcessed[] = [];
 
       for (let eventBlock of eventsOnBlock) {
         const { id, proposalId } = eventBlock.returnValues;
@@ -139,18 +141,17 @@ export default async function action(
         await updateUserPayments(bounty, event, networkBounty);
         bountiesProcessed.push({
           bounty,
-          networkBounty,
+          eventBlock,
         });
-
-        //TODO: must post a new twitter card;
 
         logger.info(`Bounty id: ${id} closed`);
       }
+      bountiesProcessedPerNetwork.push({ network, bountiesProcessed });
     }
   } catch (err) {
     logger.error(`Error to close bounty:`, err);
   }
   if (query) service.saveLastBlock();
 
-  return bountiesProcessed;
+  return bountiesProcessedPerNetwork;
 }

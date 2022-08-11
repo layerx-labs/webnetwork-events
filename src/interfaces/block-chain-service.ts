@@ -17,7 +17,12 @@ export interface EventsQuery {
 
 export interface BountiesProcessed {
   bounty: {};
-  networkBounty: {};
+  eventBlock: {} | null;
+}
+export interface BountiesProcessedPerNetwork {
+  network: Partial<NetworkProps>;
+  bountiesProcessed?: BountiesProcessed[];
+  addressProcessed?: string[];
 }
 
 export interface EventsProcessed {
