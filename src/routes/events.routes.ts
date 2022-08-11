@@ -11,6 +11,7 @@ import getPullRequestCanceled from "src/actions/get-pullrequest-canceled-event";
 import getPullRequestCreated from "src/actions/get-pullrequest-created-event";
 import getPullRequestReadyForReview from "src/actions/get-pullrequest-ready-for-review";
 import { BountiesProcessedPerNetwork } from "src/interfaces/block-chain-service";
+import twitterTweet from "src/modules/handle-tweet";
 
 import eventQuery from "src/middlewares/event-query";
 
@@ -49,6 +50,30 @@ eventsRouter.use("/:entity/:event", async (req, res) => {
 
   const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] =
     await events[entity][event](req?.eventQuery);
+
+  /**
+   * Only create tweet if the networkName params existis;
+   */
+
+  if (bountiesProcessedPerNetwork.length && req.eventQuery?.networkName) {
+    const network = bountiesProcessedPerNetwork.find(
+      ({ network }) => network.name === req.eventQuery?.networkName
+    );
+
+    if (network) {
+      const createTweet = network?.bountiesProcessed?.map(
+        async ({ bounty }) =>
+          bounty &&
+          (await twitterTweet({
+            entity,
+            event,
+            bountyId: bounty?.issueId as string,
+            networkName: req.eventQuery?.networkName as string,
+          }))
+      );
+      await Promise.all([createTweet]);
+    }
+  }
 
   return res.status(200).json(bountiesProcessedPerNetwork);
 });

@@ -1,4 +1,5 @@
 import { networksAttributes as NetworkProps } from "src/db/models/networks";
+import { Bounty } from "./bounties";
 
 export type BlockQuery = {
   from?: number;
@@ -16,7 +17,7 @@ export interface EventsQuery {
 }
 
 export interface BountiesProcessed {
-  bounty: {};
+  bounty: Bounty;
   eventBlock: {} | null;
 }
 export interface BountiesProcessedPerNetwork {
