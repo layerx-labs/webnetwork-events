@@ -1,5 +1,6 @@
 import { Router } from "express";
 import getBountyAmountUpdate from "src/actions/get-bounty-amount-updated-event";
+import getBountyFundedUpdate from "src/actions/get-bounty-funded-updated-event";
 import getBountyCanceledEvents from "src/actions/get-bounty-canceled-event";
 import getBountyCreatedEvents from "src/actions/get-bounty-created-event";
 import getBountyMovedToOpen from "src/actions/get-bounty-moved-to-open";
@@ -25,6 +26,7 @@ const events = {
     canceled: getBountyCanceledEvents,
     closed: getBountyCanceledEvents,
     updated: getBountyAmountUpdate,
+    funded: getBountyFundedUpdate,
     "moved-to-open": getBountyMovedToOpen,
   },
   oracles: {

@@ -29,11 +29,12 @@ export interface issuesAttributes {
   contractId?: number;
   tokenId?: number;
   fundingAmount?: number;
+  fundedAmount?: number;
 }
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "tokenId" | "fundingAmount";
+export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "tokenId" | "fundingAmount" | "fundedAmount";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
@@ -57,6 +58,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   contractId?: number;
   tokenId?: number;
   fundingAmount?: number;
+  fundedAmount?: number;
 
   // issues hasMany developers via issueId
   developers!: developers[];
@@ -208,6 +210,10 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       }
     },
     fundingAmount: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    fundedAmount: {
       type: DataTypes.INTEGER,
       allowNull: true
     }
