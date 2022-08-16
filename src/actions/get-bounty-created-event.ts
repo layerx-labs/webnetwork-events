@@ -96,6 +96,7 @@ export default async function action(
           bounty.creatorAddress = networkBounty.creator;
           bounty.creatorGithub = networkBounty.githubUser;
           bounty.amount = networkBounty.tokenAmount;
+          bounty.fundingAmount = networkBounty.fundingAmount;
           bounty.branch = networkBounty.branch;
           bounty.title = networkBounty.title;
           bounty.contractId = id;
