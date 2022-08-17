@@ -16,17 +16,10 @@ export interface EventsQuery {
   blockQuery: BlockQuery;
 }
 
-export interface BountiesProcessed {
-  bounty: Bounty;
-  eventBlock: {} | null;
-}
-export interface BountiesProcessedPerNetwork {
-  network: Partial<NetworkProps>;
-  bountiesProcessed?: BountiesProcessed[];
-  addressProcessed?: string[];
-}
+export type BountiesProcessed = {
+  [issueId: string]: { bounty: Bounty; eventBlock: {} | null };
+};
 
 export interface EventsProcessed {
-  events: BountiesProcessed[];
-  blocks?: BlockQuery;
+  [networkName: string]: BountiesProcessed | string[];
 }

@@ -5,7 +5,7 @@ export default function (req: Request, _: Response, next: NextFunction) {
   if (toBlock && !fromBlock) fromBlock = +toBlock - 1;
   if (fromBlock && !toBlock) toBlock = +fromBlock + 1;
 
-  if (toBlock && networkName) {
+  if ((fromBlock || toBlock) && networkName) {
     req.eventQuery = {
       networkName,
       blockQuery: {

@@ -10,10 +10,13 @@ import getProposalRefused from "src/actions/get-proposal-refused-event";
 import getPullRequestCanceled from "src/actions/get-pullrequest-canceled-event";
 import getPullRequestCreated from "src/actions/get-pullrequest-created-event";
 import getPullRequestReadyForReview from "src/actions/get-pullrequest-ready-for-review";
-import { BountiesProcessedPerNetwork } from "src/interfaces/block-chain-service";
-import twitterTweet from "src/modules/handle-tweet";
+import {
+  BountiesProcessed,
+  EventsProcessed,
+} from "src/interfaces/block-chain-service";
 
 import eventQuery from "src/middlewares/event-query";
+import { dispatchTweets } from "src/modules/handle-tweet";
 
 const eventsRouter = Router();
 
@@ -42,40 +45,31 @@ const events = {
   },
 };
 
-eventsRouter.post("/:entity/:event", async (req, res) => {
+eventsRouter.get("/:entity/:event", async (req, res) => {
   const { entity, event } = req.params;
 
   if (!events[entity][event])
     return res.status(404).json({ error: "Event not found" });
 
-  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] =
-    await events[entity][event](req?.eventQuery);
+  const eventsProcessed: EventsProcessed = await events[entity][event](
+    req?.eventQuery
+  );
 
   /**
    * Only create tweet if the networkName params existis;
    */
 
-  if (bountiesProcessedPerNetwork.length && req.eventQuery?.networkName) {
-    const network = bountiesProcessedPerNetwork.find(
-      ({ network }) => network.name === req.eventQuery?.networkName
+  const netoworkName = req.eventQuery?.networkName;
+
+  if (netoworkName && eventsProcessed[netoworkName]) {
+    await dispatchTweets(
+      eventsProcessed[netoworkName] as BountiesProcessed,
+      entity,
+      event,
+      netoworkName
     );
-
-    if (network) {
-      const createTweet = network?.bountiesProcessed?.map(
-        async ({ bounty }) =>
-          bounty &&
-          (await twitterTweet({
-            entity,
-            event,
-            bountyId: bounty?.issueId as string,
-            networkName: req.eventQuery?.networkName as string,
-          }))
-      );
-      await Promise.all([createTweet]);
-    }
   }
-
-  return res.status(200).json(bountiesProcessedPerNetwork);
+  return res.status(200).json(eventsProcessed);
 });
 
 export { eventsRouter };

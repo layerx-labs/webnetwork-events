@@ -1,5 +1,6 @@
 import "dotenv/config";
 import db from "src/db";
+import { BountiesProcessed } from "src/interfaces/block-chain-service";
 import { Bounty } from "src/interfaces/bounties";
 import { formatNumberToNScale } from "src/utils/formatNumber";
 import loggerHandler from "src/utils/logger-handler";
@@ -81,10 +82,35 @@ const events = {
   },
 };
 
-const mainNetworks = ["bepro", "taikai"];
+export const mainNetworks = ["bepro", "taikai"];
 process.env.NETWORK_NAME &&
   mainNetworks.push(process.env.NETWORK_NAME.toLowerCase());
 
+export async function dispatchTweets(
+  bounties: BountiesProcessed,
+  entity: string,
+  event: string,
+  networkName: string
+) {
+  if (
+    !bounties ||
+    !mainNetworks.includes(networkName.toLocaleLowerCase()) ||
+    !events?.[entity]?.[event]
+  )
+    return;
+
+  const createTweet = Object.values(bounties).map(
+    async (item) =>
+      item.bounty &&
+      (await twitterTweet({
+        entity,
+        event,
+        bountyId: item?.bounty?.issueId as string,
+        networkName,
+      }))
+  );
+  return await Promise.all([createTweet]).catch(console.error);
+}
 export default async function twitterTweet({
   entity,
   event,
@@ -94,7 +120,7 @@ export default async function twitterTweet({
   if (
     !bountyId ||
     !mainNetworks.includes(networkName.toLocaleLowerCase()) ||
-    !events[entity][event]
+    !events?.[entity]?.[event]
   )
     return;
 
@@ -134,8 +160,6 @@ export default async function twitterTweet({
  
   ${webAppUrl}/bounty?id=${bounty.githubId}&repoId=${bounty.repository_id}
   `;
-
-  console.log(Tweet);
 
   if (Tweet.length < 280 && title && body) {
     return await twitterClient.v2

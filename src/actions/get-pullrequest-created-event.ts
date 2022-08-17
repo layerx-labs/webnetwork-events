@@ -1,7 +1,7 @@
 import db from "src/db";
 import {
   BountiesProcessed,
-  BountiesProcessedPerNetwork,
+  EventsProcessed,
   EventsQuery,
 } from "src/interfaces/block-chain-service";
 import BlockChainService from "src/services/block-chain-service";
@@ -35,8 +35,8 @@ async function createCommentOnIssue(bounty: Bounty, pullRequest: PullRequest) {
 
 export default async function action(
   query?: EventsQuery
-): Promise<BountiesProcessedPerNetwork[]> {
-  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] = [];
+): Promise<EventsProcessed> {
+  const eventsProcessed: EventsProcessed = {};
 
   logger.info("retrieving bounty created events");
 
@@ -51,7 +51,7 @@ export default async function action(
     for (let event of events) {
       const { network, eventsOnBlock } = event;
 
-      const bountiesProcessed: BountiesProcessed[] = [];
+      const bountiesProcessed: BountiesProcessed = {};
 
       if (!(await service.networkService.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
@@ -106,15 +106,15 @@ export default async function action(
         await pullRequest.save();
         await createCommentOnIssue(bounty, pullRequest).catch(logger.error);
 
-        bountiesProcessed.push({ bounty, eventBlock });
+        bountiesProcessed[bounty.issueId as string] = { bounty, eventBlock };
 
         logger.info(`Bounty cid: ${id} created`);
       }
-      bountiesProcessedPerNetwork.push({ network, bountiesProcessed });
+      eventsProcessed[network.name as string] = bountiesProcessed;
     }
     if (!query) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error ${name}:`, err);
   }
-  return bountiesProcessedPerNetwork;
+  return eventsProcessed;
 }

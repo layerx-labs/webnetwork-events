@@ -3,7 +3,7 @@ import { Op } from "sequelize";
 import db from "src/db";
 import {
   BountiesProcessed,
-  BountiesProcessedPerNetwork,
+  EventsProcessed,
   EventsQuery,
 } from "src/interfaces/block-chain-service";
 import BlockChainService from "src/services/block-chain-service";
@@ -19,8 +19,8 @@ export const author = "clarkjoao";
 
 export default async function action(
   query?: EventsQuery
-): Promise<BountiesProcessedPerNetwork[]> {
-  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] = [];
+): Promise<EventsProcessed> {
+  const eventsProcessed: EventsProcessed = {};
 
   logger.info("Starting move bounties to open");
 
@@ -31,7 +31,7 @@ export default async function action(
     for (const network of networks) {
       logger.info(`Bounties at ${network.name.toUpperCase()} network`);
 
-      const bountiesProcessed: BountiesProcessed[] = [];
+      const bountiesProcessed: BountiesProcessed = {};
 
       if (
         !(await service.networkService.loadNetwork(network?.networkAddress))
@@ -63,10 +63,10 @@ export default async function action(
       }
       const repositoriesDetails = {};
 
-      for (const bonty of bounties) {
-        logger.info(`Moving bounty ${bonty.issueId}`);
+      for (const bounty of bounties) {
+        logger.info(`Moving bounty ${bounty.issueId}`);
 
-        const [owner, repo] = slashSplit(bonty?.repository?.githubPath);
+        const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
 
         if (!repositoriesDetails[`${owner}/${repo}`]) {
           repositoriesDetails[`${owner}/${repo}`] =
@@ -83,7 +83,7 @@ export default async function action(
           const ghIssue = await GHService.issueDetails(
             repo,
             owner,
-            bonty?.githubId as string
+            bounty?.githubId as string
           );
           await GHService.issueRemoveLabel(
             ghIssue.repository.issue.id,
@@ -91,17 +91,21 @@ export default async function action(
           );
         }
 
-        bonty.state = "open";
-        await bonty.save();
-        bountiesProcessed.push({ bounty: bonty, eventBlock: null });
+        bounty.state = "open";
+        await bounty.save();
 
-        logger.info(`Bounty ${bonty.issueId} has moved to open`);
+        bountiesProcessed[bounty.issueId as string] = {
+          bounty,
+          eventBlock: null,
+        };
+
+        logger.info(`Bounty ${bounty.issueId} has moved to open`);
       }
-      bountiesProcessedPerNetwork.push({ network, bountiesProcessed });
+      eventsProcessed[network.name as string] = bountiesProcessed;
     }
   } catch (err) {
     logger.error(`Error at try moving bounties: ${err}`);
   }
 
-  return bountiesProcessedPerNetwork;
+  return eventsProcessed;
 }
