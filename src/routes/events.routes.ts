@@ -67,7 +67,7 @@ eventsRouter.get("/:entity/:event", async (req, res) => {
       entity,
       event,
       netoworkName
-    );
+    ).catch(console.error);
   }
   return res.status(200).json(eventsProcessed);
 });
