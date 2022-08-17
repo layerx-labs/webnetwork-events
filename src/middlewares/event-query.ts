@@ -1,16 +1,16 @@
 import { NextFunction, Request, Response } from "express";
-export default function (req: Request, res: Response, next: NextFunction) {
-  var { blockTo, blockFrom, networkName } = req?.query as any;
+export default function (req: Request, _: Response, next: NextFunction) {
+  var { toBlock, fromBlock, networkName } = req?.query as any;
 
-  if (blockTo && !blockFrom) blockFrom = +blockTo - 1;
-  if (blockFrom && !blockTo) blockTo = +blockFrom + 1;
+  if (toBlock && !fromBlock) fromBlock = +toBlock - 1;
+  if (fromBlock && !toBlock) toBlock = +fromBlock + 1;
 
-  if (blockTo && networkName) {
+  if (toBlock && networkName) {
     req.eventQuery = {
       networkName,
       blockQuery: {
-        from: blockFrom,
-        to: blockTo,
+        from: fromBlock,
+        to: toBlock,
       },
     };
   }

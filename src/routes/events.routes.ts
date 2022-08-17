@@ -42,7 +42,7 @@ const events = {
   },
 };
 
-eventsRouter.use("/:entity/:event", async (req, res) => {
+eventsRouter.post("/:entity/:event", async (req, res) => {
   const { entity, event } = req.params;
 
   if (!events[entity][event])
