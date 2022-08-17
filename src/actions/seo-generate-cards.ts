@@ -6,18 +6,20 @@ import ipfsService from "src/services/ipfs-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "seo-generate-cards";
-export const schedule = "30 * * * * *";
-export const description = "generating SEO cards for all updated issues";
+export const schedule = "*/30 * * * * *"; // Every 30 minutes
+export const description =
+  "Try generate SeoCards for all updated or new bounties";
 export const author = "clarkjoao";
 
 export default async function action(issueId?: string) {
   const bountiesProcessed: any[] = [];
-  logger.info("Starting SEO cards generation");
+  logger.info("Starting SEOCards Generate");
 
   const service = new BlockChainService();
   await service.init(name);
 
   let where;
+
   if (issueId) {
     where = {
       issueId,
@@ -47,15 +49,21 @@ export default async function action(issueId?: string) {
     { association: "token" },
   ];
 
-  try {
-    const bounties = await db.issues.findAll({
-      where,
-      include,
-    });
+  const bounties = await db.issues.findAll({
+    where,
+    include,
+  });
 
-    logger.info(`Found ${bounties.length} bounties to generate SEO cards`);
+  if (!bounties.length) {
+    logger.info("No bounties to be updated");
+    return;
+  }
 
-    for (const bounty of bounties) {
+  logger.info(`${bounties.length} bounties to be updated`);
+
+  for (const bounty of bounties) {
+    try {
+      logger.info(`Creating card to bounty ${bounty.issueId}`);
       const card = await generateCard(bounty);
 
       const { hash } = await ipfsService.add(card);
@@ -64,10 +72,11 @@ export default async function action(issueId?: string) {
 
       bountiesProcessed.push({ issueId: bounty.issueId, hash });
 
-      logger.info(`SEO card generated for bounty ${bounty.githubId}`);
+      logger.info(`Bounty ${bounty.issueId} has been updated`);
+    } catch (error) {
+      logger.error(`Erro bounty ${bounty.issueId}:`, error);
+      continue;
     }
-  } catch (error) {
-    logger.error(`Error generating SEO card for bounty:`, error);
   }
 
   return bountiesProcessed;
