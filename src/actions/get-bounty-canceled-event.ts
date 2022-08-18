@@ -10,8 +10,8 @@ import logger from "src/utils/logger-handler";
 import { slashSplit } from "src/utils/string";
 
 export const name = "getBountyCanceledEvents";
-export const schedule = "1 * * * * *";
-export const description = "retrieving bounty canceled events";
+export const schedule = "*/30 * * * * *"; // Each 10 minuts
+export const description = "Move to 'Canceled' status the bounty";
 export const author = "clarkjoao";
 
 export default async function action(

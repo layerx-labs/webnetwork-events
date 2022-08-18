@@ -8,8 +8,8 @@ import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "getBountyPullRequestReadyForReviewEvents";
-export const schedule = "1 * * * * *";
-export const description = "Get bounty pull request created events";
+export const schedule = "*/30 * * * * *"; // Each 30 minutes
+export const description = "Sync pull-request created events";
 export const author = "clarkjoao";
 
 const getPRStatus = (prStatus): string =>

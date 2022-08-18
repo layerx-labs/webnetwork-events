@@ -9,8 +9,8 @@ import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "getBountyProposalDisputedEvents";
-export const schedule = "1 * * * * *";
-export const description = "";
+export const schedule = "*/10 * * * * *"; // Each 10 minutes
+export const description = "Sync proposal disputed events";
 export const author = "clarkjoao";
 
 export default async function action(

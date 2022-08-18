@@ -10,8 +10,8 @@ import NetworkService from "src/services/network-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "getBountyCreatedEvents";
-export const schedule = "1 * * * * *";
-export const description = "retrieving bounty created events";
+export const schedule = "*/10 * * * * *"; // Each 10 minuts
+export const description = "sync bounty data and move to 'DRAFT;";
 export const author = "clarkjoao";
 
 async function validateToken(
