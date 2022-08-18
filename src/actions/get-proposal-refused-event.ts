@@ -9,7 +9,7 @@ import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "getBountyProposalRefusedEvents";
-export const schedule = "*/10 * * * * *"; // Each 10 minutes
+export const schedule = "*/10 * * * *"; // Each 10 minutes
 export const description = "Sync proposal refused events";
 export const author = "clarkjoao";
 

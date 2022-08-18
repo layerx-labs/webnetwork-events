@@ -6,7 +6,7 @@ import ipfsService from "src/services/ipfs-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "seo-generate-cards";
-export const schedule = "*/15 * * * * *"; // Every 15 minutes
+export const schedule = "*/15 * * * *"; // Every 15 minutes
 export const description =
   "Try generate SeoCards for all updated or new bounties";
 export const author = "clarkjoao";

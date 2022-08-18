@@ -9,7 +9,7 @@ import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "getOraclesChangedEvents";
-export const schedule = "*/30 * * * * *"; // Each 30 minutes
+export const schedule = "*/30 * * * *"; // Each 30 minutes
 export const description = "Sync oracles data and update council's count";
 export const author = "clarkjoao";
 

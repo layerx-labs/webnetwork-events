@@ -14,7 +14,7 @@ import { slashSplit } from "src/utils/string";
 const webAppUrl = process.env.WEBAPP_URL || "http://localhost:3000";
 
 export const name = "getBountyPullRequestCreatedEvents";
-export const schedule = "*/10 * * * * *"; // Each 10 minutes
+export const schedule = "*/10 * * * *"; // Each 10 minutes
 export const description = "Sync pull-request created events";
 export const author = "clarkjoao";
 

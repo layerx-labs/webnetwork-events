@@ -12,7 +12,7 @@ import GHService from "src/services/github";
 import { slashSplit } from "src/utils/string";
 
 export const name = "getBountyPullRequestCanceledEvents";
-export const schedule = "*/10 * * * * *"; // Each 10 minutes
+export const schedule = "*/10 * * * *"; // Each 10 minutes
 export const description = "Sync pull-request canceled events";
 export const author = "clarkjoao";
 
