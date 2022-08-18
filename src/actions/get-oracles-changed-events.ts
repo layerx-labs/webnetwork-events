@@ -102,7 +102,8 @@ export default async function action(
       _network.councilMembers = new_members;
       addressProcessed.push(...new_members);
 
-      await _network.save();
+      // Update network council members only if schema is updated
+      if (!query?.blockQuery) await _network.save();
 
       eventsProcessed[network.name as string] = addressProcessed;
     }
