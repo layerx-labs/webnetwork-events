@@ -1,21 +1,21 @@
 import db from "src/db";
 import {
   BountiesProcessed,
-  BountiesProcessedPerNetwork,
+  EventsProcessed,
   EventsQuery,
 } from "src/interfaces/block-chain-service";
 import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "getBountyFundedEvents";
-export const schedule = "1 * * * * *";
+export const schedule = "*/10 * * * *"; // Each 10 minutes
 export const description = "retrieving bounty created events";
 export const author = "MarcusviniciusLsantos";
 
 export default async function action(
   query?: EventsQuery
-): Promise<BountiesProcessedPerNetwork[]> {
-  const bountiesProcessedPerNetwork: BountiesProcessedPerNetwork[] = [];
+): Promise<EventsProcessed> {
+  const eventsProcessed: EventsProcessed = {};
 
   logger.info("retrieving bounty created events");
 
@@ -30,7 +30,7 @@ export default async function action(
     for (let event of events) {
       const { network, eventsOnBlock } = event;
 
-      const bountiesProcessed: BountiesProcessed[] = [];
+      const bountiesProcessed: BountiesProcessed = {};
 
       if (!(await service.networkService.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
@@ -63,20 +63,20 @@ export default async function action(
         }
 
         const fundedAmount: number = networkBounty.funding
-        ?.map(({ amount }) => amount)
-        .reduce((accumulator, currentValue) => accumulator + currentValue);
+          ?.map(({ amount }) => amount)
+          .reduce((accumulator, currentValue) => accumulator + currentValue);
 
-        bounty.fundedAmount = fundedAmount
-        bounty.amount = fundedAmount
+        bounty.fundedAmount = fundedAmount;
+        bounty.amount = fundedAmount;
 
         await bounty.save();
 
-        bountiesProcessed.push({ bounty, eventBlock });
+        bountiesProcessed[bounty.issueId as string] = { bounty, eventBlock };
 
         logger.info(`Bounty cid: ${networkBounty.cid} updated`);
       }
 
-      bountiesProcessedPerNetwork.push({ network, bountiesProcessed });
+      eventsProcessed[network.name as string] = bountiesProcessed;
     }
   } catch (err) {
     logger.error(`Error update bounty amount:`, err);
@@ -86,5 +86,5 @@ export default async function action(
     await service.saveLastBlock();
   }
 
-  return bountiesProcessedPerNetwork;
+  return eventsProcessed;
 }
