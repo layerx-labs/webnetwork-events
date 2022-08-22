@@ -99,17 +99,18 @@ export async function dispatchTweets(
   )
     return;
 
-  const createTweet = Object.values(bounties).map(
-    async (item) =>
-      item.bounty &&
-      (await twitterTweet({
-        entity,
-        event,
-        bountyId: item?.bounty?.issueId as string,
-        networkName,
-      }))
-  );
-  return await Promise.all([createTweet]).catch(console.error);
+  return await Promise.all(
+    Object.values(bounties)
+      .filter((item) => item.bounty)
+      .map((item) =>
+        twitterTweet({
+          entity,
+          event,
+          bountyId: item?.bounty?.issueId as string,
+          networkName,
+        })
+      )
+  ).catch(console.error);
 }
 export default async function twitterTweet({
   entity,

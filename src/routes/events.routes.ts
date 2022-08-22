@@ -17,6 +17,7 @@ import {
 
 import eventQuery from "src/middlewares/event-query";
 import { dispatchTweets } from "src/modules/handle-tweet";
+import loggerHandler from "src/utils/logger-handler";
 
 const eventsRouter = Router();
 
@@ -67,7 +68,9 @@ eventsRouter.get("/:entity/:event", async (req, res) => {
       entity,
       event,
       netoworkName
-    ).catch(console.error);
+    ).catch((e) => {
+      loggerHandler.error(`Error to do a twitter: ${e}`);
+    });
   }
   return res.status(200).json(eventsProcessed);
 });
