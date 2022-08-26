@@ -5,7 +5,7 @@ import { router } from "src/routes";
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT || 3334;
+const port = process.env.WEB_EVENTS_PORT || 3334;
 
 var corsOptions = {
   origin: process.env.WEBAPP_URL || "http://localhost:3333",
