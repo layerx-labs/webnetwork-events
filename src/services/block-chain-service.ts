@@ -193,10 +193,14 @@ export default class BlockChainService {
   async getEvents(query?: EventsQuery): Promise<EventsPerNetwork[]> {
     const events: EventsPerNetwork[] = [];
 
-    if (query) {
-      events.push(await this._getEvent(query));
-    } else {
-      events.push(...(await this._getAllEvents()));
+    try {
+      if (query) {
+        events.push(await this._getEvent(query));
+      } else {
+        events.push(...(await this._getAllEvents()));
+      }
+    } catch (e) {
+      logger.error("[BlockChainService] Error try getEvents", e);
     }
 
     return events;

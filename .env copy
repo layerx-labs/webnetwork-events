@@ -1,0 +1,45 @@
+NODE_ENV=prod
+WEB_EVENTS_PORT=3334
+
+# Database credentials
+DB_DATABASE=github
+DB_HOST=localhost
+DB_PASSWORD=github
+DB_PORT=54320
+DB_USERNAME=github
+DB_DIALECT=postgres
+
+# Chain settings
+CHAIN_RPC=HTTP://127.0.0.1:8545
+CHAIN_PRIVATE_KEY=e110ed85ed1c9d96f8e9ad8acb1cf129e357b5ec865ec7a691d04b7eb66867a2
+
+# Logs on console;
+LOGS_ACTIVE=true
+
+# Github token
+GITHUB_TOKEN=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
+
+#ifps
+IPFS_PROJECT_ID=29ceI0CylDZZf110Id3JRMgr5yy
+IPFS_PROJECT_SECRET=49eabe1da65f92362dcd0a5155a93f4b
+IPFS_BASE=https://ipfs.infura.io:5001/api/v0
+
+#ChainEvents
+BULK_CHAIN_START_BLOCK=0
+
+#WebApp URL
+WEBAPP_URL=http://localhost:3000
+
+#NETWORK NAME DEFAULT (Optional)
+NETWORK_NAME=
+
+# Twitter integration
+#TWITTER_APIKEY=lYCdRMh1xjOepJsC4TgdllBsA
+#TWITTER_APIKEY_SECRET=43t7yUu1fR4QVYUPlcwpsUpVVAzWHG9Jr1It9VcJ03l5MgSKWc
+#TWITTER_ACCESS_TOKEN=1557479695775633408-nUwPqPZilAPHxFjkaG1nP1r9kJlaac
+#TWITTER_ACCESS_SECRET=g5LF8FROcVkuJkN55xxrQHfA1kDEhrxsrqhaZX4TIcFl0
+
+#ElasticSearch Logs
+#ELASTIC_SEARCH_URL=https://taikai-elastic-test-b4fd33.es.westeurope.azure.elastic-cloud.com:9243
+#ELASTIC_SEARCH_USERNAME=heldervasc
+#ELASTIC_SEARCH_PASSWORD=gw87v4rKpVPNUemB
