@@ -5,7 +5,7 @@ import { EventsProcessed, EventsQuery } from "src/interfaces/block-chain-service
 import logger from "src/utils/logger-handler";
 
 export const name = "deletePendingNetworks";
-export const schedule = "* * * * *"; // At 00:00, every day
+export const schedule = "0 0 * * *"; // At 00:00, every day
 export const description = "delete networks pending for 7 days or more";
 export const author = "vhcsilva";
 
