@@ -1,8 +1,8 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { Express } from "express";
-import fs from "fs";
-import https from "https";
+import { readFileSync } from "fs";
+import { createServer } from "https";
 import { router } from "src/routes";
 dotenv.config();
 
@@ -27,18 +27,16 @@ if (process.env.SSL_ENABLE === "true") {
     throw Error("Missing SSLKeyPath or SSLCertPath");
   }
 
-  https
-    .createServer(
-      {
-        key: fs.readFileSync(keyPath, "utf8"),
-        cert: fs.readFileSync(certPath, "utf8"),
-      },
-      app
-    )
-    .listen(port, () => {
-      console.log("Running a secure https server...");
-      console.log(`Server is running at HTTPS:${port}`);
-    });
+  createServer(
+    {
+      key: readFileSync(keyPath, "utf8"),
+      cert: readFileSync(certPath, "utf8"),
+    },
+    app
+  ).listen(port, () => {
+    console.log("Running a secure https server...");
+    console.log(`Server is running at HTTPS:${port}`);
+  });
 } else {
   app.listen(port, () => {
     console.log(`Server is running at HTTP:${port}`);
