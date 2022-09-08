@@ -184,6 +184,17 @@ export default class BlockChainService {
     return network;
   }
 
+  private async _getRegistryAddress(): Promise<string | undefined> {
+    const registryAddress = await database.settings.findOne({
+      where: {
+        key: "networkRegistry",
+        group: "contracts"
+      }
+    });
+
+    return registryAddress?.value;
+  }
+
   /*
     Get events from a specific network and especifc range of blocks
   */

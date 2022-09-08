@@ -19,6 +19,10 @@ export default class NetworkService {
     return this._registry;
   }
 
+  get registry() {
+    return this._registry;
+  }
+
   constructor() {
     this._web3Connection = new Web3Connection({
       web3Host,

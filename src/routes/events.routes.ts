@@ -50,7 +50,7 @@ const events = {
     canceled: getPullRequestCanceled,
   },
   registry: {
-    changed: getChangeAllowedTokens
+    changed: getChangeAllowedTokens,
     registered: getNetworkCreatedEvents
   }
 };
