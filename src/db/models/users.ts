@@ -8,12 +8,12 @@ export interface usersAttributes {
   createdAt: Date;
   updatedAt: Date;
   githubLogin?: string;
-  accessToken?: string;
+  resetedAt?: Date;
 }
 
 export type usersPk = "id";
 export type usersId = users[usersPk];
-export type usersOptionalAttributes = "id" | "githubHandle" | "address" | "createdAt" | "updatedAt" | "githubLogin" | "accessToken";
+export type usersOptionalAttributes = "id" | "githubHandle" | "address" | "createdAt" | "updatedAt" | "githubLogin" | "resetedAt";
 export type usersCreationAttributes = Optional<usersAttributes, usersOptionalAttributes>;
 
 export class users extends Model<usersAttributes, usersCreationAttributes> implements usersAttributes {
@@ -23,7 +23,7 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   createdAt!: Date;
   updatedAt!: Date;
   githubLogin?: string;
-  accessToken?: string;
+  resetedAt?: Date;
 
 
   static initModel(sequelize: Sequelize.Sequelize): typeof users {
@@ -48,8 +48,8 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
       allowNull: true,
       unique: "users_githubLogin_key"
     },
-    accessToken: {
-      type: DataTypes.STRING(255),
+    resetedAt: {
+      type: DataTypes.DATE,
       allowNull: true
     }
   }, {

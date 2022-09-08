@@ -17,6 +17,8 @@ import { pull_requests as _pull_requests } from "./pull_requests";
 import type { pull_requestsAttributes, pull_requestsCreationAttributes } from "./pull_requests";
 import { repositories as _repositories } from "./repositories";
 import type { repositoriesAttributes, repositoriesCreationAttributes } from "./repositories";
+import { settings as _settings } from "./settings";
+import type { settingsAttributes, settingsCreationAttributes } from "./settings";
 import { tokens as _tokens } from "./tokens";
 import type { tokensAttributes, tokensCreationAttributes } from "./tokens";
 import { users as _users } from "./users";
@@ -34,6 +36,7 @@ export {
   _networks as networks,
   _pull_requests as pull_requests,
   _repositories as repositories,
+  _settings as settings,
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
@@ -58,6 +61,8 @@ export type {
   pull_requestsCreationAttributes,
   repositoriesAttributes,
   repositoriesCreationAttributes,
+  settingsAttributes,
+  settingsCreationAttributes,
   tokensAttributes,
   tokensCreationAttributes,
   usersAttributes,
@@ -76,6 +81,7 @@ export function initModels(sequelize: Sequelize) {
   const networks = _networks.initModel(sequelize);
   const pull_requests = _pull_requests.initModel(sequelize);
   const repositories = _repositories.initModel(sequelize);
+  const settings = _settings.initModel(sequelize);
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
@@ -113,6 +119,7 @@ export function initModels(sequelize: Sequelize) {
     networks: networks,
     pull_requests: pull_requests,
     repositories: repositories,
+    settings: settings,
     tokens: tokens,
     users: users,
     users_payments: users_payments,

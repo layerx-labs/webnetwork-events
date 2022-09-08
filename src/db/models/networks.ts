@@ -18,11 +18,12 @@ export interface networksAttributes {
   isClosed?: boolean;
   allowCustomTokens?: boolean;
   councilMembers?: string[];
+  isRegistered?: boolean;
 }
 
 export type networksPk = "id";
 export type networksId = networks[networksPk];
-export type networksOptionalAttributes = "id" | "colors" | "networkAddress" | "logoIcon" | "fullLogo" | "createdAt" | "updatedAt" | "isClosed" | "allowCustomTokens" | "councilMembers";
+export type networksOptionalAttributes = "id" | "colors" | "networkAddress" | "logoIcon" | "fullLogo" | "createdAt" | "updatedAt" | "isClosed" | "allowCustomTokens" | "councilMembers" | "isRegistered";
 export type networksCreationAttributes = Optional<networksAttributes, networksOptionalAttributes>;
 
 export class networks extends Model<networksAttributes, networksCreationAttributes> implements networksAttributes {
@@ -39,6 +40,7 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
   isClosed?: boolean;
   allowCustomTokens?: boolean;
   councilMembers?: string[];
+  isRegistered?: boolean;
 
   // networks hasMany issues via network_id
   issues!: issues[];
@@ -127,6 +129,11 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
     councilMembers: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true
+    },
+    isRegistered: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
     }
   }, {
     tableName: 'networks',
