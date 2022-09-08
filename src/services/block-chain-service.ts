@@ -50,7 +50,7 @@ export default class BlockChainService {
   }
 
   private async _instaceDB(name: string) {
-    let instance = await database.chain_events.findOne({
+    let instance = await database.chainEvents.findOne({
       where: { name },
     });
 
@@ -58,7 +58,7 @@ export default class BlockChainService {
       const lastBlock =
         (await this.networkService.web3Connection.eth.getBlockNumber()) || 0;
 
-      instance = await database.chain_events.create({
+      instance = await database.chainEvents.create({
         name,
         lastBlock,
       });
@@ -188,8 +188,8 @@ export default class BlockChainService {
     const registryAddress = await database.settings.findOne({
       where: {
         key: "networkRegistry",
-        group: "contracts"
-      }
+        group: "contracts",
+      },
     });
 
     return registryAddress?.value;

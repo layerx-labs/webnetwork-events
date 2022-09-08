@@ -1,8 +1,8 @@
 import type { Sequelize } from "sequelize";
 import { SequelizeMeta as _SequelizeMeta } from "./SequelizeMeta";
 import type { SequelizeMetaAttributes, SequelizeMetaCreationAttributes } from "./SequelizeMeta";
-import { chain_events as _chain_events } from "./chain_events";
-import type { chain_eventsAttributes, chain_eventsCreationAttributes } from "./chain_events";
+import { chainEvents as _chainEvents } from "./chainEvents";
+import type { chainEventsAttributes, chainEventsCreationAttributes } from "./chainEvents";
 import { developers as _developers } from "./developers";
 import type { developersAttributes, developersCreationAttributes } from "./developers";
 import { issues as _issues } from "./issues";
@@ -28,7 +28,7 @@ import type { users_paymentsAttributes, users_paymentsCreationAttributes } from 
 
 export {
   _SequelizeMeta as SequelizeMeta,
-  _chain_events as chain_events,
+  _chainEvents as chainEvents,
   _developers as developers,
   _issues as issues,
   _merge_proposals as merge_proposals,
@@ -45,8 +45,8 @@ export {
 export type {
   SequelizeMetaAttributes,
   SequelizeMetaCreationAttributes,
-  chain_eventsAttributes,
-  chain_eventsCreationAttributes,
+  chainEventsAttributes,
+  chainEventsCreationAttributes,
   developersAttributes,
   developersCreationAttributes,
   issuesAttributes,
@@ -73,7 +73,7 @@ export type {
 
 export function initModels(sequelize: Sequelize) {
   const SequelizeMeta = _SequelizeMeta.initModel(sequelize);
-  const chain_events = _chain_events.initModel(sequelize);
+  const chainEvents = _chainEvents.initModel(sequelize);
   const developers = _developers.initModel(sequelize);
   const issues = _issues.initModel(sequelize);
   const merge_proposals = _merge_proposals.initModel(sequelize);
@@ -111,7 +111,7 @@ export function initModels(sequelize: Sequelize) {
 
   return {
     SequelizeMeta: SequelizeMeta,
-    chain_events: chain_events,
+    chainEvents: chainEvents,
     developers: developers,
     issues: issues,
     merge_proposals: merge_proposals,
