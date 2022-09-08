@@ -52,8 +52,8 @@ const events = {
   },
   registry: {
     changed: getChangeAllowedTokens,
-    registered: getNetworkCreatedEvents,
-  },
+    registered: getNetworkCreatedEvents
+  }
 };
 
 eventsRouter.get("/:entity/:event", async (req, res) => {
