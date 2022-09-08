@@ -185,6 +185,7 @@ export default class BlockChainService {
     const { networkName, blockQuery } = query;
     const networkEvent: EventsPerNetwork = {
       network: {},
+      registry: {},
       eventsOnBlock: [],
     };
 
@@ -200,8 +201,11 @@ export default class BlockChainService {
       const registryAddress = await this._getRegistryAddress();
 
       if (!registryAddress) throw Error("Missing network registry address");
+      const registry = await this.networkService.loadRegistry(registryAddress)
 
-      if (!(await this.networkService.loadRegistry(registryAddress))) {
+      networkEvent.registry = registry
+      
+      if (!registry) {
         throw Error(`Error loading network registry contract ${registryAddress}`);
       }
     }
