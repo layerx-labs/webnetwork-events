@@ -28,10 +28,13 @@ if (process.env.SSL_ENABLE === "true") {
   }
 
   https
-    .createServer({
-      key: fs.readFileSync(keyPath, "utf8"),
-      cert: fs.readFileSync(certPath, "utf8"),
-    })
+    .createServer(
+      {
+        key: fs.readFileSync(keyPath, "utf8"),
+        cert: fs.readFileSync(certPath, "utf8"),
+      },
+      app
+    )
     .listen(port, () => {
       console.log("Running a secure https server...");
       console.log(`Server is running at HTTPS:${port}`);
