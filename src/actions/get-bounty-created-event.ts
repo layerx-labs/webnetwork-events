@@ -36,7 +36,7 @@ async function validateToken(
       name: await erc20.name(),
       symbol: await erc20.symbol(),
       address: transactionalToken,
-      isTransactional: true,
+      isTransactional: true
     });
   }
 
