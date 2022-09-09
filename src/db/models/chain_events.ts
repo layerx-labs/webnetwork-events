@@ -37,7 +37,8 @@ export class chain_events extends Model<chain_eventsAttributes, chain_eventsCrea
     },
     lastBlock: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
+      defaultValue: 0
     }
   }, {
     tableName: 'chain_events',
@@ -49,13 +50,6 @@ export class chain_events extends Model<chain_eventsAttributes, chain_eventsCrea
         unique: true,
         fields: [
           { name: "name" },
-        ]
-      },
-      {
-        name: "chain_events_pkey",
-        unique: true,
-        fields: [
-          { name: "id" },
         ]
       },
     ]
