@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(cors(corsOptions));
 app.use(router);
 
-if (process.env.SSL_ENABLE === "true") {
+if (process.env.SSL_ENABLED === "true") {
   const keyPath = process.env.SSL_PRIVATE_KEY_PATH;
   const certPath = process.env.SSL_CERT_PATH;
 
