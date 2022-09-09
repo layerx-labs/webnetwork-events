@@ -20,7 +20,7 @@ export default async function action(
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  logger.info("retrieving bounty created events");
+  logger.info("retrieving pull request ready events");
 
   const service = new BlockChainService();
   await service.init(name);
@@ -94,7 +94,7 @@ export default async function action(
 
         bountiesProcessed[bounty.issueId as string] = { bounty, eventBlock };
 
-        logger.info(`Bounty cid: ${id} created`);
+        logger.info(`Pull Request cid: ${id} ready for review`);
       }
 
       eventsProcessed[network?.name as string] = bountiesProcessed;

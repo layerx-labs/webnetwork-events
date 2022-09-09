@@ -8,6 +8,7 @@ export interface tokensAttributes {
   name: string;
   symbol: string;
   address: string;
+  isTransactional: boolean;
 }
 
 export type tokensPk = "id";
@@ -71,7 +72,6 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
       type: DataTypes.BOOLEAN,
       allowNull: false
     }
-
   }, {
     tableName: 'tokens',
     schema: 'public',

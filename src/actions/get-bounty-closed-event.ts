@@ -27,8 +27,8 @@ async function mergeProposal(bounty, proposal) {
 
   const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
 
-  await GHService.mergeProposal(owner, repo, pullRequest?.githubId as string);
-  await GHService.issueClose(repo, owner, bounty?.issueId);
+  await GHService.mergeProposal(repo, owner, pullRequest?.githubId as string);
+  await GHService.issueClose(repo, owner, bounty?.githubId);
 
   return pullRequest;
 }
@@ -125,7 +125,7 @@ export default async function action(
         }
 
         const proposal = bounty?.merge_proposals?.find(
-          (p) => p.id === proposalId
+          (p) => p.contractId?.toString() === proposalId?.toString()
         );
 
         if (networkBounty.closed && !networkBounty.canceled && proposal) {

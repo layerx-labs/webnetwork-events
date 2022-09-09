@@ -10,7 +10,7 @@
     "start:server": "node ./dist/src/server.js",
     "start:cron": "cma ./dist/src/actions",
     "build": "rimraf ./build && tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
-    "dev": "ts-node-dev -r tsconfig-paths/register --ignore-watch node_modules --respawn --transpile-only './src/server.ts'",
+    "dev": "ts-node-dev -r tsconfig-paths/register --ignore-watch node_modules --respawn --transpile-only ./src/server.ts",
     "dev:debug": "ts-node-dev -r tsconfig-paths/register --inspect=0.0.0.0:9230 --notify --poll --respawn --transpile-only './src/server.ts'"
   },
   "repository": {

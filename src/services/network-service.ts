@@ -15,6 +15,7 @@ export default class NetworkService {
   get network() {
     return this._network;
   }
+
   get registry() {
     return this._registry;
   }

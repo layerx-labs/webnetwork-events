@@ -61,8 +61,8 @@ export async function pullrequestDetails(
 }
 
 async function pullrequestClose(
-  repo: string,
   owner: string,
+  repo: string,
   pullrequestId: string
 ) {
   const pullrequest = await pullrequestDetails(repo, owner, pullrequestId);
