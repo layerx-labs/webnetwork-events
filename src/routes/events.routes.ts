@@ -2,6 +2,7 @@ import { Router } from "express";
 import getBountyAmountUpdate from "src/actions/get-bounty-amount-updated-event";
 import getBountyFundedUpdate from "src/actions/get-bounty-funded-updated-event";
 import getBountyCanceledEvents from "src/actions/get-bounty-canceled-event";
+import getBountyClosedEvents from "src/actions/get-bounty-closed-event";
 import getBountyCreatedEvents from "src/actions/get-bounty-created-event";
 import getBountyMovedToOpen from "src/actions/get-bounty-moved-to-open";
 import getOraclesChangedEvents from "src/actions/get-oracles-changed-events";
@@ -31,7 +32,7 @@ const events = {
   bounty: {
     created: getBountyCreatedEvents,
     canceled: getBountyCanceledEvents,
-    closed: getBountyCanceledEvents,
+    closed: getBountyClosedEvents,
     updated: getBountyAmountUpdate,
     funded: getBountyFundedUpdate,
     "moved-to-open": getBountyMovedToOpen,

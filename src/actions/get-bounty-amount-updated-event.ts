@@ -62,7 +62,7 @@ export default async function action(
           continue;
         }
 
-        bounty.amount = networkBounty.tokenAmount;
+        bounty.amount = +networkBounty.tokenAmount;
         await bounty.save();
 
         bountiesProcessed[bounty.issueId as string] = { bounty, eventBlock };

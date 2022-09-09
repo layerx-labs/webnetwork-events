@@ -18,7 +18,7 @@ export default async function action(
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  logger.info("retrieving bounty created events");
+  logger.info("retrieving proposal disputed events");
 
   const service = new BlockChainService();
   await service.init(name);

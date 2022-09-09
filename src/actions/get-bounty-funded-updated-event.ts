@@ -63,7 +63,7 @@ export default async function action(
         }
 
         const fundedAmount: number = networkBounty.funding
-          ?.map(({ amount }) => amount)
+          ?.map(({ amount }) => +amount)
           .reduce((accumulator, currentValue) => accumulator + currentValue);
 
         bounty.fundedAmount = fundedAmount;

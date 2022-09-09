@@ -36,6 +36,7 @@ async function validateToken(
       name: await erc20.name(),
       symbol: await erc20.symbol(),
       address: transactionalToken,
+      isTransactional: true
     });
   }
 
@@ -95,8 +96,8 @@ export default async function action(
         if (networkBounty) {
           bounty.creatorAddress = networkBounty.creator;
           bounty.creatorGithub = networkBounty.githubUser;
-          bounty.amount = networkBounty.tokenAmount;
-          bounty.fundingAmount = networkBounty.fundingAmount;
+          bounty.amount = +networkBounty.tokenAmount;
+          bounty.fundingAmount = +networkBounty.fundingAmount;
           bounty.branch = networkBounty.branch;
           bounty.title = networkBounty.title;
           bounty.contractId = id;

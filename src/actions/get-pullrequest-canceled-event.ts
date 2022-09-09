@@ -114,7 +114,7 @@ export default async function action(
 
         bountiesProcessed[bounty.issueId as string] = { bounty, eventBlock };
 
-        logger.info(`Pull Request ${id} Created`);
+        logger.info(`Pull Request ${id} canceled`);
       }
       eventsProcessed[network.name as string] = bountiesProcessed;
     }
