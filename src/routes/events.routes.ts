@@ -11,7 +11,9 @@ import getProposalRefused from "src/actions/get-proposal-refused-event";
 import getPullRequestCanceled from "src/actions/get-pullrequest-canceled-event";
 import getPullRequestCreated from "src/actions/get-pullrequest-created-event";
 import getPullRequestReadyForReview from "src/actions/get-pullrequest-ready-for-review";
+import getChangeAllowedTokens from "src/actions/get-change-allowed-tokens-events";
 import getNetworkCreatedEvents from "src/actions/get-network-registered-events";
+
 import {
   BountiesProcessed,
   EventsProcessed,
@@ -48,6 +50,7 @@ const events = {
     canceled: getPullRequestCanceled,
   },
   registry: {
+    changed: getChangeAllowedTokens
     registered: getNetworkCreatedEvents
   }
 };

@@ -1,4 +1,4 @@
-import { Network_Registry, Network_v2, Web3Connection } from "@taikai/dappkit";
+import { NetworkRegistry, Network_v2, Web3Connection } from "@taikai/dappkit";
 import "dotenv/config";
 import logger from "src/utils/logger-handler";
 
@@ -7,7 +7,7 @@ const { CHAIN_RPC: web3Host, CHAIN_PRIVATE_KEY: privateKey } = process.env;
 export default class NetworkService {
   private _web3Connection: Web3Connection;
   private _network: Network_v2;
-  private _registry: Network_Registry;
+  private _registry: NetworkRegistry;
 
   get web3Connection() {
     return this._web3Connection;
@@ -51,23 +51,18 @@ export default class NetworkService {
     return false;
   }
 
-  async loadRegistry(
-    registryAddress: string
-  ): Promise<Network_Registry | boolean> {
+  async loadRegistry(registryAddress: string): Promise<NetworkRegistry | boolean> {
     try {
-      if (!registryAddress)
-        throw new Error("Missing Network_Registry Contract Address");
+      if (!registryAddress) 
+        throw new Error("Missing NetworkRegistry Contract Address");
 
-      this._registry = new Network_Registry(
-        this.web3Connection,
-        registryAddress
-      );
+      this._registry = new NetworkRegistry(this.web3Connection, registryAddress);
 
       await this._registry.loadContract();
 
       return this._registry;
     } catch (error) {
-      console.log("Error loading Network_Registry: ", error);
+      console.log("Error loading NetworkRegistry: ", error);
     }
 
     return false;

@@ -20,6 +20,7 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   name!: string;
   symbol!: string;
   address!: string;
+  isTransactional!: boolean;
 
   // tokens hasMany issues via tokenId
   issues!: issues[];
@@ -64,21 +65,18 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
     },
     address: {
       type: DataTypes.STRING(255),
-      allowNull: false,
-      unique: "tokens_address_key"
+      allowNull: false
+    },
+    isTransactional: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false
     }
+
   }, {
     tableName: 'tokens',
     schema: 'public',
     timestamps: false,
     indexes: [
-      {
-        name: "tokens_address_key",
-        unique: true,
-        fields: [
-          { name: "address" },
-        ]
-      },
       {
         name: "tokens_pkey",
         unique: true,

@@ -8,6 +8,7 @@ export type BlockQuery = {
 
 export interface EventsPerNetwork {
   network: Partial<NetworkProps>;
+  registry?: any;
   eventsOnBlock: any[];
 }
 
