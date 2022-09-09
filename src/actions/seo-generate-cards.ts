@@ -13,70 +13,75 @@ export const author = "clarkjoao";
 
 export default async function action(issueId?: string) {
   const bountiesProcessed: any[] = [];
-  logger.info("Starting SEOCards Generate");
 
-  const service = new BlockChainService();
-  await service.init(name);
+  try {
+    logger.info("Starting SEOCards Generate");
 
-  let where;
+    const service = new BlockChainService();
+    await service.init(name);
 
-  if (issueId) {
-    where = {
-      issueId,
-    };
-  } else {
-    const lastUpdated =
-      service?.db?.updatedAt || service?.db?.createdAt || new Date();
+    let where;
 
-    where = {
-      [Op.or]: [
-        { seoImage: null },
-        {
-          updatedAt: {
-            [Op.gt]: lastUpdated,
+    if (issueId) {
+      where = {
+        issueId,
+      };
+    } else {
+      const lastUpdated =
+        service?.db?.updatedAt || service?.db?.createdAt || new Date();
+
+      where = {
+        [Op.or]: [
+          { seoImage: null },
+          {
+            updatedAt: {
+              [Op.gt]: lastUpdated,
+            },
           },
-        },
-      ],
-    };
-  }
-
-  const include = [
-    { association: "developers" },
-    { association: "merge_proposals" },
-    { association: "pull_requests" },
-    { association: "network" },
-    { association: "repository" },
-    { association: "token" },
-  ];
-
-  const bounties = await db.issues.findAll({
-    where,
-    include,
-  });
-
-  if (!bounties.length) {
-    logger.info("No bounties to be updated");
-    return;
-  }
-
-  logger.info(`${bounties.length} bounties to be updated`);
-
-  for (const bounty of bounties) {
-    try {
-      logger.info(`Creating card to bounty ${bounty.issueId}`);
-      const card = await generateCard(bounty);
-
-      const { hash } = await ipfsService.add(card);
-
-      await bounty.update({ seoImage: hash });
-
-      bountiesProcessed.push({ issueId: bounty.issueId, hash });
-
-      logger.info(`Bounty ${bounty.issueId} has been updated`);
-    } catch (error) {
-      logger.error(`Erro bounty ${bounty.issueId}:`, error);
-      continue;
+        ],
+      };
     }
+
+    const include = [
+      { association: "developers" },
+      { association: "merge_proposals" },
+      { association: "pull_requests" },
+      { association: "network" },
+      { association: "repository" },
+      { association: "token" },
+    ];
+
+    const bounties = await db.issues.findAll({
+      where,
+      include,
+    });
+
+    if (!bounties.length) {
+      logger.info("No bounties to be updated");
+      return;
+    }
+
+    logger.info(`${bounties.length} bounties to be updated`);
+
+    for (const bounty of bounties) {
+      try {
+        logger.info(`Creating card to bounty ${bounty.issueId}`);
+        const card = await generateCard(bounty);
+
+        const { hash } = await ipfsService.add(card);
+
+        await bounty.update({ seoImage: hash });
+
+        bountiesProcessed.push({ issueId: bounty.issueId, hash });
+
+        logger.info(`Bounty ${bounty.issueId} has been updated`);
+      } catch (error) {
+        logger.error(`Erro bounty ${bounty.issueId}:`, error);
+        continue;
+      }
+    }
+  } catch (err) {
+    logger.error(`Error ${name}:`, err);
   }
 
   return bountiesProcessed;
