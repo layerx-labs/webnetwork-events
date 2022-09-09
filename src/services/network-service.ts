@@ -52,12 +52,17 @@ export default class NetworkService {
     return false;
   }
 
-  async loadRegistry(registryAddress: string): Promise<NetworkRegistry | boolean> {
+  async loadRegistry(
+    registryAddress: string
+  ): Promise<NetworkRegistry | boolean> {
     try {
-      if (!registryAddress) 
+      if (!registryAddress)
         throw new Error("Missing NetworkRegistry Contract Address");
 
-      this._registry = new NetworkRegistry(this.web3Connection, registryAddress);
+      this._registry = new NetworkRegistry(
+        this.web3Connection,
+        registryAddress
+      );
 
       await this._registry.loadContract();
 

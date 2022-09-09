@@ -14,7 +14,6 @@ import getProposalRefused from "src/actions/get-proposal-refused-event";
 import getPullRequestCanceled from "src/actions/get-pullrequest-canceled-event";
 import getPullRequestCreated from "src/actions/get-pullrequest-created-event";
 import getPullRequestReadyForReview from "src/actions/get-pullrequest-ready-for-review";
-
 import {
   BountiesProcessed,
   EventsProcessed,
@@ -52,8 +51,8 @@ const events = {
   },
   registry: {
     changed: getChangeAllowedTokens,
-    registered: getNetworkCreatedEvents
-  }
+    registered: getNetworkCreatedEvents,
+  },
 };
 
 eventsRouter.get("/:entity/:event", async (req, res) => {
