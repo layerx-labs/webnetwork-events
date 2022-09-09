@@ -18,16 +18,15 @@ export default async function action(
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  logger.info("retrieving proposal created events");
-
-  const service = new BlockChainService();
-  await service.init(name);
-
-  const events = await service.getEvents(query);
-
-  logger.info(`found ${events.length} events`);
-
   try {
+    logger.info("retrieving proposal created events");
+
+    const service = new BlockChainService();
+    await service.init(name);
+
+    const events = await service.getEvents(query);
+
+    logger.info(`found ${events.length} events`);
     for (let event of events) {
       const { network, eventsOnBlock } = event;
 

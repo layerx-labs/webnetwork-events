@@ -36,7 +36,7 @@ async function validateToken(
       name: await erc20.name(),
       symbol: await erc20.symbol(),
       address: transactionalToken,
-      isTransactional: true
+      isTransactional: true,
     });
   }
 
@@ -47,16 +47,16 @@ export default async function action(
   query?: EventsQuery
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
-  logger.info("retrieving bounty created events");
-
-  const service = new BlockChainService();
-  await service.init(name);
-
-  const events = await service.getEvents(query);
-
-  logger.info(`found ${events.length} events`);
 
   try {
+    logger.info("retrieving bounty created events");
+
+    const service = new BlockChainService();
+    await service.init(name);
+
+    const events = await service.getEvents(query);
+
+    logger.info(`found ${events.length} events`);
     for (let event of events) {
       const { network, eventsOnBlock } = event;
 

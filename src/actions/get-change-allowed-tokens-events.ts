@@ -17,34 +17,36 @@ export default async function action(
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  logger.info("retrieving change allowed tokens events");
-
-  const service = new BlockChainService();
-  await service.init(name);
-
-  const events = await service.getEvents(query);
-
-  logger.info(`found ${events.length} events`);
-
   try {
+    logger.info("retrieving change allowed tokens events");
+
+    const service = new BlockChainService();
+    await service.init(name);
+
+    const events = await service.getEvents(query);
+
+    logger.info(`found ${events.length} events`);
+
     for (let event of events) {
-      const { network, registry , eventsOnBlock } = event;
+      const { network, registry, eventsOnBlock } = event;
 
       if (!(await service.networkService.loadNetwork(network.networkAddress))) {
         logger.error(`Error loading network contract ${network.name}`);
         continue;
       }
 
-      if (!(await service.networkService.loadRegistry(registry.contractAddress))) {
+      if (
+        !(await service.networkService.loadRegistry(registry.contractAddress))
+      ) {
         logger.error(`Error loading registry contract`);
         continue;
       }
-      
 
       for (let eventBlock of eventsOnBlock) {
         const { tokens, operation, kind } = eventBlock.returnValues;
 
-        const allowedTokens = await service.networkService?.registry?.getAllowedTokens();
+        const allowedTokens =
+          await service.networkService?.registry?.getAllowedTokens();
         const databaseTokens = (await db.tokens.findAll()) || [];
 
         if (allowedTokens) {
@@ -116,17 +118,14 @@ export default async function action(
         } else console.warn("Allowed tokens not found in the registry");
       }
 
-      eventsProcessed[network.name!] = [network.networkAddress!]
+      eventsProcessed[network.name!] = [network.networkAddress!];
     }
+    if (!query) await service.saveLastBlock();
   } catch (err) {
     logger.error(
       `[ERROR_REGISTRY] Failed to save tokens from past-events`,
       err
     );
-  }
-
-  if (!query) {
-    await service.saveLastBlock();
   }
 
   return eventsProcessed;

@@ -17,16 +17,15 @@ export default async function action(
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  logger.info("retrieving bounty created events");
-
-  const service = new BlockChainService();
-  await service.init(name);
-
-  const events = await service.getEvents(query);
-
-  logger.info(`found ${events.length} events`);
-
   try {
+    logger.info("retrieving bounty created events");
+
+    const service = new BlockChainService();
+    await service.init(name);
+
+    const events = await service.getEvents(query);
+
+    logger.info(`found ${events.length} events`);
     for (let event of events) {
       const { network, eventsOnBlock } = event;
 
@@ -78,12 +77,9 @@ export default async function action(
 
       eventsProcessed[network.name as string] = bountiesProcessed;
     }
+    if (!query) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error update bounty amount:`, err);
-  }
-
-  if (!query) {
-    await service.saveLastBlock();
   }
 
   return eventsProcessed;

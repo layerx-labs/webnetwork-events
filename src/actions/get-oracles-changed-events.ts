@@ -53,18 +53,18 @@ export default async function action(
   const addressProcessed: string[] = [];
   const eventsProcessed: EventsProcessed = {};
 
-  logger.info("retrieving oracles changed events");
-
-  const service = new BlockChainService();
-  await service.init(name);
-  if (query?.blockQuery) {
-    query.blockQuery = await _validateBlockQuery(service, query?.blockQuery);
-  }
-  const events = await service.getEvents(query);
-
-  logger.info(`found ${events.length} ${name} events`);
-
   try {
+    logger.info("retrieving oracles changed events");
+
+    const service = new BlockChainService();
+    await service.init(name);
+    if (query?.blockQuery) {
+      query.blockQuery = await _validateBlockQuery(service, query?.blockQuery);
+    }
+    const events = await service.getEvents(query);
+
+    logger.info(`found ${events.length} ${name} events`);
+
     for (let event of events) {
       const { network, eventsOnBlock } = event;
 
@@ -107,10 +107,10 @@ export default async function action(
 
       eventsProcessed[network.name as string] = addressProcessed;
     }
+    if (!query) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error ${name}: ${err}`);
   }
-  if (!query) await service.saveLastBlock();
 
   return eventsProcessed;
 }

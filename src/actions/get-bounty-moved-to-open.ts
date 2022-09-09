@@ -22,12 +22,13 @@ export default async function action(
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  logger.info("Starting move bounties to open");
-
-  const service = new BlockChainService();
-  await service.init(name);
-  const networks = await service.getNetworks();
   try {
+    logger.info("Starting move bounties to open");
+
+    const service = new BlockChainService();
+    await service.init(name);
+    const networks = await service.getNetworks();
+
     for (const network of networks) {
       logger.info(`Bounties at ${network.name.toUpperCase()} network`);
 
