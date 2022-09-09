@@ -8,7 +8,7 @@ import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "getChangeAllowedTokensEvents";
-export const schedule = "*/10 * * * *"; // Each 10 minutes
+export const schedule = "*/60 * * * *"; // Each 60 minutes
 export const description = "retrieving bounty created events";
 export const author = "MarcusviniciusLsantos";
 
