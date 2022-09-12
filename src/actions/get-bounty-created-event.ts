@@ -36,7 +36,7 @@ async function validateToken(
       name: await erc20.name(),
       symbol: await erc20.symbol(),
       address: transactionalToken,
-      isTransactional: true
+      isTransactional: true,
     });
   }
 
@@ -117,7 +117,7 @@ export default async function action(
       }
       eventsProcessed[network.name as string] = bountiesProcessed;
     }
-    if (!query) await service.saveLastBlock();
+    if (!query?.networkName) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error ${name}:`, err);
   }
