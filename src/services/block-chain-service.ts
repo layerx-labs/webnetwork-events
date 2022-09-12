@@ -249,7 +249,7 @@ export default class BlockChainService {
   ): Promise<EventsPerNetwork[]> {
     const events: EventsPerNetwork[] = [];
 
-    if (query) {
+    if (query?.networkName) {
       events.push(await this._getEvent(query, fromRegistry));
     } else {
       events.push(...(await this._getAllEvents(fromRegistry)));
