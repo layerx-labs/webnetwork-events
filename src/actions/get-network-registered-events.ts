@@ -57,7 +57,7 @@ export default async function action(
         logger.info(`Network ${network.networkAddress} registered`);
       }
     }
-    if (!query) await service.saveLastBlock();
+    if (!query?.networkName) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error registering network`, err);
   }

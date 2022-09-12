@@ -77,7 +77,7 @@ export default async function action(
 
       eventsProcessed[network.name as string] = bountiesProcessed;
     }
-    if (!query) await service.saveLastBlock();
+    if (!query?.networkName) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error update bounty amount:`, err);
   }
