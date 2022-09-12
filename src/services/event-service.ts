@@ -21,15 +21,15 @@ export class EventService {
 
   async processEvents(blockProcessor: BlockProcessor, query?: EventsQuery) {
     try {
-      for (const event of await this.getEvents(query)) {
+      for (const event of await this.getEvents(query || this.query)) {
         const {network, eventsOnBlock} = event;
         if (!(await this.chainService.networkService.loadNetwork(network.networkAddress))) {
           loggerHandler.error(`Failed to load network ${network.name}`, network);
           continue;
         }
 
-        for (const block of eventsOnBlock)
-          await blockProcessor(block);
+        eventsOnBlock.forEach(async (block) => { await blockProcessor(block); })
+
       }
     } catch (e: any) {
       loggerHandler.error(`Error on ${this.name}, ${e?.message}`, e)
