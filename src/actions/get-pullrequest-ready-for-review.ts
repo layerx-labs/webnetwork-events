@@ -15,7 +15,7 @@ export const author = "clarkjoao";
 const getPRStatus = (prStatus): string =>
   prStatus?.canceled ? "canceled" : prStatus?.ready ? "ready" : "draft";
 
-export default async function action(
+export async function action(
   query?: EventsQuery
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};

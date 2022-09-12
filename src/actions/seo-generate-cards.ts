@@ -11,7 +11,7 @@ export const description =
   "Try generate SeoCards for all updated or new bounties";
 export const author = "clarkjoao";
 
-export default async function action(issueId?: string) {
+export async function action(issueId?: string) {
   const bountiesProcessed: any[] = [];
 
   try {

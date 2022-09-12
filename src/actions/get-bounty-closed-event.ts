@@ -64,7 +64,7 @@ async function updateUserPayments(bounty, event, networkBounty) {
   );
 }
 
-export default async function action(
+export async function action(
   query?: EventsQuery
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};

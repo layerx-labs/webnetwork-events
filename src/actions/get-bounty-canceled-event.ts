@@ -14,7 +14,7 @@ export const schedule = "*/30 * * * *"; // Each 30 minuts
 export const description = "Move to 'Canceled' status the bounty";
 export const author = "clarkjoao";
 
-export default async function action(
+export async function action(
   query?: EventsQuery
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import seoGenerateCard from "src/actions/seo-generate-cards";
+import { action as seoGenerateCard } from "src/actions/seo-generate-cards";
 import db from "src/db";
 
 const seoRoutes = Router();

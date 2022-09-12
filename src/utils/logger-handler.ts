@@ -14,25 +14,22 @@ const {
   ELASTIC_SEARCH_PASSWORD: password,
 } = process.env;
 
-const output = (level: string, message: string | any, rest) => {
-  const msg = rest.length ? message : "No message";
+const output = (level, message, ...rest) => { // eslint-disable-line
+  let _rest;
 
-  if (!rest.length || !rest) rest = message;
+  if (rest.some(v => v !== undefined))
+    _rest = rest;
 
-  const string = `(${level}) (${new Date().toISOString()}) ${msg}\n`;
-  console.log(colorsLevels[level], string, rest, colorsLevels.reset);
+  const string = `(${level.toUpperCase()}) (${new Date().toISOString()}) ${message}\n`;
+  console[level](string, _rest ? _rest : "");
 
   if (node && username && password) {
-    const client = new Client({ node, auth: { username, password } });
+    const client = new Client({node, auth: {username, password} })
 
-    client
-      ?.index({
-        index: "web-network",
-        document: { level, timestamp: new Date(), message, rest },
-      })
-      .catch((e) => console.log(e));
+    client?.index({ index: "web-network-events", document: {level, timestamp: new Date(), message, rest: _rest}})
+      .catch(e => console.log(e))
   }
-};
+}
 
 const info = (message?, ...rest: any) => output(Levels.info, message, rest);
 const error = (message?, ...rest: any) => output(Levels.error, message, rest);

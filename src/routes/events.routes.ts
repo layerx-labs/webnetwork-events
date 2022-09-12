@@ -1,19 +1,19 @@
 import { Router } from "express";
-import getBountyAmountUpdate from "src/actions/get-bounty-amount-updated-event";
-import getBountyCanceledEvents from "src/actions/get-bounty-canceled-event";
-import getBountyClosedEvents from "src/actions/get-bounty-closed-event";
-import getBountyCreatedEvents from "src/actions/get-bounty-created-event";
-import getBountyFundedUpdate from "src/actions/get-bounty-funded-updated-event";
-import getBountyMovedToOpen from "src/actions/get-bounty-moved-to-open";
-import getChangeAllowedTokens from "src/actions/get-change-allowed-tokens-events";
-import getNetworkCreatedEvents from "src/actions/get-network-registered-events";
-import getOraclesChangedEvents from "src/actions/get-oracles-changed-events";
-import getProposalCreated from "src/actions/get-proposal-created-event";
-import getProposalDisputed from "src/actions/get-proposal-disputed-event";
-import getProposalRefused from "src/actions/get-proposal-refused-event";
-import getPullRequestCanceled from "src/actions/get-pullrequest-canceled-event";
-import getPullRequestCreated from "src/actions/get-pullrequest-created-event";
-import getPullRequestReadyForReview from "src/actions/get-pullrequest-ready-for-review";
+import { action as getBountyAmountUpdate } from "src/actions/get-bounty-amount-updated-event";
+import { action as getBountyCanceledEvents } from "src/actions/get-bounty-canceled-event";
+import { action as getBountyClosedEvents } from "src/actions/get-bounty-closed-event";
+import { action as getBountyCreatedEvents } from "src/actions/get-bounty-created-event";
+import { action as getBountyFundedUpdate } from "src/actions/get-bounty-funded-updated-event";
+import { action as getBountyMovedToOpen } from "src/actions/get-bounty-moved-to-open";
+import { action as getChangeAllowedTokens } from "src/actions/get-change-allowed-tokens-events";
+import { action as getNetworkCreatedEvents } from "src/actions/get-network-registered-events";
+import { action as getOraclesChangedEvents } from "src/actions/get-oracles-changed-events";
+import { action as getProposalCreated } from "src/actions/get-proposal-created-event";
+import { action as getProposalDisputed } from "src/actions/get-proposal-disputed-event";
+import { action as getProposalRefused } from "src/actions/get-proposal-refused-event";
+import { action as getPullRequestCanceled } from "src/actions/get-pullrequest-canceled-event";
+import { action as getPullRequestCreated } from "src/actions/get-pullrequest-created-event";
+import { action as getPullRequestReadyForReview } from "src/actions/get-pullrequest-ready-for-review";
 import {
   BountiesProcessed,
   EventsProcessed,

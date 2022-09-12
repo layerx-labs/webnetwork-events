@@ -17,7 +17,7 @@ export const description =
   "move to 'OPEN' all 'DRAFT' bounties that have Draft Time finished as set at the block chain";
 export const author = "clarkjoao";
 
-export default async function action(
+export async function action(
   query?: EventsQuery
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};

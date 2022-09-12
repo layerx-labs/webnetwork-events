@@ -14,9 +14,7 @@ export const schedule = "*/30 * * * *"; // Each 30 minutes
 export const description = "retrieving network registered on registry events";
 export const author = "vhcsilva";
 
-export default async function action(
-  query?: EventsQuery
-): Promise<EventsProcessed> {
+export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   try {

@@ -33,7 +33,7 @@ async function closePullRequest(bounty: Bounty, pullRequest: PullRequest) {
   );
 }
 
-export default async function action(
+export async function action(
   query?: EventsQuery
 ): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};

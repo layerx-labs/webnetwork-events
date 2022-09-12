@@ -11,7 +11,7 @@ export const author = "vhcsilva";
 
 const DAY = 1000 * 60 * 60 * 24;
 
-export default async function action(query?: EventsQuery): Promise<EventsProcessed> {
+export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   logger.info("Deleting networks pending for 7 days or more");
