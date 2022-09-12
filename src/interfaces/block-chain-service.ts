@@ -6,10 +6,10 @@ export type BlockQuery = {
   to: number;
 };
 
-export interface EventsPerNetwork {
+export interface EventsPerNetwork<T = any> {
   network: Partial<NetworkProps>;
   registry?: any;
-  eventsOnBlock: any[];
+  eventsOnBlock: T[];
 }
 
 export interface EventsQuery {

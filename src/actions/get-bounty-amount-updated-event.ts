@@ -22,29 +22,24 @@ export async function action(
 
   try {
     const service = new EventService(name, new BlockChainService(), query);
-    let _network;
 
-    const processor = async (block: XEvents<BountyAmountUpdatedEvent>) => {
+    const processor = async (block: XEvents<BountyAmountUpdatedEvent>, network) => {
       const {id} = block.returnValues;
-
-      if (!_network || _network.contractId !== service.chainService.networkService.network.contractAddress)
-        _network = await db.networks.findOne({
-          where: {networkAddress: service.chainService.networkService.network.contractAddress}});
 
       const bounty = await service.chainService.networkService.network.getBounty(id);
       if (!bounty)
-        logger.info(`Bounty not found for id ${id} in network ${service.chainService.networkService.network.contractAddress}`)
+        logger.info(`Bounty not found for id ${id} in network ${network.networkAddress}`);
       else {
         const dbBounty = await db.issues.findOne({
-          where: {contractId: id, issueId: bounty.cid, network_id: _network.network_id}});
+          where: {contractId: id, issueId: bounty.cid, network_id: network.id}});
 
         if (!dbBounty)
-          logger.info(`Failed to find a bounty on database matching ${bounty.cid} on network ${_network.network_id}`)
+          logger.info(`Failed to find a bounty on database matching ${bounty.cid} on network ${network.network_id}`)
         else {
           dbBounty.amount = +bounty.tokenAmount;
           await dbBounty.save();
 
-          eventsProcessed[_network.name] = {[dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
+          eventsProcessed[network.name] = {[dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
         }
       }
     }
