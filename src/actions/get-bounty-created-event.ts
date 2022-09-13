@@ -10,24 +10,20 @@ import NetworkService from "src/services/network-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "getBountyCreatedEvents";
-export const schedule = "*/10 * * * *"; // Each 10 minuts
+export const schedule = "*/10 * * * *"; // Each 10 minutes
 export const description = "sync bounty data and move to 'DRAFT;";
 export const author = "clarkjoao";
 
 async function validateToken(
   networkService: NetworkService,
-  transactionalToken
+  address
 ): Promise<number> {
-  var token = await db.tokens.findOne({
-    where: {
-      address: transactionalToken,
-    },
-  });
+  let token = await db.tokens.findOne({where: {address},});
 
   if (!token?.id) {
     const erc20 = new ERC20(
       networkService?.network?.connection,
-      transactionalToken
+      address
     );
 
     await erc20.loadContract();
@@ -35,7 +31,7 @@ async function validateToken(
     token = await db.tokens.create({
       name: await erc20.name(),
       symbol: await erc20.symbol(),
-      address: transactionalToken,
+      address,
       isTransactional: true,
     });
   }

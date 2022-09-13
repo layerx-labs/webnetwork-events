@@ -5,8 +5,8 @@ import {BlockProcessor} from "../interfaces/block-processor";
 
 export class EventService {
   constructor(readonly name: string,
-              readonly chainService = new BlockChainService(),
-              readonly query?: EventsQuery) {}
+              readonly query?: EventsQuery,
+              readonly chainService = new BlockChainService(),) {}
 
   async getEvents(query?: EventsQuery) {
     loggerHandler.info(`retrieving ${this.name}...`);
@@ -19,7 +19,6 @@ export class EventService {
 
   async processEvents<T = any>(blockProcessor: BlockProcessor<T>, query?: EventsQuery) {
     try {
-
       for (const event of await this.getEvents(query)) {
         const {network, eventsOnBlock} = event;
         if (!(await this.chainService.networkService.loadNetwork(network.networkAddress))) {
@@ -29,10 +28,14 @@ export class EventService {
 
         await Promise.all(eventsOnBlock.map(block => blockProcessor(block, network)));
 
+        loggerHandler.info(`Parsed ${this.name}`);
       }
+
+      if (!query && !this.query)
+        await this.chainService.saveLastBlock()
+
     } catch (e: any) {
       loggerHandler.error(`Error on ${this.name}, ${e?.message}`, e)
     }
   }
-
 }

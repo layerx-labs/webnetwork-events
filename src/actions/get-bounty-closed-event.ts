@@ -9,19 +9,19 @@ import BlockChainService from "src/services/block-chain-service";
 import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
 import { slashSplit } from "src/utils/string";
+import {EventService} from "../services/event-service";
+import {XEvents} from "@taikai/dappkit";
+import {BountyClosedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
+import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 
 export const name = "getBountyClosedEvents";
-export const schedule = "*/30 * * * *"; // Each 30 minuts
+export const schedule = "*/30 * * * *"; // Every 30 minutes
 export const description = "Move to 'Closed' status the bounty";
 export const author = "clarkjoao";
 
-async function mergeProposal(bounty, proposal) {
-  const pullRequest = await db.pull_requests.findOne({
-    where: {
-      id: proposal.pullRequestId,
-      issueId: proposal.issueId,
-    },
-  });
+async function mergeProposal(bounty, id, issueId) {
+  const pullRequest =
+    await db.pull_requests.findOne({where: {id, issueId},});
 
   if (!pullRequest) return;
 
@@ -33,11 +33,11 @@ async function mergeProposal(bounty, proposal) {
   return pullRequest;
 }
 
-async function closePullRequests(bounty, pullRequest) {
+async function closePullRequests(bounty, mergedPullRequestId) {
   const pullRequests = await db.pull_requests.findAll({
     where: {
       issueId: bounty.id,
-      githubId: { [Op.not]: pullRequest.githubId },
+      githubId: { [Op.not]: mergedPullRequestId },
     },
     raw: true,
   });
@@ -49,19 +49,14 @@ async function closePullRequests(bounty, pullRequest) {
   }
 }
 
-async function updateUserPayments(bounty, event, networkBounty) {
-  return await Promise.all(
-    networkBounty?.proposals?.[0].details.map(async (detail) =>
+async function updateUserPayments(proposal, transactionHash, issueId, tokenAmount) {
+  return Promise.all(
+    proposal.details.map(async (detail) =>
       db.users_payments.create({
         address: detail?.["recipient"],
         ammount:
-          Number((detail?.["percentage"] / 100) * networkBounty?.tokenAmount) ||
-          0,
-        issueId: bounty?.id,
-        transactionHash: event?.transactionHash || null,
-      })
-    )
-  );
+          Number((detail?.["percentage"] / 100) * +tokenAmount) || 0,
+        issueId, transactionHash,})));
 }
 
 export async function action(
@@ -70,83 +65,53 @@ export async function action(
   const eventsProcessed: EventsProcessed = {};
 
   try {
-    logger.info("retrieving bounty closed events");
+    const service = new EventService(name, query);
+    const {chainService:{networkService:{network:{getBounty}}}} = service;
 
-    const service = new BlockChainService();
-    await service.init(name);
+    const processor = async (block: XEvents<BountyClosedEvent>, network) => {
+      const {id, proposalId} = block.returnValues;
 
-    const events = await service.getEvents(query);
+      const bounty = await getBounty(id);
+      if (!bounty)
+        return logger.info(NETWORK_BOUNTY_NOT_FOUND(id, network.networkAddress));
 
-    logger.info(`found ${events.length} events`);
+      const dbBounty = await db.issues.findOne({
+        where: {contractId: id, issueId: bounty.cid, network_id: network?.id,},
+        include: [
+          {association: "token",},
+          {association: "repository",},
+          {association: "merge_proposals",},
+        ],
+      });
 
-    for (let event of events) {
-      const { network, eventsOnBlock } = event;
+      if (!dbBounty)
+        return logger.info(DB_BOUNTY_NOT_FOUND(bounty.cid, network.id))
 
-      if (!(await service.networkService.loadNetwork(network.networkAddress))) {
-        logger.error(`Error loading network contract ${network.name}`);
-        continue;
+      const findDBProposal = (prop) => prop.contractId.toString() === proposalId.toString();
+
+      const dbProposal = await dbBounty.merge_proposals.find(findDBProposal);
+
+      if (!dbProposal)
+        logger.warn(`proposal ${proposalId} was not found on database for bounty ${dbBounty.id}`);
+      else {
+        const mergedPR = await mergeProposal(dbBounty, dbProposal.id, dbProposal.issueId);
+        if (mergedPR)
+          await closePullRequests(dbBounty, mergedPR.githubId);
       }
-      const bountiesProcessed: BountiesProcessed = {};
 
-      for (let eventBlock of eventsOnBlock) {
-        const { id, proposalId } = eventBlock.returnValues;
+      dbBounty.merged = dbProposal?.scMergeId;
+      dbBounty.state = "closed";
+      await dbBounty.save();
 
-        const networkBounty = await service.networkService?.network?.getBounty(
-          id
-        );
+      const proposal = bounty.proposals.find(prop => prop.id === proposalId);
 
-        if (!networkBounty) {
-          logger.info(`Bounty id: ${id} not found`);
-          continue;
-        }
+      await updateUserPayments(proposal, block.transactionHash, dbBounty.id, bounty.tokenAmount);
 
-        const bounty = await db.issues.findOne({
-          where: {
-            contractId: id,
-            issueId: networkBounty?.cid,
-            network_id: network?.id,
-          },
-          include: [
-            {
-              association: "token",
-            },
-            {
-              association: "repository",
-            },
-            {
-              association: "merge_proposals",
-            },
-          ],
-        });
-
-        if (!bounty) {
-          logger.info(`Bounty cid: ${id} not found`);
-          continue;
-        }
-
-        const proposal = bounty?.merge_proposals?.find(
-          (p) => p.contractId?.toString() === proposalId?.toString()
-        );
-
-        if (networkBounty.closed && !networkBounty.canceled && proposal) {
-          const prMerged = await mergeProposal(bounty, proposal);
-          if (prMerged) await closePullRequests(bounty, prMerged);
-        }
-
-        bounty.merged = proposal?.scMergeId;
-        bounty.state = "closed";
-
-        await bounty.save();
-
-        await updateUserPayments(bounty, event, networkBounty);
-
-        bountiesProcessed[bounty.issueId as string] = { bounty, eventBlock };
-
-        logger.info(`Bounty id: ${id} closed`);
-      }
-      eventsProcessed[network.name as string] = bountiesProcessed;
+      eventsProcessed[network.name] = {[dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
     }
-    if (!query) service.saveLastBlock();
+
+    await service.processEvents(processor);
+
   } catch (err) {
     logger.error(`Error to close bounty:`, err);
   }
