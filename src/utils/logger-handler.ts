@@ -1,20 +1,21 @@
 import { Client } from "@elastic/elasticsearch";
 import "dotenv/config";
 
+enum DebugLevel { none, error, warn, info, log};
 const Levels = { log: "log", info: "info", error: "error", warn: "warn" };
-const colorsLevels = {
-  [Levels.log]: "\x1b[37m",
-  [Levels.info]: "\x1b[32m",
-  [Levels.error]: "\x1b[31m",
-  reset: "\x1b[0m",
-};
+
 const {
   ELASTIC_SEARCH_URL: node,
   ELASTIC_SEARCH_USERNAME: username,
   ELASTIC_SEARCH_PASSWORD: password,
 } = process.env;
 
+const LOG_LEVEL = process.env.LOG_LEVEL ? parseInt(process.env.LOG_LEVEL, 10) : DebugLevel.log;
+
 const output = (level, message, ...rest) => { // eslint-disable-line
+  if (LOG_LEVEL && +DebugLevel[level] < LOG_LEVEL)
+    return;
+
   let _rest;
 
   if (rest.some(v => v !== undefined))

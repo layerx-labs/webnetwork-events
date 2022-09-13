@@ -40,7 +40,7 @@ export async function action(
           dbBounty.amount = +bounty.tokenAmount;
           await dbBounty.save();
 
-          eventsProcessed[network.name] = {[dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
+          eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
         }
       }
     }

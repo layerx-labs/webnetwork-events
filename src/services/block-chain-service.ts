@@ -6,6 +6,7 @@ import {
 } from "src/interfaces/block-chain-service";
 import NetworkService from "src/services/network-service";
 import logger from "src/utils/logger-handler";
+import {from} from "form-data";
 
 export default class BlockChainService {
   _eventName: string = "";
@@ -90,7 +91,7 @@ export default class BlockChainService {
     if (lastBlock > 0) this._db.update({ lastBlock });
   }
 
-  private async _getRegistryAddress(): Promise<string | undefined> {
+  async getRegistryAddress(): Promise<string | undefined> {
     const registryAddress = await database.settings.findOne({
       where: {
         key: "networkRegistry",
@@ -104,9 +105,7 @@ export default class BlockChainService {
   /*
     Get events from all networks and last range of blocks processed
   */
-  private async _getAllEvents(
-    fromRegistry?: boolean
-  ): Promise<EventsPerNetwork[]> {
+  private async _getAllEvents(fromRegistry?: boolean): Promise<EventsPerNetwork[]> {
     const allEvents: EventsPerNetwork[] = [];
     const networks = await this._loadAllNetworks();
 
@@ -122,15 +121,14 @@ export default class BlockChainService {
           continue;
         }
       } else {
-        const registryAddress = await this._getRegistryAddress();
+        const registryAddress = await this.getRegistryAddress();
 
-        if (!registryAddress) throw Error("Missing network registry address");
+        if (!registryAddress)
+          throw Error("Missing network registry address");
 
-        if (!(await this.networkService.loadRegistry(registryAddress))) {
-          throw Error(
-            `Error loading network registry contract ${registryAddress}`
-          );
-        }
+        if (!(await this.networkService.loadRegistry(registryAddress)))
+          throw Error(`Error loading network registry contract ${registryAddress}`);
+
       }
 
       const { lastBlock, currentBlock, totalPages, blocksPerPages } =
@@ -187,10 +185,7 @@ export default class BlockChainService {
   /*
     Get events from a specific network and especifc range of blocks
   */
-  private async _getEvent(
-    query: EventsQuery,
-    fromRegistry?: boolean
-  ): Promise<EventsPerNetwork> {
+  private async _getEvent(query: EventsQuery, fromRegistry?: boolean): Promise<EventsPerNetwork> {
     const { networkName, blockQuery } = query;
     const networkEvent: EventsPerNetwork = {
       network: {},
@@ -203,22 +198,22 @@ export default class BlockChainService {
     networkEvent.network = network;
 
     if (!fromRegistry) {
-      if (!(await this.networkService.loadNetwork(network.networkAddress))) {
+      if (!(await this.networkService.loadNetwork(network.networkAddress)))
         throw Error(`Error loading network contract ${network.name}`);
-      }
-    } else {
-      const registryAddress = await this._getRegistryAddress();
 
-      if (!registryAddress) throw Error("Missing network registry address");
+    } else {
+      const registryAddress = await this.getRegistryAddress();
+
+      if (!registryAddress)
+        throw Error("Missing network registry address");
+
       const registry = await this.networkService.loadRegistry(registryAddress);
 
       networkEvent.registry = registry;
 
-      if (!registry) {
-        throw Error(
-          `Error loading network registry contract ${registryAddress}`
-        );
-      }
+      if (!registry)
+        throw Error(`Error loading network registry contract ${registryAddress}`);
+
     }
 
     const toBlock = +blockQuery.to;
@@ -232,40 +227,20 @@ export default class BlockChainService {
       ? this.networkService.registry
       : this.networkService.network;
 
-    const eventsBlock = await eventsFinder[this._eventName]({
-      fromBlock,
-      toBlock,
-    });
+    const eventsBlock =
+      await eventsFinder[this._eventName]({fromBlock, toBlock });
 
-    if (eventsBlock.length) {
+    if (eventsBlock.length)
       networkEvent.eventsOnBlock = eventsBlock;
-    }
+
     return networkEvent;
   }
 
-  async getEvents(
-    query?: EventsQuery,
-    fromRegistry?: boolean
-  ): Promise<EventsPerNetwork[]> {
-    const events: EventsPerNetwork[] = [];
-
-    if (query?.networkName) {
-      events.push(await this._getEvent(query, fromRegistry));
-    } else {
-      events.push(...(await this._getAllEvents(fromRegistry)));
-    }
-
-    return events;
+  async getEvents(query?: EventsQuery, fromRegistry?: boolean): Promise<EventsPerNetwork[]> {
+    return query ? [await this._getEvent(query, fromRegistry)] : this._getAllEvents(fromRegistry);
   }
 
   async getNetworks(query?: EventsQuery): Promise<NetworkProps[]> {
-    const networks: NetworkProps[] = [];
-    if (query?.networkName) {
-      networks.push(await this._getNetwork(query.networkName));
-    } else {
-      networks.push(...(await this._loadAllNetworks()));
-    }
-
-    return networks;
+    return query?.networkName ? [await this._getNetwork(query.networkName)] : this._loadAllNetworks();
   }
 }

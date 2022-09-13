@@ -107,7 +107,7 @@ export async function action(
 
       await updateUserPayments(proposal, block.transactionHash, dbBounty.id, bounty.tokenAmount);
 
-      eventsProcessed[network.name] = {[dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
+      eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
     }
 
     await service.processEvents(processor);

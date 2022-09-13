@@ -11,101 +11,77 @@ import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
 import { slashSplit } from "src/utils/string";
 
+
 export const name = "get-bounty-moved-to-open";
 export const schedule = "*/5 * * * *"; // Every 5 minutes
 export const description =
   "move to 'OPEN' all 'DRAFT' bounties that have Draft Time finished as set at the block chain";
 export const author = "clarkjoao";
 
-export async function action(
-  query?: EventsQuery
-): Promise<EventsProcessed> {
+export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   try {
-    logger.info("Starting move bounties to open");
+    logger.info(`Starting ${name}`);
 
     const service = new BlockChainService();
+
     await service.init(name);
-    const networks = await service.getNetworks();
 
-    for (const network of networks) {
-      logger.info(`Bounties at ${network.name.toUpperCase()} network`);
+    for (const network of await service.getNetworks()) {
+      logger.info(`Bounties at ${network.networkAddress} network`);
 
-      const bountiesProcessed: BountiesProcessed = {};
-
-      if (
-        !(await service.networkService.loadNetwork(network?.networkAddress))
-      ) {
-        logger.error(
-          `Error at loading network networkService: ${network.networkAddress}`
-        );
+      if (!(await service.networkService.loadNetwork(network?.networkAddress))) {
+        logger.error(`Failed to load network ${network.networkAddress}`, network);
         continue;
       }
 
       const redeemTime = await service.networkService.network.draftTime();
 
-      const where = {
-        createdAt: { [Op.lt]: subMilliseconds(+new Date(), redeemTime) },
-        network_id: network.id,
-        state: "draft",
-      };
-
       const bounties = await db.issues.findAll({
-        where,
+        where: {
+          createdAt: { [Op.lt]: subMilliseconds(+new Date(), redeemTime) },
+          network_id: network.id,
+          state: "draft",},
         include: [{ association: "token" }, { association: "repository" }],
       });
 
-      if (!bounties) {
-        logger.error(
-          `${network.name.toUpperCase()} no have bounties to be moved`
-        );
+      logger.info(`Found ${bounties.length} draft bounties on ${network.networkAddress}`);
+
+      if (!bounties || !bounties.length)
         continue;
-      }
+
       const repositoriesDetails = {};
 
-      for (const bounty of bounties) {
-        logger.info(`Moving bounty ${bounty.issueId}`);
+      for (const dbBounty of bounties) {
+        logger.info(`Parsing bounty ${dbBounty.issueId}`);
 
-        const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
+        const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
+        const detailKey = `${owner}/${repo}`;
 
-        if (!repositoriesDetails[`${owner}/${repo}`]) {
-          repositoriesDetails[`${owner}/${repo}`] =
+        if (!repositoriesDetails[detailKey])
+          repositoriesDetails[detailKey] =
             await GHService.repositoryDetails(repo, owner);
-        }
 
-        const labelId = repositoriesDetails[
-          `${owner}/${repo}`
-        ]?.repository?.labels?.nodes.find(
-          (label) => label.name.toLowerCase() === "draft"
-        )?.id;
+        const labelId = repositoriesDetails[detailKey]
+          .repository.labels.nodes.find((label) => label.name.toLowerCase() === "draft")?.id;
 
         if (labelId) {
-          const ghIssue = await GHService.issueDetails(
-            repo,
-            owner,
-            bounty?.githubId as string
-          );
-          await GHService.issueRemoveLabel(
-            ghIssue.repository.issue.id,
-            labelId
-          );
+          const ghIssue = await GHService.issueDetails(repo, owner, dbBounty?.githubId as string);
+          await GHService.issueRemoveLabel(ghIssue.repository.issue.id, labelId);
         }
 
-        bounty.state = "open";
-        await bounty.save();
+        dbBounty.state = "open";
+        await dbBounty.save();
 
-        bountiesProcessed[bounty.issueId as string] = {
-          bounty,
-          eventBlock: null,
-        };
+        eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: null}};
 
-        logger.info(`Bounty ${bounty.issueId} has moved to open`);
+        logger.info(`Parsed bounty ${dbBounty.issueId}`);
       }
-      eventsProcessed[network.name as string] = bountiesProcessed;
+
     }
   } catch (err) {
-    logger.error(`Error at try moving bounties: ${err}`);
+    logger.error(`Error while parsing ${name}`, err);
   }
 
   return eventsProcessed;

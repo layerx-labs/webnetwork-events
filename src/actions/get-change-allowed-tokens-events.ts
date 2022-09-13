@@ -1,14 +1,12 @@
-import { ERC20 } from "@taikai/dappkit";
 import db from "src/db";
-import {
-  EventsProcessed,
-  EventsQuery,
-} from "src/interfaces/block-chain-service";
-import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
+import {ERC20, XEvents} from "@taikai/dappkit";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
+import {EventService} from "../services/event-service";
+import {ChangeAllowedTokensEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-registry";
 
 export const name = "getChangeAllowedTokensEvents";
-export const schedule = "*/60 * * * *"; // Each 60 minutes
+export const schedule = "*/60 * * * *"; // every hour
 export const description = "retrieving bounty created events";
 export const author = "MarcusviniciusLsantos";
 
@@ -16,114 +14,59 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   try {
-    logger.info("retrieving change allowed tokens events");
 
-    const service = new BlockChainService();
-    await service.init(name);
+    const service = new EventService(name, query, true);
 
-    const events = await service.getEvents(query);
+    const processor = async (block: XEvents<ChangeAllowedTokensEvent>, network) => {
+      const {tokens, operation, kind} = block.returnValues;
+      const dbTokens = await db.tokens.findAll();
 
-    logger.info(`found ${events.length} events`);
+      const onDatabase = (token) => tokens.includes(token.address);
+      const notOnDatabase = (token) => !dbTokens.some((t) => t.address === token);
 
-    for (let event of events) {
-      const { network, registry, eventsOnBlock } = event;
+      let result: number[]|string[] = [];
 
-      if (!(await service.networkService.loadNetwork(network.networkAddress))) {
-        logger.error(`Error loading network contract ${network.name}`);
-        continue;
-      }
-
-      if (
-        !(await service.networkService.loadRegistry(registry.contractAddress))
-      ) {
-        logger.error(`Error loading registry contract`);
-        continue;
-      }
-
-      for (let eventBlock of eventsOnBlock) {
-        const { tokens, operation, kind } = eventBlock.returnValues;
-
-        const allowedTokens =
-          await service.networkService?.registry?.getAllowedTokens();
-        const databaseTokens = (await db.tokens.findAll()) || [];
-
-        if (allowedTokens) {
-          if (operation === "add") {
-            const addTokens = tokens
-              ?.map((address) => {
-                const valid = allowedTokens?.[kind]?.find(
-                  (kindAddress) => kindAddress === address
-                );
-                if (valid) {
-                  const isDatabase = databaseTokens?.find(
-                    (token) => token.address === address
-                  );
-                  if (!isDatabase) return address;
-                }
-              })
-              .filter((v) => v);
-
-            if (addTokens.length > 0) {
-              for (const address of addTokens) {
-                const erc20 = new ERC20(registry.web3Connection, address);
-
+      if (operation === "add")
+        result = await Promise.all(
+          tokens
+            .filter(notOnDatabase)
+            .map(async (tokenAddress) => {
+              try {
+                const erc20 = new ERC20(network.connection, tokenAddress)
                 await erc20.loadContract();
-
-                const token = {
+                await db.tokens.create({
                   name: await erc20.name(),
                   symbol: await erc20.symbol(),
-                  address: address,
-                };
-                await db.tokens.create({
-                  ...token,
-                  isTransactional: kind === "transactional" ? true : false,
-                });
-              }
-            }
-          } else if (operation === "remove") {
-            const removeTokens = tokens
-              ?.map((address) => {
-                const valid = allowedTokens?.[kind]?.find(
-                  (kindAddress) => kindAddress === address
-                );
-                if (!valid) {
-                  const isDatabase = databaseTokens?.find(
-                    (token) => token.address === address
-                  );
-                  if (isDatabase) return address;
-                }
-              })
-              .filter((v) => v);
-
-            if (removeTokens.length > 0) {
-              for (const address of removeTokens) {
-                const token = await db.tokens.findOne({
-                  where: {
-                    address: address,
-                    isTransactional: kind === "transactional" ? true : false,
-                  },
+                  address: tokenAddress,
+                  isTransactional: kind === "transactional"
                 });
 
-                if (token)
-                  await db.network_tokens
-                    .destroy({ where: { tokenId: token.id } })
-                    .catch(() =>
-                      console.log("Error synchronizing token deletion")
-                    );
+                return tokenAddress;
+              } catch (e) {
+                logger.warn(`Failed to create ${tokenAddress} on database`, e);
+                return;
               }
-            }
-          }
-        } else console.warn("Allowed tokens not found in the registry");
-      }
+            }));
+      else if (operation === "remove")
+        result = await Promise.all(
+          tokens
+            .filter(onDatabase)
+            .map(address => dbTokens.find(t => t.address === address))
+            .map(async (token) => {
+              const removed = await db.network_tokens.destroy({where: {tokenId: token.id}});
+              if (!removed)
+                logger.info(`Failed to remove ${token.id}`);
+              return removed > 0;
+            })
+        )
 
-      eventsProcessed[network.name!] = [network.networkAddress!];
+      eventsProcessed[network.name] = [...eventsProcessed[network.name] as string[], ...result.map(n => n.toString())];
     }
-    if (!query?.networkName) await service.saveLastBlock();
+
+    await service.processEvents(processor);
+
   } catch (err) {
-    logger.error(
-      `[ERROR_REGISTRY] Failed to save tokens from past-events`,
-      err
-    );
+    logger.error(`Failed to parse ${name}`, err);
   }
 
   return eventsProcessed;
