@@ -9,6 +9,7 @@ const {
   DB_PORT: port,
   DB_USERNAME: username,
   DB_DIALECT: dialect,
+  DB_LOG,
 } = process.env;
 
 if ([database, host, password, port, username].some((v) => !v))
@@ -22,6 +23,7 @@ const options = {
   dialect: (dialect as Dialect) || "postgres",
   host: host || "localhost",
   port: +(port || 54320),
+  logging: !DB_LOG ? false : console.log
 };
 
 const con = new Sequelize(
