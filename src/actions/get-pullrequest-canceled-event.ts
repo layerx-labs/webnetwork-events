@@ -1,15 +1,13 @@
 import db from "src/db";
-import {
-  BountiesProcessed,
-  EventsProcessed,
-  EventsQuery,
-} from "src/interfaces/block-chain-service";
-import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
-
-import { Bounty, PullRequest } from "src/interfaces/bounties";
 import GHService from "src/services/github";
-import { slashSplit } from "src/utils/string";
+import {EventsProcessed,EventsQuery,} from "src/interfaces/block-chain-service";
+import {Bounty, PullRequest} from "src/interfaces/bounties";
+import {slashSplit} from "src/utils/string";
+import {XEvents} from "@taikai/dappkit";
+import {BountyPullRequestCanceledEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
+import {EventService} from "../services/event-service";
+import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 
 export const name = "getBountyPullRequestCanceledEvents";
 export const schedule = "*/10 * * * *"; // Each 10 minutes
@@ -18,108 +16,57 @@ export const author = "clarkjoao";
 
 async function closePullRequest(bounty: Bounty, pullRequest: PullRequest) {
   const [owner, repo] = slashSplit(bounty?.repository?.githubPath as string);
-  await GHService.pullrequestClose(
-    repo,
-    owner,
-    pullRequest?.githubId as string
-  );
+  await GHService.pullrequestClose(repo, owner, pullRequest?.githubId as string);
 
-  const body = `This pull request was closed by @${pullRequest?.githubLogin}`;
-  await GHService.createCommentOnIssue(
-    repo,
-    owner,
-    bounty?.githubId as string,
-    body
-  );
+  const body = `This pull request was closed ${pullRequest?.githubLogin ? `by @${pullRequest.githubLogin}` : ""}`;
+  await GHService.createCommentOnIssue(repo, owner, bounty?.githubId as string, body);
 }
 
-export async function action(
-  query?: EventsQuery
-): Promise<EventsProcessed> {
+export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   try {
-    logger.info("retrieving bounty created events");
 
-    const service = new BlockChainService();
-    await service.init(name);
+    const service = new EventService(name, query);
 
-    const events = await service.getEvents(query);
+    const processor = async (block: XEvents<BountyPullRequestCanceledEvent>, network) => {
+      const {bountyId, pullRequestId} = block.returnValues;
 
-    logger.info(`found ${events.length} events`);
-    for (let event of events) {
-      const { network, eventsOnBlock } = event;
+      const bounty = await service.chainService.networkService.network.getBounty(bountyId);
+      if (!bounty)
+        return logger.info(NETWORK_BOUNTY_NOT_FOUND(bountyId, network.networkAddress));
 
-      const bountiesProcessed: BountiesProcessed = {};
+      const dbBounty = await db.issues.findOne({
+        where: { contractId: bounty.id, network_id: network.id }, include: [{association: "repository"}]});
+      if (!dbBounty)
+        return logger.info(DB_BOUNTY_NOT_FOUND(bounty.cid, network.id))
 
-      if (!(await service.networkService.loadNetwork(network.networkAddress))) {
-        logger.error(`Error loading network contract ${network.name}`);
-        continue;
+      const pullRequest = bounty.pullRequests[pullRequestId];
+
+      const dbPullRequest = await db.pull_requests.findOne({
+        where:{ issueId: dbBounty.id, githubId: pullRequest.cid, contractId: pullRequest.id}});
+
+      if (!dbPullRequest)
+        return logger.error(`Pull request ${pullRequest.cid} not found in database`, bounty)
+
+      await closePullRequest(dbBounty, dbPullRequest);
+
+      dbPullRequest.status = "canceled";
+      await dbPullRequest.save();
+
+      if (bounty.pullRequests.some(({ready, canceled}) => ready && !canceled)) {
+        dbBounty.state = "open";
+        await dbBounty.save();
       }
 
-      for (let eventBlock of eventsOnBlock) {
-        const { bountyId: id, pullRequestId } = eventBlock.returnValues;
-        const networkBounty = await service.networkService?.network?.getBounty(
-          id
-        );
-
-        if (!networkBounty) {
-          logger.info(`Bounty id: ${id} not found`);
-          continue;
-        }
-
-        const bounty = await db.issues.findOne({
-          where: {
-            issueId: networkBounty.cid,
-            contractId: id,
-            network_id: network?.id,
-          },
-          include: [{ association: "repository" }],
-        });
-
-        if (!bounty) {
-          logger.info(`Bounty cid: ${id} not found`);
-          continue;
-        }
-
-        const networkPullRequest = networkBounty?.pullRequests[pullRequestId];
-
-        const pullRequest = await db.pull_requests.findOne({
-          where: {
-            issueId: bounty?.id,
-            githubId: networkPullRequest?.cid?.toString(),
-            contractId: network?.id,
-          },
-        });
-
-        if (!pullRequest) {
-          logger.info(`Pull request cid: ${networkPullRequest.cid} not found`);
-          continue;
-        }
-
-        await closePullRequest(bounty, pullRequest).catch(logger.error);
-
-        pullRequest.status = "canceled";
-
-        await pullRequest.save();
-
-        if (
-          !networkBounty.pullRequests.find((pr) => pr.ready && !pr.canceled)
-        ) {
-          bounty.state = "open";
-
-          await bounty.save();
-        }
-
-        bountiesProcessed[bounty.issueId as string] = { bounty, eventBlock };
-
-        logger.info(`Pull Request ${id} canceled`);
-      }
-      eventsProcessed[network.name as string] = bountiesProcessed;
+      eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
     }
-    if (!query?.networkName) await service.saveLastBlock();
+
+    await service.processEvents(processor);
+
   } catch (err) {
     logger.error(`Error ${name}:`, err);
   }
+
   return eventsProcessed;
 }

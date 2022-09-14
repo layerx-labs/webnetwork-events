@@ -1,10 +1,5 @@
 import db from "src/db";
-import {
-  BountiesProcessed,
-  EventsProcessed,
-  EventsQuery,
-} from "src/interfaces/block-chain-service";
-import BlockChainService from "src/services/block-chain-service";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import logger from "src/utils/logger-handler";
 import {EventService} from "../services/event-service";
 import {XEvents} from "@taikai/dappkit";

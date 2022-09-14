@@ -11,6 +11,10 @@ import "dotenv/config";
 import { Bounty, PullRequest } from "src/interfaces/bounties";
 import GHService from "src/services/github";
 import { slashSplit } from "src/utils/string";
+import {EventService} from "../services/event-service";
+import {XEvents} from "@taikai/dappkit";
+import {BountyPullRequestCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
+import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 const webAppUrl = process.env.WEBAPP_URL || "http://localhost:3000";
 
 export const name = "getBountyPullRequestCreatedEvents";
@@ -25,93 +29,50 @@ async function createCommentOnIssue(bounty: Bounty, pullRequest: PullRequest) {
   const issueLink = `${webAppUrl}/bounty?id=${bounty.githubId}&repoId=${bounty.repository_id}`;
   const body = `@${bounty.creatorGithub}, @${pullRequest.githubLogin} has a solution - [check your bounty](${issueLink})`;
   const [owner, repo] = slashSplit(bounty?.repository?.githubPath as string);
-  return await GHService.createCommentOnIssue(
-    repo,
-    owner,
-    bounty?.githubId as string,
-    body
-  );
+  return await GHService.createCommentOnIssue(repo, owner, bounty?.githubId as string, body);
 }
 
-export async function action(
-  query?: EventsQuery
-): Promise<EventsProcessed> {
+export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   try {
-    logger.info("retrieving pull request created events");
 
-    const service = new BlockChainService();
-    await service.init(name);
+    const _service = new EventService(name, query);
 
-    const events = await service.getEvents(query);
+    const processor = async (block: XEvents<BountyPullRequestCreatedEvent>, network) => {
+      const {bountyId, pullRequestId} = block.returnValues;
 
-    logger.info(`found ${events.length} events`);
-    for (let event of events) {
-      const { network, eventsOnBlock } = event;
+      const bounty = await _service.chainService.networkService.network.getBounty(bountyId);
+      if (!bounty)
+        return logger.info(NETWORK_BOUNTY_NOT_FOUND(bountyId, network.networkAddress));
 
-      const bountiesProcessed: BountiesProcessed = {};
+      const dbBounty = await db.issues.findOne({
+        where: {contractId: bountyId, issueId: bounty.cid, network_id: network.id},
+        include: [{ association: "repository" }]});
 
-      if (!(await service.networkService.loadNetwork(network.networkAddress))) {
-        logger.error(`Error loading network contract ${network.name}`);
-        continue;
-      }
+      if (!dbBounty)
+        return logger.info(DB_BOUNTY_NOT_FOUND(bounty.cid, network.id));
 
-      for (let eventBlock of eventsOnBlock) {
-        const { bountyId: id, pullRequestId } = eventBlock.returnValues;
-        const networkBounty = await service.networkService?.network?.getBounty(
-          id
-        );
+      const pullRequest = bounty.pullRequests[pullRequestId];
 
-        if (!networkBounty) {
-          logger.info(`Bounty id: ${id} not found`);
-          continue;
-        }
+      const dbPullRequest = await db.pull_requests.findOne({
+        where: {issueId: dbBounty.id, githubId: pullRequest.cid, status: "pending"}});
 
-        const bounty = await db.issues.findOne({
-          where: {
-            issueId: networkBounty.cid,
-            contractId: id,
-            network_id: network.id,
-          },
-          include: [{ association: "repository" }],
-        });
+      if (!dbPullRequest)
+        return logger.error(`No pull request found in database for pending and id ${pullRequest.cid}`, bounty);
 
-        if (!bounty) {
-          logger.info(`Bounty cid: ${id} not found`);
-          continue;
-        }
+      dbPullRequest.status = getPRStatus(dbPullRequest);
+      dbPullRequest.userRepo = pullRequest.userRepo;
+      dbPullRequest.userBranch = pullRequest.userBranch;
+      dbPullRequest.contractId = pullRequest.id;
 
-        const networkPullRequest = networkBounty?.pullRequests[pullRequestId];
+      await dbPullRequest.save();
 
-        const pullRequest = await db.pull_requests.findOne({
-          where: {
-            issueId: bounty?.id,
-            githubId: networkPullRequest.cid.toString(),
-            status: "pending",
-          },
-        });
+      await createCommentOnIssue(dbBounty, dbPullRequest)
+        .catch(logger.error);
 
-        if (!pullRequest) {
-          logger.info(`Pull request cid: ${networkPullRequest.cid} not found`);
-          continue;
-        }
-
-        pullRequest.status = getPRStatus(networkPullRequest);
-        pullRequest.userRepo = networkPullRequest.userRepo;
-        pullRequest.userBranch = networkPullRequest.userBranch;
-        pullRequest.contractId = +networkPullRequest.id;
-
-        await pullRequest.save();
-        await createCommentOnIssue(bounty, pullRequest).catch(logger.error);
-
-        bountiesProcessed[bounty.issueId as string] = { bounty, eventBlock };
-
-        logger.info(`Bounty cid: ${id} created`);
-      }
-      eventsProcessed[network.name as string] = bountiesProcessed;
+      eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
     }
-    if (!query?.networkName) await service.saveLastBlock();
   } catch (err) {
     logger.error(`Error ${name}:`, err);
   }
