@@ -92,7 +92,7 @@ export async function action(
       const dbProposal = await dbBounty.merge_proposals.find(findDBProposal);
 
       if (!dbProposal)
-        logger.warn(`proposal ${proposalId} was not found on database for bounty ${dbBounty.id}`);
+        logger.warn(`proposal ${proposalId} was not found in database for bounty ${dbBounty.id}`);
       else {
         const mergedPR = await mergeProposal(dbBounty, dbProposal.id, dbProposal.issueId);
         if (mergedPR)
