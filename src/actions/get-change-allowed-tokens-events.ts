@@ -43,7 +43,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
                 return tokenAddress;
               } catch (e) {
-                logger.warn(`Failed to create ${tokenAddress} in database`, e);
+                logger.warn(`${name} Failed to create ${tokenAddress} in database`, e);
                 return;
               }
             }));
@@ -55,7 +55,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
             .map(async (token) => {
               const removed = await db.network_tokens.destroy({where: {tokenId: token.id}});
               if (!removed)
-                logger.warn(`Failed to remove ${token.id}`);
+                logger.warn(`${name} Failed to remove ${token.id}`);
               return removed > 0;
             })
         )
@@ -66,7 +66,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     await service.processEvents(processor);
 
   } catch (err) {
-    logger.error(`Failed to parse ${name}`, err);
+    logger.error(`${name} Error`, err);
   }
 
   return eventsProcessed;

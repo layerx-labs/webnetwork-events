@@ -73,7 +73,7 @@ export async function action(
       const {chainService:{networkService:{network:{getBounty}}}} = service;
       const bounty = await getBounty(id);
       if (!bounty)
-        return logger.error(NETWORK_BOUNTY_NOT_FOUND(id, network.networkAddress));
+        return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
 
       const dbBounty = await db.issues.findOne({
         where: {contractId: id, issueId: bounty.cid, network_id: network?.id,},
@@ -85,7 +85,7 @@ export async function action(
       });
 
       if (!dbBounty)
-        return logger.error(DB_BOUNTY_NOT_FOUND(bounty.cid, network.id))
+        return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
 
       const findDBProposal = (prop) => prop.contractId.toString() === proposalId.toString();
 
@@ -113,7 +113,7 @@ export async function action(
     await service.processEvents(processor);
 
   } catch (err) {
-    logger.error(`Error to close bounty:`, err);
+    logger.error(`${name} Error`, err);
   }
 
   return eventsProcessed;

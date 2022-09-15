@@ -22,13 +22,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
       const bounty = await service.chainService.networkService.network.getBounty(id);
       if (!bounty)
-        logger.error(NETWORK_BOUNTY_NOT_FOUND(id, network.networkAddress));
+        logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
       else {
         const dbBounty = await db.issues.findOne({
           where: {contractId: id, issueId: bounty.cid, network_id: network.id}});
 
         if (!dbBounty)
-          logger.error(DB_BOUNTY_NOT_FOUND(bounty.cid, network.id))
+          logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
         else {
           dbBounty.amount = +bounty.tokenAmount;
           await dbBounty.save();
@@ -41,7 +41,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     await service.processEvents(processor);
 
   } catch (e) {
-    logger.error(`Failed to parse ${name}`, e);
+    logger.error(`${name} Error`, e);
   }
 
   return eventsProcessed;

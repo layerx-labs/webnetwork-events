@@ -21,7 +21,7 @@ export async function action(issueId?: string) {
   }
 
   try {
-    logger.info("Starting SEOCards Generate");
+    logger.info(`${name} start`);
 
     const service = new BlockChainService();
     await service.init(name);
@@ -47,15 +47,15 @@ export async function action(issueId?: string) {
     const bounties = await db.issues.findAll({where, include,});
 
     if (!bounties.length) {
-      logger.info("No bounties to be updated");
+      logger.info(`${name} No bounties to be updated`);
       return;
     }
 
-    logger.info(`${bounties.length} bounties to be updated`);
+    logger.info(`${name} ${bounties.length} bounties to be updated`);
 
     for (const bounty of bounties) {
       try {
-        logger.info(`Creating card to bounty ${bounty.issueId}`);
+        logger.info(`${name} Creating card to bounty ${bounty.issueId}`);
         const card = await generateCard(bounty);
 
         const { hash } = await ipfsService.add(card);
@@ -66,14 +66,14 @@ export async function action(issueId?: string) {
 
         bountiesProcessed.push({ issueId: bounty.issueId, hash });
 
-        logger.info(`Bounty card for ${bounty.issueId} has been updated`);
+        logger.info(`${name} Bounty card for ${bounty.issueId} has been updated`);
       } catch (error) {
-        logger.error(`Error generating card for ${bounty.issueId}:`, error);
+        logger.error(`${name} Error generating card for ${bounty.issueId}:`, error);
         continue;
       }
     }
   } catch (err) {
-    logger.error(`Error ${name}:`, err);
+    logger.error(`${name} Error`, err);
   }
 
   return bountiesProcessed;

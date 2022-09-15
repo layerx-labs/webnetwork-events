@@ -3,13 +3,14 @@ import {BountyProposalDisputedEvent} from "@taikai/dappkit/dist/src/interfaces/e
 import logger from "../utils/logger-handler";
 import {NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import validateProposalState, {validateProposal} from "./proposal-validate-state";
+import {name} from "../actions/get-bounty-funded-updated-event";
 
 export async function proposalStateProcessor(block: XEvents<BountyProposalDisputedEvent>, network, _service, eventsProcessed) {
   const {bountyId, prId, proposalId,} = block.returnValues;
 
   const bounty = await _service.chainService.networkService.network.getBounty(bountyId);
   if (!bounty)
-    return logger.error(NETWORK_BOUNTY_NOT_FOUND(bountyId, network.networkAddress));
+    return logger.error(NETWORK_BOUNTY_NOT_FOUND('proposal-state-processor', bountyId, network.networkAddress));
 
   const values = await validateProposal(bounty, prId, proposalId, network.id);
   if (!values?.dbBounty)

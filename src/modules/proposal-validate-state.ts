@@ -5,6 +5,7 @@ import db from "../db";
 import logger from "../utils/logger-handler";
 import {DB_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {Op} from "sequelize";
+import {name} from "../actions/get-bounty-funded-updated-event";
 
 async function bountyReadyPRsHasNoInvalidProposals(networkBounty: any,
                                                    networkService: NetworkService): Promise<number> {
@@ -55,7 +56,7 @@ export async function validateProposal(bounty: Bounty, prId: number, proposalId:
   const dbBounty = await db.issues.findOne({
     where: {contractId: bounty.id, issueId: bounty.cid, network_id}})
   if (!dbBounty)
-    return logger.error(DB_BOUNTY_NOT_FOUND(bounty.cid, network_id));
+    return logger.error(DB_BOUNTY_NOT_FOUND('validate-proposal', bounty.cid, network_id));
 
   const pullRequest = bounty.pullRequests.find(pr => pr.id === prId);
   if (!pullRequest)

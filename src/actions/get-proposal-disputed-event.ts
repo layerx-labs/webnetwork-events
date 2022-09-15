@@ -25,7 +25,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       });
 
   } catch (err) {
-    logger.error(`Error ${name}:`, err);
+    logger.error(`${name} Error`, err);
   }
   return eventsProcessed;
 }

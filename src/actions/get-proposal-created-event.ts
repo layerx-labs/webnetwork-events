@@ -25,7 +25,7 @@ export async function action(
 
       const bounty = await service.chainService.networkService.network.getBounty(bountyId);
       if (!bounty)
-        return logger.error(NETWORK_BOUNTY_NOT_FOUND(bountyId, network.networkAddress));
+        return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
       const values = await validateProposal(bounty, prId, proposalId, network.id);
       if (!values?.proposal || !values?.dbBounty || !values?.dbPullRequest)
@@ -53,7 +53,7 @@ export async function action(
     await service.processEvents(processor);
 
   } catch (err) {
-    logger.error(`Error ${name}:`, err);
+    logger.error(`${name} Error`, err);
   }
   return eventsProcessed;
 }

@@ -44,14 +44,14 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
       const bounty = await _service.chainService.networkService.network.getBounty(bountyId);
       if (!bounty)
-        return logger.error(NETWORK_BOUNTY_NOT_FOUND(bountyId, network.networkAddress));
+        return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
       const dbBounty = await db.issues.findOne({
         where: {contractId: bountyId, issueId: bounty.cid, network_id: network.id},
         include: [{ association: "repository" }]});
 
       if (!dbBounty)
-        return logger.error(DB_BOUNTY_NOT_FOUND(bounty.cid, network.id));
+        return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
 
       const pullRequest = bounty.pullRequests[pullRequestId];
 
@@ -59,7 +59,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         where: {issueId: dbBounty.id, githubId: pullRequest.cid, status: "pending"}});
 
       if (!dbPullRequest)
-        return logger.error(`No pull request found in database for pending and id ${pullRequest.cid}`, bounty);
+        return logger.error(`${name} No pull request found in database for pending and id ${pullRequest.cid}`, bounty);
 
       dbPullRequest.status = getPRStatus(dbPullRequest);
       dbPullRequest.userRepo = pullRequest.userRepo;

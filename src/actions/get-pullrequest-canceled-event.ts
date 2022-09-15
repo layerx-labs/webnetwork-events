@@ -34,12 +34,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
       const bounty = await service.chainService.networkService.network.getBounty(bountyId);
       if (!bounty)
-        return logger.error(NETWORK_BOUNTY_NOT_FOUND(bountyId, network.networkAddress));
+        return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
       const dbBounty = await db.issues.findOne({
         where: { contractId: bounty.id, network_id: network.id }, include: [{association: "repository"}]});
       if (!dbBounty)
-        return logger.error(DB_BOUNTY_NOT_FOUND(bounty.cid, network.id))
+        return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
 
       const pullRequest = bounty.pullRequests[pullRequestId];
 
@@ -47,7 +47,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         where:{ issueId: dbBounty.id, githubId: pullRequest.cid, contractId: pullRequest.id}});
 
       if (!dbPullRequest)
-        return logger.error(`Pull request ${pullRequest.cid} not found in database`, bounty)
+        return logger.error(`${name} Pull request ${pullRequest.cid} not found in database`, bounty)
 
       await closePullRequest(dbBounty, dbPullRequest);
 
@@ -65,7 +65,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     await service.processEvents(processor);
 
   } catch (err) {
-    logger.error(`Error ${name}:`, err);
+    logger.error(`${name} Error`, err);
   }
 
   return eventsProcessed;

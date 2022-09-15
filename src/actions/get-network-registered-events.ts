@@ -24,14 +24,14 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           : [0]
 
 
-      logger.warn(`${updated[0] > 0 ? 'Registered' : 'Failed to register'} ${createdNetworkAddress}`)
+      logger.warn(`${name} ${updated[0] > 0 ? 'Registered' : 'Failed to register'} ${createdNetworkAddress}`)
       eventsProcessed[network.name!] = [network.networkAddress!];
     }
 
     await (new EventService(name, query, true)).processEvents(processor);
 
   } catch (err) {
-    logger.error(`Error registering network`, err);
+    logger.error(`${name} Error`, err);
   }
 
   return eventsProcessed;

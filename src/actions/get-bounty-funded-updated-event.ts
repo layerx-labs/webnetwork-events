@@ -30,13 +30,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
       const bounty = await getBounty(id);
       if (!bounty)
-        return logger.error(NETWORK_BOUNTY_NOT_FOUND(id, network.networkAddress));
+        return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
 
       const dbBounty = await db.issues.findOne({
         where: {contractId: id, issueId: bounty.cid, network_id: network?.id,}});
 
       if (!dbBounty)
-        return logger.error(DB_BOUNTY_NOT_FOUND(bounty.cid, network.id));
+        return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
 
       dbBounty.amount =
         dbBounty.fundedAmount =
@@ -50,7 +50,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     await service.processEvents<BountyFunded>(processor);
 
   } catch (err) {
-    logger.error(`Error update bounty amount:`, err);
+    logger.error(`${name} Error`, err);
   }
 
   return eventsProcessed;

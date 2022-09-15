@@ -23,17 +23,17 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
   try {
 
-    logger.info(`Starting ${name}`);
+    logger.info(`${name} start`);
 
     const service = new BlockChainService();
 
     await service.init(name);
 
     for (const network of await service.getNetworks()) {
-      logger.info(`Bounties at ${network.networkAddress} network`);
+      logger.info(`${name} listing bounties for ${network.networkAddress}`);
 
       if (!(await service.networkService.loadNetwork(network?.networkAddress))) {
-        logger.error(`Failed to load network ${network.networkAddress}`, network);
+        logger.error(`${name} Failed to load network ${network.networkAddress}`, network);
         continue;
       }
 
@@ -55,7 +55,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       const repositoriesDetails = {};
 
       for (const dbBounty of bounties) {
-        logger.info(`Parsing bounty ${dbBounty.issueId}`);
+        logger.info(`${name} Parsing bounty ${dbBounty.issueId}`);
 
         const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
         const detailKey = `${owner}/${repo}`;
@@ -77,12 +77,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
         eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: null}};
 
-        logger.info(`Parsed bounty ${dbBounty.issueId}`);
+        logger.info(`${name} Parsed bounty ${dbBounty.issueId}`);
       }
 
+      logger.info(`${name} finished`)
     }
   } catch (err) {
-    logger.error(`Error while parsing ${name}`, err);
+    logger.error(`${name} Error`, err);
   }
 
   return eventsProcessed;

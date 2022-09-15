@@ -12,7 +12,7 @@ const DAY = 1000 * 60 * 60 * 24;
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  logger.info("Deleting networks pending for 7 days or more");
+  logger.info(`${name} start`);
 
   try {
     const pendingNetworks =
@@ -29,11 +29,11 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
         eventsProcessed[network.name!] = [network.networkAddress!];
 
-        logger.info(`Network ${network.networkAddress} and it's repositories were deleted`);
+        logger.info(`${name} Network ${network.networkAddress} and it's repositories were deleted`);
       }
     }
   } catch (err) {
-    logger.error(`Error registering network`, err);
+    logger.error(`${name} Error`, err);
   }
 
   return eventsProcessed;

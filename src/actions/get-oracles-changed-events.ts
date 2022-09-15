@@ -24,7 +24,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
       const dbNetwork = await db.networks.findOne({where: {networkAddress: network.networkAddress}});
       if (!dbNetwork)
-        return logger.error(`Could not find network ${network.networkAddress}`);
+        return logger.error(`${name} Could not find network ${network.networkAddress}`);
 
       if (!councilAmount)
         councilAmount = await service.chainService.networkService.network.councilAmount();
@@ -48,7 +48,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     await service.processEvents(processor);
 
   } catch (err) {
-    logger.error(`Error parsing ${name}`, err);
+    logger.error(`${name} Error`, err);
   }
 
   return eventsProcessed;
