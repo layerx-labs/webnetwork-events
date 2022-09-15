@@ -31,7 +31,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           : [0]
 
 
-      logger.info(`${updated[0] > 0 ? 'Registered' : 'Failed to register'} ${createdNetworkAddress}`)
+      logger.warn(`${updated[0] > 0 ? 'Registered' : 'Failed to register'} ${createdNetworkAddress}`)
       eventsProcessed[network.name!] = [network.networkAddress!];
     }
 

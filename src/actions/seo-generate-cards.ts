@@ -7,8 +7,7 @@ import logger from "src/utils/logger-handler";
 
 export const name = "seo-generate-cards";
 export const schedule = "*/15 * * * *"; // Every 15 minutes
-export const description =
-  "Try generate SeoCards for all updated or new bounties";
+export const description = "Try generate SeoCards for all updated or new bounties";
 export const author = "clarkjoao";
 
 export async function action(issueId?: string) {
@@ -20,27 +19,14 @@ export async function action(issueId?: string) {
     const service = new BlockChainService();
     await service.init(name);
 
-    let where;
-
-    if (issueId) {
-      where = {
-        issueId,
-      };
-    } else {
-      const lastUpdated =
-        service?.db?.updatedAt || service?.db?.createdAt || new Date();
-
-      where = {
-        [Op.or]: [
-          { seoImage: null },
-          {
-            updatedAt: {
-              [Op.gt]: lastUpdated,
-            },
-          },
-        ],
-      };
-    }
+    const where = {
+      ... issueId
+        ? {issueId}
+        : {[Op.or]: [
+            {seoImage: null},
+            {updatedAt: {[Op.gt]: service?.db?.updatedAt || service?.db?.createdAt || new Date()}}
+          ]}
+    };
 
     const include = [
       { association: "developers" },
@@ -51,10 +37,7 @@ export async function action(issueId?: string) {
       { association: "token" },
     ];
 
-    const bounties = await db.issues.findAll({
-      where,
-      include,
-    });
+    const bounties = await db.issues.findAll({where, include,});
 
     if (!bounties.length) {
       logger.info("No bounties to be updated");
@@ -76,7 +59,7 @@ export async function action(issueId?: string) {
 
         logger.info(`Bounty ${bounty.issueId} has been updated`);
       } catch (error) {
-        logger.error(`Erro bounty ${bounty.issueId}:`, error);
+        logger.error(`Error bounty ${bounty.issueId}:`, error);
         continue;
       }
     }

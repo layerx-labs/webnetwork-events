@@ -55,7 +55,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
             .map(async (token) => {
               const removed = await db.network_tokens.destroy({where: {tokenId: token.id}});
               if (!removed)
-                logger.info(`Failed to remove ${token.id}`);
+                logger.warn(`Failed to remove ${token.id}`);
               return removed > 0;
             })
         )

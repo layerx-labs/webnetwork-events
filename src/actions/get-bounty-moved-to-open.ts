@@ -22,6 +22,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   try {
+
     logger.info(`Starting ${name}`);
 
     const service = new BlockChainService();

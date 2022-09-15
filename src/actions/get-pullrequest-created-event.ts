@@ -44,14 +44,14 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
       const bounty = await _service.chainService.networkService.network.getBounty(bountyId);
       if (!bounty)
-        return logger.info(NETWORK_BOUNTY_NOT_FOUND(bountyId, network.networkAddress));
+        return logger.error(NETWORK_BOUNTY_NOT_FOUND(bountyId, network.networkAddress));
 
       const dbBounty = await db.issues.findOne({
         where: {contractId: bountyId, issueId: bounty.cid, network_id: network.id},
         include: [{ association: "repository" }]});
 
       if (!dbBounty)
-        return logger.info(DB_BOUNTY_NOT_FOUND(bounty.cid, network.id));
+        return logger.error(DB_BOUNTY_NOT_FOUND(bounty.cid, network.id));
 
       const pullRequest = bounty.pullRequests[pullRequestId];
 

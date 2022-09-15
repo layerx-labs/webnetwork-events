@@ -51,11 +51,11 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
       const bounty = await getBounty(id);
       if (!bounty)
-        return logger.info(NETWORK_BOUNTY_NOT_FOUND(id, network.networkAddress));
+        return logger.error(NETWORK_BOUNTY_NOT_FOUND(id, network.networkAddress));
 
       const dbBounty = await db.issues.findOne({where: {issueId, network_id: network.id}});
       if (!dbBounty)
-        return logger.info(DB_BOUNTY_NOT_FOUND(issueId, network.id));
+        return logger.error(DB_BOUNTY_NOT_FOUND(issueId, network.id));
 
       if (dbBounty.state !== "pending")
         return logger.info(`Bounty ${issueId} was already parsed.`);

@@ -11,9 +11,7 @@ export const schedule = "*/10 * * * *"; // Each 10 minutes
 export const description = "retrieving bounty updated events";
 export const author = "clarkjoao";
 
-export async function action(
-  query?: EventsQuery
-): Promise<EventsProcessed> {
+export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   try {
@@ -24,13 +22,13 @@ export async function action(
 
       const bounty = await service.chainService.networkService.network.getBounty(id);
       if (!bounty)
-        logger.info(NETWORK_BOUNTY_NOT_FOUND(id, network.networkAddress));
+        logger.error(NETWORK_BOUNTY_NOT_FOUND(id, network.networkAddress));
       else {
         const dbBounty = await db.issues.findOne({
           where: {contractId: id, issueId: bounty.cid, network_id: network.id}});
 
         if (!dbBounty)
-          logger.info(DB_BOUNTY_NOT_FOUND(bounty.cid, network.id))
+          logger.error(DB_BOUNTY_NOT_FOUND(bounty.cid, network.id))
         else {
           dbBounty.amount = +bounty.tokenAmount;
           await dbBounty.save();
