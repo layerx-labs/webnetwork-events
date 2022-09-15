@@ -1,19 +1,12 @@
 import db from "src/db";
-
-import {
-  EventsProcessed,
-  EventsQuery,
-} from "src/interfaces/block-chain-service";
-
-import BlockChainService from "src/services/block-chain-service";
-
 import logger from "src/utils/logger-handler";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {EventService} from "../services/event-service";
 import {XEvents} from "@taikai/dappkit";
 import {NetworkCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-factory-v2-events";
 
-export const name = "getNetworkCreatedEvents";
-export const schedule = "*/30 * * * *"; // Each 30 minutes
+export const name = "getNetworkRegisteredEvents";
+export const schedule = "*/1 * * * *";
 export const description = "retrieving network registered on registry events";
 export const author = "vhcsilva";
 

@@ -3,6 +3,7 @@ import "dotenv/config";
 import axios from "axios";
 import FormData from "form-data";
 import { v4 as uuidv4 } from "uuid";
+import loggerHandler from "../utils/logger-handler";
 
 const {
   IPFS_PROJECT_ID: id,
@@ -12,12 +13,16 @@ const {
 
 const auth = "Basic " + Buffer.from(id + ":" + secret).toString("base64");
 
-export async function add(
-  file: Buffer | string,
-  pin = false,
-  originalFilename?: string,
-  ext?: string
-): Promise<{ hash: string; fileName: string; size: string }> {
+export async function add(file: Buffer | string,
+                          pin = false,
+                          originalFilename?: string,
+                          ext?: string): Promise<{ hash: string; fileName: string; size: string }> {
+
+  if ([id, secret, baseURL].some(v => !v)) {
+    loggerHandler.warn(`Missing id, secret or baseURL, for IPFService`);
+    return {hash: '', fileName: '', size: '0'};
+  }
+
   const form = new FormData();
 
   const isBuffer = Buffer.isBuffer(file);
@@ -42,13 +47,8 @@ export async function add(
     authorization: auth,
   };
 
-  const { data } = await axios.post(
-    `${baseURL}/add?stream-channels=true&progress=false&pin=${pin}`,
-    form,
-    {
-      headers,
-    }
-  );
+  const { data } =
+    await axios.post(`${baseURL}/add?stream-channels=true&progress=false&pin=${pin}`, form, {headers,});
   return { hash: data.Hash, fileName: data.Name, size: data.Size };
 }
 

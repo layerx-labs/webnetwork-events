@@ -10,7 +10,7 @@ import {EventService} from "../services/event-service";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 
 export const name = "getBountyPullRequestCanceledEvents";
-export const schedule = "*/11 * * * *"; // Each 10 minutes
+export const schedule = "*/11 * * * *";
 export const description = "Sync pull-request canceled events";
 export const author = "clarkjoao";
 

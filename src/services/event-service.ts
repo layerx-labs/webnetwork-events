@@ -10,33 +10,45 @@ export class EventService {
               readonly chainService = new BlockChainService()) {}
 
   async getEvents() {
-    loggerHandler.info(`retrieving ${this.name}...`);
+    loggerHandler.info(`${this.name} start`);
     if (!this.chainService._eventName)
       await this.chainService.init(this.name);
-    const events = await this.chainService.getEvents(this.query, this.fromRegistry);
-    loggerHandler.info(`found ${events.length || 0} events`);
-    return events;
+
+    return this.chainService.getEvents(this.query, this.fromRegistry);
   }
 
   async processEvents<T = any>(blockProcessor: BlockProcessor<T>) {
     try {
-      for (const event of await this.getEvents()) {
+      const events = await this.getEvents();
+      const eventsLength = events.map(({eventsOnBlock}) => eventsOnBlock).filter(v => !!v).flat(1).length;
+
+      if (!eventsLength)
+        return loggerHandler.info(`${this.name} has no events to be parsed`);
+
+      for (const event of events) {
         const {network, eventsOnBlock} = event;
+        if (!eventsOnBlock.length) {
+          loggerHandler.info(`${this.name} Network ${network.networkAddress} has no events`);
+          continue;
+        }
+
         if (!(await this.chainService.networkService.loadNetwork(network.networkAddress))) {
-          loggerHandler.error(`Failed to load network ${network.networkAddress}`, network);
+          loggerHandler.error(`${this.name} Failed to load network ${network.networkAddress}`, network);
           continue;
         }
 
         await Promise.all(eventsOnBlock.map(block => blockProcessor(block, network)));
 
-        loggerHandler.info(`Parsed ${this.name}`);
+        loggerHandler.info(`${this.name} Parsed ${network.networkAddress}`);
       }
 
       if (!this.query)
         await this.chainService.saveLastBlock()
 
+      loggerHandler.info(`${this.name} finished`);
+
     } catch (e: any) {
-      loggerHandler.error(`Error on ${this.name}, ${e?.message}`, e)
+      loggerHandler.error(`${this.name} Error, ${e?.message}`, e)
     }
   }
 

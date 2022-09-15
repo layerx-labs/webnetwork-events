@@ -8,14 +8,11 @@ import {BountyCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/net
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 
 export const name = "getBountyCreatedEvents";
-export const schedule = "*/10 * * * *"; // Each 10 minutes
+export const schedule = "*/10 * * * *";
 export const description = "sync bounty data and move to 'DRAFT;";
 export const author = "clarkjoao";
 
-async function validateToken(
-  networkService: NetworkService,
-  address
-): Promise<number> {
+async function validateToken(networkService: NetworkService, address, isTransactional): Promise<number> {
   let token = await db.tokens.findOne({where: {address},});
 
   if (!token?.id) {
@@ -29,8 +26,7 @@ async function validateToken(
     token = await db.tokens.create({
       name: await erc20.name(),
       symbol: await erc20.symbol(),
-      address,
-      isTransactional: true,
+      address, isTransactional
     });
   }
 
@@ -43,11 +39,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   try {
 
     const service = new EventService(name, query);
-    const {chainService:{networkService}} = service;
-    const {network:{getBounty}} = networkService;
 
     const processor = async (block: XEvents<BountyCreatedEvent>, network) => {
       const {id, cid: issueId} = block.returnValues;
+
+      const {chainService:{networkService}} = service;
+      const {network:{getBounty}} = networkService;
 
       const bounty = await getBounty(id);
       if (!bounty)
@@ -69,7 +66,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       dbBounty.title = bounty.title;
       dbBounty.contractId = id;
 
-      const tokenId = await validateToken(networkService, bounty.transactional);
+      const tokenId = await validateToken(networkService, bounty.transactional, true);
       if (!tokenId)
         logger.info(`Failed to validate token ${bounty.transactional}`)
       else dbBounty.tokenId = tokenId;

@@ -6,12 +6,19 @@ import ipfsService from "src/services/ipfs-service";
 import logger from "src/utils/logger-handler";
 
 export const name = "seo-generate-cards";
-export const schedule = "*/15 * * * *"; // Every 15 minutes
+export const schedule = "*/10 * * * *";
 export const description = "Try generate SeoCards for all updated or new bounties";
 export const author = "clarkjoao";
 
+const {IPFS_PROJECT_ID, IPFS_PROJECT_SECRET, IPFS_BASE} = process.env;
+
 export async function action(issueId?: string) {
   const bountiesProcessed: any[] = [];
+
+  if ([IPFS_PROJECT_ID, IPFS_PROJECT_SECRET, IPFS_BASE].some(v => !v)) {
+    logger.warn(`Missing id, secret or baseURL, for IPFService`);
+    return bountiesProcessed;
+  }
 
   try {
     logger.info("Starting SEOCards Generate");
@@ -52,14 +59,16 @@ export async function action(issueId?: string) {
         const card = await generateCard(bounty);
 
         const { hash } = await ipfsService.add(card);
+        if (!hash)
+          continue;
 
         await bounty.update({ seoImage: hash });
 
         bountiesProcessed.push({ issueId: bounty.issueId, hash });
 
-        logger.info(`Bounty ${bounty.issueId} has been updated`);
+        logger.info(`Bounty card for ${bounty.issueId} has been updated`);
       } catch (error) {
-        logger.error(`Error bounty ${bounty.issueId}:`, error);
+        logger.error(`Error generating card for ${bounty.issueId}:`, error);
         continue;
       }
     }

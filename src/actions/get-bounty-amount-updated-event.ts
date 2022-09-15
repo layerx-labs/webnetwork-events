@@ -7,7 +7,7 @@ import {BountyAmountUpdatedEvent} from "@taikai/dappkit/dist/src/interfaces/even
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 
 export const name = "getBountyAmountUpdatedEvents";
-export const schedule = "*/13 * * * *"; // Each 10 minutes
+export const schedule = "*/13 * * * *";
 export const description = "retrieving bounty updated events";
 export const author = "clarkjoao";
 

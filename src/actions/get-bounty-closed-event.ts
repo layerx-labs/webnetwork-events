@@ -15,7 +15,7 @@ import {BountyClosedEvent} from "@taikai/dappkit/dist/src/interfaces/events/netw
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 
 export const name = "getBountyClosedEvents";
-export const schedule = "*/12 * * * *"; // Every 30 minutes
+export const schedule = "*/12 * * * *";
 export const description = "Move to 'Closed' status the bounty";
 export const author = "clarkjoao";
 
@@ -66,11 +66,11 @@ export async function action(
 
   try {
     const service = new EventService(name, query);
-    const {chainService:{networkService:{network:{getBounty}}}} = service;
 
     const processor = async (block: XEvents<BountyClosedEvent>, network) => {
       const {id, proposalId} = block.returnValues;
 
+      const {chainService:{networkService:{network:{getBounty}}}} = service;
       const bounty = await getBounty(id);
       if (!bounty)
         return logger.error(NETWORK_BOUNTY_NOT_FOUND(id, network.networkAddress));

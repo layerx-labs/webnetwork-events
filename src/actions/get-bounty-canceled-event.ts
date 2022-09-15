@@ -9,7 +9,7 @@ import {BountyCanceledEvent} from "@taikai/dappkit/dist/src/interfaces/events/ne
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 
 export const name = "getBountyCanceledEvents";
-export const schedule = "*/11 * * * *"; // Each 30 minuts
+export const schedule = "*/11 * * * *";
 export const description = "Move to 'Canceled' status the bounty";
 export const author = "clarkjoao";
 
@@ -20,9 +20,9 @@ export async function action(
 
   try {
     const service = new EventService(name, query);
-    const {networkService:{network:{getBounty}}} = service.chainService;
 
     const processor = async (block: XEvents<BountyCanceledEvent>, network) => {
+      const {networkService:{network:{getBounty}}} = service.chainService;
       const bounty = await getBounty(block.returnValues.id);
       if (!bounty)
         return logger.error(NETWORK_BOUNTY_NOT_FOUND(block.returnValues.id, network.networkAddress));

@@ -5,7 +5,7 @@ import {BountyProposalRefusedEvent} from "@taikai/dappkit/dist/src/interfaces/ev
 import {proposalStateProcessor} from "../modules/proposal-state-processor";
 
 export const name = "getBountyProposalRefusedEvents";
-export const schedule = "*/15 * * * *"; // Each 10 minutes
+export const schedule = "*/15 * * * *";
 export const description = "Sync proposal refused events";
 export const author = "clarkjoao";
 

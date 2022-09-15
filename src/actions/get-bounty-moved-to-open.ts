@@ -13,7 +13,7 @@ import { slashSplit } from "src/utils/string";
 
 
 export const name = "get-bounty-moved-to-open";
-export const schedule = "*/5 * * * *"; // Every 5 minutes
+export const schedule = "*/5 * * * *";
 export const description =
   "move to 'OPEN' all 'DRAFT' bounties that have Draft Time finished as set at the block chain";
 export const author = "clarkjoao";

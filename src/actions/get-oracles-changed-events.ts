@@ -6,7 +6,7 @@ import {OraclesChangedEvent} from "@taikai/dappkit/dist/src/interfaces/events/ne
 import {EventService} from "../services/event-service";
 
 export const name = "getOraclesChangedEvents";
-export const schedule = "*/30 * * * *"; // Each 30 minutes
+export const schedule = "*/30 * * * *";
 export const description = "Sync oracles data and update council's count";
 export const author = "clarkjoao";
 

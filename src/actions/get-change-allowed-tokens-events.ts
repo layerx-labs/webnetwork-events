@@ -6,7 +6,7 @@ import {EventService} from "../services/event-service";
 import {ChangeAllowedTokensEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-registry";
 
 export const name = "getChangeAllowedTokensEvents";
-export const schedule = "*/60 * * * *"; // every hour
+export const schedule = "*/60 * * * *";
 export const description = "retrieving bounty created events";
 export const author = "MarcusviniciusLsantos";
 
