@@ -8,7 +8,7 @@ import {NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {proposalStateProcessor} from "../modules/proposal-state-processor";
 
 export const name = "getBountyProposalDisputedEvents";
-export const schedule = "*/10 * * * *"; // Each 10 minutes
+export const schedule = "*/14 * * * *"; // Each 10 minutes
 export const description = "Sync proposal disputed events";
 export const author = "clarkjoao";
 

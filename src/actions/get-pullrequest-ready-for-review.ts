@@ -12,7 +12,7 @@ import {BountyPullRequestReadyForReviewEvent} from "@taikai/dappkit/dist/src/int
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 
 export const name = "getBountyPullRequestReadyForReviewEvents";
-export const schedule = "*/30 * * * *"; // Each 30 minutes
+export const schedule = "*/12 * * * *"; // Each 30 minutes
 export const description = "Sync pull-request created events";
 export const author = "clarkjoao";
 

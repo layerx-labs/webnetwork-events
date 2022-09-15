@@ -8,7 +8,7 @@ import {NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {validateProposal} from "../modules/proposal-validate-state";
 
 export const name = "getBountyProposalCreatedEvents";
-export const schedule = "*/10 * * * *"; // Each 10 minutes
+export const schedule = "*/13 * * * *"; // Each 10 minutes
 export const description = "Sync proposal created events";
 export const author = "clarkjoao";
 

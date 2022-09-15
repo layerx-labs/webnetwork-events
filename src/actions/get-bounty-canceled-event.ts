@@ -9,7 +9,7 @@ import {BountyCanceledEvent} from "@taikai/dappkit/dist/src/interfaces/events/ne
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 
 export const name = "getBountyCanceledEvents";
-export const schedule = "*/30 * * * *"; // Each 30 minuts
+export const schedule = "*/11 * * * *"; // Each 30 minuts
 export const description = "Move to 'Canceled' status the bounty";
 export const author = "clarkjoao";
 

@@ -12,7 +12,7 @@ import {BountyFunded} from "@taikai/dappkit/dist/src/interfaces/events/network-v
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 
 export const name = "getBountyFundedEvents";
-export const schedule = "*/10 * * * *"; // Each 10 minutes
+export const schedule = "*/14 * * * *"; // Each 10 minutes
 export const description = "retrieving bounty created events";
 export const author = "MarcusviniciusLsantos";
 
