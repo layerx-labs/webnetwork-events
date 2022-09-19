@@ -21,7 +21,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       const {tokens, operation, kind} = block.returnValues;
       const dbTokens = await db.tokens.findAll();
 
-      const onDatabase = (token) => tokens.includes(token.address);
+      const onDatabase = (address) => tokens.includes(address);
       const notOnDatabase = (token) => !dbTokens.some((t) => t.address === token);
 
       let result: number[]|string[] = [];
@@ -32,7 +32,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
             .filter(notOnDatabase)
             .map(async (tokenAddress) => {
               try {
-                const erc20 = new ERC20(network.connection, tokenAddress)
+                const erc20 = new ERC20(service.chainService.networkService.network?.connection, tokenAddress)
                 await erc20.loadContract();
                 await db.tokens.create({
                   name: await erc20.name(),
