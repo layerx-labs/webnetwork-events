@@ -13,44 +13,38 @@ export const author = "clarkjoao";
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
+  const service = new EventService(name, query);
 
-  try {
+  let councilAmount
+  let decimals;
 
-    const service = new EventService(name, query);
-    let councilAmount
-    let decimals;
+  const processor: BlockProcessor<OraclesChangedEvent> = async (block, network) => {
+    const {newLockedTotal, actor} = block.returnValues;
 
-    const processor: BlockProcessor<OraclesChangedEvent> = async (block, network) => {
-      const {newLockedTotal, actor} = block.returnValues;
+    const dbNetwork = await db.networks.findOne({where: {networkAddress: network.networkAddress}});
+    if (!dbNetwork)
+      return logger.error(`${name} Could not find network ${network.networkAddress}`);
 
-      const dbNetwork = await db.networks.findOne({where: {networkAddress: network.networkAddress}});
-      if (!dbNetwork)
-        return logger.error(`${name} Could not find network ${network.networkAddress}`);
+    if (!councilAmount)
+      councilAmount = await (service.Actor as Network_v2).councilAmount();
+    if (!decimals)
+      decimals = (service.Actor as Network_v2).networkToken.decimals;
 
-      if (!councilAmount)
-        councilAmount = await (service.Actor as Network_v2).councilAmount();
-      if (!decimals)
-        decimals = (service.Actor as Network_v2).networkToken.decimals;
+    const actorsNewTotal = fromSmartContractDecimals(newLockedTotal, decimals);
+    const networkCouncilMembers = network.councilMembers || [];
+    const actorExistsInDb = networkCouncilMembers.some(address => actor === address);
 
-      const actorsNewTotal = fromSmartContractDecimals(newLockedTotal, decimals);
-      const networkCouncilMembers = network.councilMembers || [];
-      const actorExistsInDb = networkCouncilMembers.some(address => actor === address);
+    if (actorExistsInDb && actorsNewTotal < councilAmount)
+      dbNetwork.councilMembers = networkCouncilMembers.filter(address => address !== actor);
+    else if (!actorExistsInDb && actorsNewTotal >= councilAmount)
+      dbNetwork.councilMembers = [...networkCouncilMembers, actor];
 
-      if (actorExistsInDb && actorsNewTotal < councilAmount)
-        dbNetwork.councilMembers = networkCouncilMembers.filter(address => address !== actor);
-      else if (!actorExistsInDb && actorsNewTotal >= councilAmount)
-        dbNetwork.councilMembers = [...networkCouncilMembers, actor];
+    await dbNetwork.save();
 
-      await dbNetwork.save();
-
-      eventsProcessed[network.name] = dbNetwork.councilMembers || [];
-    }
-
-    await service._processEvents(processor);
-
-  } catch (err) {
-    logger.error(`${name} Error`, err);
+    eventsProcessed[network.name] = dbNetwork.councilMembers || [];
   }
+
+  await service._processEvents(processor);
 
   return eventsProcessed;
 }

@@ -14,38 +14,31 @@ export const author = "MarcusviniciusLsantos";
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
+  const service = new EventService(name, query);
 
-  try {
+  const processor: BlockProcessor<BountyFunded> = async (block, network) => {
+    const {id,} = block.returnValues;
 
-    const service = new EventService(name, query);
+    const bounty = await (service.Actor as Network_v2).getBounty(+id);
+    if (!bounty)
+      return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
 
-    const processor: BlockProcessor<BountyFunded> = async (block, network) => {
-      const {id,} = block.returnValues;
+    const dbBounty = await db.issues.findOne({
+      where: {contractId: id, issueId: bounty.cid, network_id: network?.id,}});
 
-      const bounty = await (service.Actor as Network_v2).getBounty(+id);
-      if (!bounty)
-        return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
+    if (!dbBounty)
+      return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
 
-      const dbBounty = await db.issues.findOne({
-        where: {contractId: id, issueId: bounty.cid, network_id: network?.id,}});
+    dbBounty.amount =
+      dbBounty.fundedAmount =
+        bounty.funding.reduce((prev, current) => prev + +current.amount, 0);
 
-      if (!dbBounty)
-        return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
+    await dbBounty.save();
 
-      dbBounty.amount =
-        dbBounty.fundedAmount =
-          bounty.funding.reduce((prev, current) => prev + +current.amount, 0);
-
-      await dbBounty.save();
-
-      eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
-    }
-
-    await service._processEvents(processor);
-
-  } catch (err) {
-    logger.error(`${name} Error`, err);
+    eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
   }
+
+  await service._processEvents(processor);
 
   return eventsProcessed;
 }

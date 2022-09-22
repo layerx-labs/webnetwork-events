@@ -17,43 +17,37 @@ export const author = "clarkjoao";
 export async function action(
   query?: EventsQuery
 ): Promise<EventsProcessed> {
+
   const eventsProcessed: EventsProcessed = {};
+  const service = new EventService(name, query);
 
-  try {
-    const service = new EventService(name, query);
+  const processor: BlockProcessor<BountyCanceledEvent> = async (block, network) => {
+    const bounty = await (service.Actor as Network_v2).getBounty(block.returnValues.id);
+    if (!bounty)
+      return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, block.returnValues.id, network.networkAddress));
 
-    const processor: BlockProcessor<BountyCanceledEvent> = async (block, network) => {
-      const bounty = await (service.Actor as Network_v2).getBounty(block.returnValues.id);
-      if (!bounty)
-        return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, block.returnValues.id, network.networkAddress));
+    const dbBounty = await db.issues.findOne({
+        where: { contractId: block.returnValues.id, issueId: bounty.cid, network_id: network.id, },
+        include: [{ association: "token" }, { association: "repository" }],});
 
-      const dbBounty = await db.issues.findOne({
-          where: { contractId: block.returnValues.id, issueId: bounty.cid, network_id: network.id, },
-          include: [{ association: "token" }, { association: "repository" }],});
+    if (!dbBounty)
+      return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
 
-      if (!dbBounty)
-        return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
+    if (!dbBounty.githubId)
+      return logger.error(`${name} Bounty ${bounty.id} missing githubId`, bounty);
 
-      if (!dbBounty.githubId)
-        return logger.error(`${name} Bounty ${bounty.id} missing githubId`, bounty);
+    const [owner, repo] = slashSplit(dbBounty.repository.githubPath);
 
-      const [owner, repo] = slashSplit(dbBounty.repository.githubPath);
+    await GHService.issueClose(repo, owner, dbBounty.githubId)
+      .catch(e => logger.error(`${name} Failed to close ${owner}/${repo}/issues/${dbBounty.githubId}`, e));
 
-      await GHService.issueClose(repo, owner, dbBounty.githubId)
-        .catch(e => logger.error(`${name} Failed to close ${owner}/${repo}/issues/${dbBounty.githubId}`, e));
+    dbBounty.state = `canceled`;
+    await dbBounty.save();
 
-      dbBounty.state = `canceled`;
-      await dbBounty.save();
-
-      eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
-    }
-
-    await service._processEvents(processor);
-
-
-  } catch (err) {
-    logger.error(`Error ${name}: `, err);
+    eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
   }
+
+  await service._processEvents(processor);
 
   return eventsProcessed;
 }

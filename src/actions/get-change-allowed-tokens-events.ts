@@ -13,62 +13,55 @@ export const author = "MarcusviniciusLsantos";
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
+  const service = new EventService(name, query, true);
 
-  try {
+  const processor: BlockProcessor<ChangeAllowedTokensEvent> = async (block, network) => {
+    const {tokens, operation, kind} = block.returnValues as any;
+    const dbTokens = await db.tokens.findAll();
 
-    const service = new EventService(name, query, true);
+    const onDatabase = (address) => tokens.includes(address);
+    const notOnDatabase = (token) => !dbTokens.some((t) => t.address === token);
 
-    const processor: BlockProcessor<ChangeAllowedTokensEvent> = async (block, network) => {
-      const {tokens, operation, kind} = block.returnValues as any;
-      const dbTokens = await db.tokens.findAll();
+    let result: number[]|string[] = [];
 
-      const onDatabase = (address) => tokens.includes(address);
-      const notOnDatabase = (token) => !dbTokens.some((t) => t.address === token);
+    if (operation === "add")
+      result = await Promise.all(
+        tokens
+          .filter(notOnDatabase)
+          .map(async (tokenAddress) => {
+            try {
+              const erc20 = new ERC20(service.web3Connection, tokenAddress)
+              await erc20.loadContract();
+              await db.tokens.create({
+                name: await erc20.name(),
+                symbol: await erc20.symbol(),
+                address: tokenAddress,
+                isTransactional: kind === "transactional"
+              });
 
-      let result: number[]|string[] = [];
+              return tokenAddress;
+            } catch (e) {
+              logger.warn(`${name} Failed to create ${tokenAddress} in database`, e);
+              return;
+            }
+          }));
+    else if (operation === "remove")
+      result = await Promise.all(
+        tokens
+          .filter(onDatabase)
+          .map(address => dbTokens.find(t => t.address === address))
+          .map(async (token) => {
+            const removed = await db.network_tokens.destroy({where: {tokenId: token.id}});
+            if (!removed)
+              logger.warn(`${name} Failed to remove ${token.id}`);
+            return removed > 0;
+          })
+      )
 
-      if (operation === "add")
-        result = await Promise.all(
-          tokens
-            .filter(notOnDatabase)
-            .map(async (tokenAddress) => {
-              try {
-                const erc20 = new ERC20(service.web3Connection, tokenAddress)
-                await erc20.loadContract();
-                await db.tokens.create({
-                  name: await erc20.name(),
-                  symbol: await erc20.symbol(),
-                  address: tokenAddress,
-                  isTransactional: kind === "transactional"
-                });
-
-                return tokenAddress;
-              } catch (e) {
-                logger.warn(`${name} Failed to create ${tokenAddress} in database`, e);
-                return;
-              }
-            }));
-      else if (operation === "remove")
-        result = await Promise.all(
-          tokens
-            .filter(onDatabase)
-            .map(address => dbTokens.find(t => t.address === address))
-            .map(async (token) => {
-              const removed = await db.network_tokens.destroy({where: {tokenId: token.id}});
-              if (!removed)
-                logger.warn(`${name} Failed to remove ${token.id}`);
-              return removed > 0;
-            })
-        )
-
-      eventsProcessed[network.name] = result.map(n => n.toString());
-    }
-
-    await service._processEvents(processor);
-
-  } catch (err) {
-    logger.error(`${name} Error`, err);
+    eventsProcessed[network.name] = result.map(n => n.toString());
   }
+
+  await service._processEvents(processor);
 
   return eventsProcessed;
 }

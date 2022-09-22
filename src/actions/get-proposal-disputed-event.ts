@@ -12,17 +12,12 @@ export const author = "clarkjoao";
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   let eventsProcessed: EventsProcessed = {};
 
-  try {
+  const _service = new EventService<BountyProposalDisputedEvent>(name, query);
 
-    const _service = new EventService<BountyProposalDisputedEvent>(name, query);
+  await _service._processEvents(
+    async (block, network) => {
+      eventsProcessed = await proposalStateProcessor(block, network, _service, eventsProcessed);
+    });
 
-    await _service._processEvents(
-      async (block, network) => {
-        eventsProcessed = await proposalStateProcessor(block, network, _service, eventsProcessed);
-      });
-
-  } catch (err) {
-    logger.error(`${name} Error`, err);
-  }
   return eventsProcessed;
 }

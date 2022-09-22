@@ -33,49 +33,44 @@ async function validateToken(connection: Web3Connection, address, isTransactiona
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
+  const service = new EventService(name, query);
 
-  try {
+  const processor: BlockProcessor<BountyCreatedEvent> = async (block, network) => {
+    const {id, cid: issueId} = block.returnValues;
 
-    const service = new EventService(name, query);
+    const bounty = await (service.Actor as Network_v2).getBounty(+id);
+    if (!bounty)
+      return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
 
-    const processor: BlockProcessor<BountyCreatedEvent> = async (block, network) => {
-      const {id, cid: issueId} = block.returnValues;
+    const dbBounty = await db.issues.findOne({where: {issueId, network_id: network.id}});
+    if (!dbBounty)
+      return logger.error(DB_BOUNTY_NOT_FOUND(name, issueId, network.id));
 
-      const bounty = await (service.Actor as Network_v2).getBounty(+id);
-      if (!bounty)
-        return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
+    if (dbBounty.state !== "pending")
+      return logger.info(`${name} Bounty ${issueId} was already parsed.`);
 
-      const dbBounty = await db.issues.findOne({where: {issueId, network_id: network.id}});
-      if (!dbBounty)
-        return logger.error(DB_BOUNTY_NOT_FOUND(name, issueId, network.id));
+    dbBounty.state = "draft";
+    dbBounty.creatorAddress = bounty.creator;
+    dbBounty.creatorGithub = bounty.githubUser;
+    dbBounty.amount = +bounty.tokenAmount;
+    dbBounty.fundingAmount = +bounty.fundingAmount;
+    dbBounty.branch = bounty.branch;
+    dbBounty.title = bounty.title;
+    dbBounty.contractId = +id;
 
-      if (dbBounty.state !== "pending")
-        return logger.info(`${name} Bounty ${issueId} was already parsed.`);
+    const tokenId = await validateToken(service.web3Connection, bounty.transactional, true);
+    if (!tokenId)
+      logger.info(`Failed to validate token ${bounty.transactional}`)
+    else dbBounty.tokenId = tokenId;
 
-      dbBounty.state = "draft";
-      dbBounty.creatorAddress = bounty.creator;
-      dbBounty.creatorGithub = bounty.githubUser;
-      dbBounty.amount = +bounty.tokenAmount;
-      dbBounty.fundingAmount = +bounty.fundingAmount;
-      dbBounty.branch = bounty.branch;
-      dbBounty.title = bounty.title;
-      dbBounty.contractId = +id;
+    await dbBounty.save();
 
-      const tokenId = await validateToken(service.web3Connection, bounty.transactional, true);
-      if (!tokenId)
-        logger.info(`Failed to validate token ${bounty.transactional}`)
-      else dbBounty.tokenId = tokenId;
+    eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
 
-      await dbBounty.save();
-
-      eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
-
-    }
-
-    await service._processEvents(processor);
-
-  } catch (err) {
-    logger.error(`${name} Error`, err);
   }
+
+  await service._processEvents(processor);
+
+
   return eventsProcessed;
 }

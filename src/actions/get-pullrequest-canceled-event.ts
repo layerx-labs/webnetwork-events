@@ -26,48 +26,43 @@ async function closePullRequest(bounty: Bounty, pullRequest: PullRequest) {
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  try {
+  const service = new EventService(name, query);
 
-    const service = new EventService(name, query);
+  const processor: BlockProcessor<BountyPullRequestCanceledEvent> = async (block, network) => {
+    const {bountyId, pullRequestId} = block.returnValues;
 
-    const processor: BlockProcessor<BountyPullRequestCanceledEvent> = async (block, network) => {
-      const {bountyId, pullRequestId} = block.returnValues;
+    const bounty = await (service.Actor as Network_v2).getBounty(bountyId);
+    if (!bounty)
+      return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
-      const bounty = await (service.Actor as Network_v2).getBounty(bountyId);
-      if (!bounty)
-        return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
+    const dbBounty = await db.issues.findOne({
+      where: { contractId: bounty.id, network_id: network.id }, include: [{association: "repository"}]});
+    if (!dbBounty)
+      return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
 
-      const dbBounty = await db.issues.findOne({
-        where: { contractId: bounty.id, network_id: network.id }, include: [{association: "repository"}]});
-      if (!dbBounty)
-        return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
+    const pullRequest = bounty.pullRequests[pullRequestId];
 
-      const pullRequest = bounty.pullRequests[pullRequestId];
+    const dbPullRequest = await db.pull_requests.findOne({
+      where:{ issueId: dbBounty.id, githubId: pullRequest.cid.toString(), contractId: pullRequest.id}});
 
-      const dbPullRequest = await db.pull_requests.findOne({
-        where:{ issueId: dbBounty.id, githubId: pullRequest.cid.toString(), contractId: pullRequest.id}});
+    if (!dbPullRequest)
+      return logger.error(`${name} Pull request ${pullRequest.cid} not found in database`, bounty)
 
-      if (!dbPullRequest)
-        return logger.error(`${name} Pull request ${pullRequest.cid} not found in database`, bounty)
+    await closePullRequest(dbBounty, dbPullRequest);
 
-      await closePullRequest(dbBounty, dbPullRequest);
+    dbPullRequest.status = "canceled";
+    await dbPullRequest.save();
 
-      dbPullRequest.status = "canceled";
-      await dbPullRequest.save();
-
-      if (bounty.pullRequests.some(({ready, canceled}) => ready && !canceled)) {
-        dbBounty.state = "open";
-        await dbBounty.save();
-      }
-
-      eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
+    if (bounty.pullRequests.some(({ready, canceled}) => ready && !canceled)) {
+      dbBounty.state = "open";
+      await dbBounty.save();
     }
 
-    await service._processEvents(processor);
-
-  } catch (err) {
-    logger.error(`${name} Error`, err);
+    eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
   }
+
+  await service._processEvents(processor);
+
 
   return eventsProcessed;
 }

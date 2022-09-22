@@ -68,6 +68,16 @@ export class EventService<E = any> {
     if (!allNetworks.length)
       return {};
 
+    if (this.query?.networkName) {
+      const _network = allNetworks.find(({name: n}) => n === this.query?.networkName);
+      if (_network)
+        allNetworks.splice(0, allNetworks.length, _network);
+      else {
+        loggerHandler.warn(`${this.name} found no network ${this.query?.networkName}`, allNetworks);
+        return {}
+      }
+    }
+
     const lastReadBlock = await db.chain_events.findOne({where: {name: this.name}});
     if (!lastReadBlock) {
       loggerHandler.warn(`${this.name} had no entry on chain_events`)
@@ -99,9 +109,9 @@ export class EventService<E = any> {
     const perRequest = +(process.env.EVENTS_PER_REQUEST || 1500);
     const networkMap = allNetworks.reduce((prev, curr) => prev = {...prev, [curr.networkAddress!]: curr}, {})
 
-    let toBlock = 0;
 
-    for (let fromBlock = startBlock; fromBlock <= endBlock; fromBlock += perRequest) {
+    let toBlock = 0;
+    for (let fromBlock = startBlock; fromBlock < endBlock; fromBlock += perRequest) {
       toBlock = fromBlock + perRequest > endBlock ? endBlock : fromBlock + perRequest;
 
       loggerHandler.log(`${this.name} Fetching events from ${fromBlock} to ${toBlock}`);
@@ -133,10 +143,10 @@ export class EventService<E = any> {
     loggerHandler.info(`${this.name} start`);
 
     try {
+
       for (const [networkAddress, {info, returnValues}] of Object.entries(await this._getEventsOfNetworks())) {
         await this.loadActorWithAddress(networkAddress);
         await Promise.all(returnValues.map(event => blockProcessor(event, info)));
-
       }
 
       if (!this.query || !this.query?.networkName)

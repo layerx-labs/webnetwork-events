@@ -13,29 +13,23 @@ export const author = "vhcsilva";
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  try {
+  const processor: BlockProcessor<NetworkCreatedEvent> = async (block, network) => {
+    const {network: createdNetworkAddress} = block.returnValues;
 
-    const processor: BlockProcessor<NetworkCreatedEvent> = async (block, network) => {
-      const {network: createdNetworkAddress} = block.returnValues;
+    if (network.isRegistered && network.networkAddress === createdNetworkAddress)
+      return logger.warn(`${name} ${createdNetworkAddress} was already registered`);
 
-      if (network.isRegistered && network.networkAddress === createdNetworkAddress)
-        return logger.warn(`${name} ${createdNetworkAddress} was already registered`);
-
-      const updated =
-        !network.isRegistered && network.networkAddress === createdNetworkAddress
-          ? await db.networks.update({isRegistered: true}, {where: {networkAddress: network.networkAddress}})
-          : [0]
+    const updated =
+      !network.isRegistered && network.networkAddress === createdNetworkAddress
+        ? await db.networks.update({isRegistered: true}, {where: {networkAddress: network.networkAddress}})
+        : [0]
 
 
-      logger.warn(`${name} ${updated[0] > 0 ? 'Registered' : 'Failed to register'} ${createdNetworkAddress}`)
-      eventsProcessed[network.name!] = [network.networkAddress!];
-    }
-
-    await (new EventService(name, query, true))._processEvents(processor);
-
-  } catch (err) {
-    logger.error(`${name} Error`, err);
+    logger.warn(`${name} ${updated[0] > 0 ? 'Registered' : 'Failed to register'} ${createdNetworkAddress}`)
+    eventsProcessed[network.name!] = [network.networkAddress!];
   }
+
+  await (new EventService(name, query, true))._processEvents(processor);
 
   return eventsProcessed;
 }
