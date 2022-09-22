@@ -4,9 +4,10 @@ import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {slashSplit} from "src/utils/string";
 import {EventService} from "../services/event-service";
-import {XEvents} from "@taikai/dappkit";
 import {BountyCanceledEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
+import {BlockProcessor} from "../interfaces/block-processor";
+import {Network_v2} from "@taikai/dappkit";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -21,8 +22,8 @@ export async function action(
   try {
     const service = new EventService(name, query);
 
-    const processor = async (block: XEvents<BountyCanceledEvent>, network) => {
-      const bounty = await service.chainService.networkService.network.getBounty(block.returnValues.id);
+    const processor: BlockProcessor<BountyCanceledEvent> = async (block, network) => {
+      const bounty = await (service.Actor as Network_v2).getBounty(block.returnValues.id);
       if (!bounty)
         return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, block.returnValues.id, network.networkAddress));
 
@@ -47,7 +48,7 @@ export async function action(
       eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
     }
 
-    await service.processEvents(processor);
+    await service._processEvents(processor);
 
 
   } catch (err) {

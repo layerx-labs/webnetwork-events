@@ -13,7 +13,7 @@ const {
 const LOG_LEVEL = process.env.LOG_LEVEL ? parseInt(process.env.LOG_LEVEL, 10) : DebugLevel.log;
 
 const output = (level, message, rest) => { // eslint-disable-line
-  if (LOG_LEVEL && LOG_LEVEL <= +DebugLevel[level])
+  if (LOG_LEVEL && LOG_LEVEL < +DebugLevel[level])
     return;
 
   let _rest;

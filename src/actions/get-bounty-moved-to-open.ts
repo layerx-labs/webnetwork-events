@@ -1,15 +1,12 @@
-import { subMilliseconds } from "date-fns";
-import { Op } from "sequelize";
 import db from "src/db";
-import {
-  BountiesProcessed,
-  EventsProcessed,
-  EventsQuery,
-} from "src/interfaces/block-chain-service";
-import BlockChainService from "src/services/block-chain-service";
 import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
+import loggerHandler from "src/utils/logger-handler";
+import { subMilliseconds } from "date-fns";
+import { Op } from "sequelize";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import { slashSplit } from "src/utils/string";
+import {Network_v2, Web3Connection} from "@taikai/dappkit";
 
 
 export const name = "get-bounty-moved-to-open";
@@ -18,6 +15,8 @@ export const description =
   "move to 'OPEN' all 'DRAFT' bounties that have Draft Time finished as set at the block chain";
 export const author = "clarkjoao";
 
+const {NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey,} = process.env;
+
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
@@ -25,29 +24,28 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     logger.info(`${name} start`);
 
-    const service = new BlockChainService();
+    const web3Connection = new Web3Connection({web3Host, privateKey});
+    await web3Connection.start();
 
-    await service.init(name);
+    const networks = await db.networks.findAll({where: {isRegistered: true}, raw: true});
+    if (!networks || !networks.length) {
+      loggerHandler.warn(`${name} found no networks`);
+      return eventsProcessed;
+    }
 
-    for (const network of await service.getNetworks()) {
-      logger.info(`${name} listing bounties for ${network.networkAddress}`);
+    for (const {networkAddress, id: network_id, name: networkName} of networks) {
+      const _network = new Network_v2(web3Connection, networkAddress);
+      const draftTime = await _network.draftTime();
+      const bounties =
+        await db.issues.findAll({
+          where: {
+            createdAt: {[Op.lt]: subMilliseconds(+new Date(), draftTime)},
+            network_id,
+            state: "draft"
+          }
+        });
 
-      if (!(await service.networkService.loadNetwork(network?.networkAddress))) {
-        logger.error(`${name} Failed to load network ${network.networkAddress}`, network);
-        continue;
-      }
-
-      const redeemTime = await service.networkService.network.draftTime();
-
-      const bounties = await db.issues.findAll({
-        where: {
-          createdAt: { [Op.lt]: subMilliseconds(+new Date(), redeemTime) },
-          network_id: network.id,
-          state: "draft",},
-        include: [{ association: "token" }, { association: "repository" }],
-      });
-
-      logger.info(`${name} Found ${bounties.length} draft bounties on ${network.networkAddress}`);
+      loggerHandler.info(`${name} found ${bounties.length} draft bounties on ${networkAddress}`);
 
       if (!bounties || !bounties.length)
         continue;
@@ -75,13 +73,16 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         dbBounty.state = "open";
         await dbBounty.save();
 
-        eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: null}};
+        eventsProcessed[networkName] = {
+          ...eventsProcessed[networkName],
+          [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: null}
+        };
 
         logger.info(`${name} Parsed bounty ${dbBounty.issueId}`);
-      }
 
-      logger.info(`${name} finished`)
+      }
     }
+
   } catch (err) {
     logger.error(`${name} Error`, err);
   }
