@@ -5,7 +5,7 @@ import {NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import validateProposalState, {validateProposal} from "./proposal-validate-state";
 import {name} from "../actions/get-bounty-funded-updated-event";
 
-export async function proposalStateProcessor(block: XEvents<BountyProposalDisputedEvent>, network, _service, eventsProcessed) {
+export async function proposalStateProcessor(block: BountyProposalDisputedEvent, network, _service, eventsProcessed) {
   const {bountyId, prId, proposalId,} = block.returnValues;
 
   const bounty = await _service.chainService.networkService.network.getBounty(bountyId);

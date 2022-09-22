@@ -1,9 +1,10 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
-import {ERC20, XEvents} from "@taikai/dappkit";
+import {ERC20,} from "@taikai/dappkit";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {EventService} from "../services/event-service";
 import {ChangeAllowedTokensEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-registry";
+import {BlockProcessor} from "../interfaces/block-processor";
 
 export const name = "getChangeAllowedTokensEvents";
 export const schedule = "*/60 * * * *";
@@ -17,8 +18,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     const service = new EventService(name, query, true);
 
-    const processor = async (block: XEvents<ChangeAllowedTokensEvent>, network) => {
-      const {tokens, operation, kind} = block.returnValues;
+    const processor: BlockProcessor<ChangeAllowedTokensEvent> = async (block, network) => {
+      const {tokens, operation, kind} = block.returnValues as any;
       const dbTokens = await db.tokens.findAll();
 
       const onDatabase = (address) => tokens.includes(address);
@@ -32,7 +33,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
             .filter(notOnDatabase)
             .map(async (tokenAddress) => {
               try {
-                const erc20 = new ERC20(service.chainService.networkService.network?.connection, tokenAddress)
+                const erc20 = new ERC20(service.web3Connection, tokenAddress)
                 await erc20.loadContract();
                 await db.tokens.create({
                   name: await erc20.name(),
@@ -63,7 +64,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       eventsProcessed[network.name] = result.map(n => n.toString());
     }
 
-    await service.processEvents(processor);
+    await service._processEvents(processor);
 
   } catch (err) {
     logger.error(`${name} Error`, err);

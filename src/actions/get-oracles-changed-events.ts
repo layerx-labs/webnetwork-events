@@ -1,9 +1,10 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
-import {fromSmartContractDecimals, XEvents} from "@taikai/dappkit";
+import {fromSmartContractDecimals, Network_v2,} from "@taikai/dappkit";
 import {EventsProcessed,EventsQuery,} from "src/interfaces/block-chain-service";
 import {OraclesChangedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {EventService} from "../services/event-service";
+import {BlockProcessor} from "../interfaces/block-processor";
 
 export const name = "getOraclesChangedEvents";
 export const schedule = "*/30 * * * *";
@@ -19,7 +20,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     let councilAmount
     let decimals;
 
-    const processor = async (block: XEvents<OraclesChangedEvent>, network) => {
+    const processor: BlockProcessor<OraclesChangedEvent> = async (block, network) => {
       const {newLockedTotal, actor} = block.returnValues;
 
       const dbNetwork = await db.networks.findOne({where: {networkAddress: network.networkAddress}});
@@ -27,9 +28,9 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         return logger.error(`${name} Could not find network ${network.networkAddress}`);
 
       if (!councilAmount)
-        councilAmount = await service.chainService.networkService.network.councilAmount();
+        councilAmount = await (service.Actor as Network_v2).councilAmount();
       if (!decimals)
-        decimals = service.chainService.networkService.network.networkToken.decimals;
+        decimals = (service.Actor as Network_v2).networkToken.decimals;
 
       const actorsNewTotal = fromSmartContractDecimals(newLockedTotal, decimals);
       const networkCouncilMembers = network.councilMembers || [];
@@ -45,7 +46,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       eventsProcessed[network.name] = dbNetwork.councilMembers || [];
     }
 
-    await service.processEvents(processor);
+    await service._processEvents(processor);
 
   } catch (err) {
     logger.error(`${name} Error`, err);

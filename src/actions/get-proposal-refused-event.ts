@@ -16,9 +16,9 @@ export async function action(
 
   try {
 
-    const _service = new EventService(name, query);
+    const _service = new EventService<BountyProposalRefusedEvent>(name, query);
 
-    await _service.processEvents<BountyProposalRefusedEvent>(
+    await _service._processEvents(
       async (block, network) => {
         eventsProcessed = await proposalStateProcessor(block, network, _service, eventsProcessed);
       })

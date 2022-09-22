@@ -4,10 +4,11 @@ import GHService from "src/services/github";
 import {EventsProcessed,EventsQuery,} from "src/interfaces/block-chain-service";
 import {Bounty, PullRequest} from "src/interfaces/bounties";
 import {slashSplit} from "src/utils/string";
-import {XEvents} from "@taikai/dappkit";
 import {BountyPullRequestCanceledEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {EventService} from "../services/event-service";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
+import {BlockProcessor} from "../interfaces/block-processor";
+import {Network_v2} from "@taikai/dappkit";
 
 export const name = "getBountyPullRequestCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -29,10 +30,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     const service = new EventService(name, query);
 
-    const processor = async (block: XEvents<BountyPullRequestCanceledEvent>, network) => {
+    const processor: BlockProcessor<BountyPullRequestCanceledEvent> = async (block, network) => {
       const {bountyId, pullRequestId} = block.returnValues;
 
-      const bounty = await service.chainService.networkService.network.getBounty(bountyId);
+      const bounty = await (service.Actor as Network_v2).getBounty(bountyId);
       if (!bounty)
         return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
@@ -62,7 +63,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
     }
 
-    await service.processEvents(processor);
+    await service._processEvents(processor);
 
   } catch (err) {
     logger.error(`${name} Error`, err);

@@ -1,15 +1,11 @@
 import db from "src/db";
-import {
-  BountiesProcessed,
-  EventsProcessed,
-  EventsQuery,
-} from "src/interfaces/block-chain-service";
-import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
+import { EventsProcessed, EventsQuery, } from "src/interfaces/block-chain-service";
 import {EventService} from "../services/event-service";
-import {XEvents} from "@taikai/dappkit";
 import {BountyPullRequestReadyForReviewEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
+import {BlockProcessor} from "../interfaces/block-processor";
+import {Network_v2} from "@taikai/dappkit";
 
 export const name = "getBountyPullRequestReadyForReviewEvents";
 export const schedule = "*/12 * * * *";
@@ -23,10 +19,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     const service = new EventService(name, query);
 
-    const processor = async (block: XEvents<BountyPullRequestReadyForReviewEvent>, network) => {
+    const processor: BlockProcessor<BountyPullRequestReadyForReviewEvent> = async (block, network) => {
       const {bountyId, pullRequestId} = block.returnValues;
 
-      const bounty = await service.chainService.networkService.network.getBounty(bountyId);
+      const bounty = await (service.Actor as Network_v2).getBounty(bountyId);
       if (!bounty)
         return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
@@ -56,7 +52,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
     }
 
-    await service.processEvents(processor);
+    await service._processEvents(processor);
 
   } catch (err) {
     logger.error(`${name} Error`, err);

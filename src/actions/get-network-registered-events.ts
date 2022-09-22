@@ -2,8 +2,8 @@ import db from "src/db";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {EventService} from "../services/event-service";
-import {XEvents} from "@taikai/dappkit";
 import {NetworkCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-factory-v2-events";
+import {BlockProcessor} from "../interfaces/block-processor";
 
 export const name = "getNetworkRegisteredEvents";
 export const schedule = "*/10 * * * *";
@@ -15,7 +15,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
   try {
 
-    const processor = async (block: XEvents<NetworkCreatedEvent>, network) => {
+    const processor: BlockProcessor<NetworkCreatedEvent> = async (block, network) => {
       const {network: createdNetworkAddress} = block.returnValues;
 
       if (network.isRegistered && network.networkAddress === createdNetworkAddress)
@@ -31,7 +31,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       eventsProcessed[network.name!] = [network.networkAddress!];
     }
 
-    await (new EventService(name, query, true)).processEvents(processor);
+    await (new EventService(name, query, true))._processEvents(processor);
 
   } catch (err) {
     logger.error(`${name} Error`, err);

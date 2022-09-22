@@ -1,25 +1,23 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
 import NetworkService from "src/services/network-service";
-import {ERC20, XEvents} from "@taikai/dappkit";
+import {ERC20, Network_v2, Web3Connection,} from "@taikai/dappkit";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {EventService} from "../services/event-service";
 import {BountyCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
+import {BlockProcessor} from "../interfaces/block-processor";
 
 export const name = "getBountyCreatedEvents";
 export const schedule = "*/10 * * * *";
 export const description = "sync bounty data and move to 'DRAFT;";
 export const author = "clarkjoao";
 
-async function validateToken(networkService: NetworkService, address, isTransactional): Promise<number> {
+async function validateToken(connection: Web3Connection, address, isTransactional): Promise<number> {
   let token = await db.tokens.findOne({where: {address},});
 
   if (!token?.id) {
-    const erc20 = new ERC20(
-      networkService?.network?.connection,
-      address
-    );
+    const erc20 = new ERC20(connection, address);
 
     await erc20.loadContract();
 
@@ -40,10 +38,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     const service = new EventService(name, query);
 
-    const processor = async (block: XEvents<BountyCreatedEvent>, network) => {
+    const processor: BlockProcessor<BountyCreatedEvent> = async (block, network) => {
       const {id, cid: issueId} = block.returnValues;
 
-      const bounty = await service.chainService.networkService.network.getBounty(id);
+      const bounty = await (service.Actor as Network_v2).getBounty(+id);
       if (!bounty)
         return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
 
@@ -61,9 +59,9 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       dbBounty.fundingAmount = +bounty.fundingAmount;
       dbBounty.branch = bounty.branch;
       dbBounty.title = bounty.title;
-      dbBounty.contractId = id;
+      dbBounty.contractId = +id;
 
-      const tokenId = await validateToken(service.chainService.networkService, bounty.transactional, true);
+      const tokenId = await validateToken(service.web3Connection, bounty.transactional, true);
       if (!tokenId)
         logger.info(`Failed to validate token ${bounty.transactional}`)
       else dbBounty.tokenId = tokenId;
@@ -74,7 +72,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     }
 
-    await service.processEvents<BountyCreatedEvent>(processor);
+    await service._processEvents(processor);
 
   } catch (err) {
     logger.error(`${name} Error`, err);
