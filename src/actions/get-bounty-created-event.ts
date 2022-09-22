@@ -50,7 +50,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         return logger.error(DB_BOUNTY_NOT_FOUND(name, issueId, network.id));
 
       if (dbBounty.state !== "pending")
-        return logger.info(`Bounty ${issueId} was already parsed.`);
+        return logger.info(`${name} Bounty ${issueId} was already parsed.`);
 
       dbBounty.state = "draft";
       dbBounty.creatorAddress = bounty.creator;
