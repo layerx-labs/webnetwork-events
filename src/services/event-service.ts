@@ -92,7 +92,8 @@ export class EventService<E = any> {
     }
 
     const eth = this.web3Connection.eth;
-    const endBlock = await eth.getBlockNumber();
+    const startBlock = this.query?.blockQuery?.from || lastReadBlock.lastBlock || 0;
+    const endBlock = this.query?.blockQuery?.to || await eth.getBlockNumber();
     const topics = [eth.abi.encodeEventSignature(event)];
     const events: Log[] = [];
     const perRequest = +(process.env.EVENTS_PER_REQUEST || 1500);
@@ -100,7 +101,7 @@ export class EventService<E = any> {
 
     let toBlock = 0;
 
-    for (let fromBlock = lastReadBlock.lastBlock || 0; fromBlock <= endBlock; fromBlock += perRequest) {
+    for (let fromBlock = startBlock; fromBlock <= endBlock; fromBlock += perRequest) {
       toBlock = fromBlock + perRequest > endBlock ? endBlock : fromBlock + perRequest;
 
       loggerHandler.log(`${this.name} Fetching events from ${fromBlock} to ${toBlock}`);
