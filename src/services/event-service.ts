@@ -9,9 +9,10 @@ import {networksAttributes} from "../db/models/networks";
 
 const {NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey,} = process.env;
 
-type EventsPerNetwork<T = any> = {[networkAddress: string]: {info: networksAttributes, returnValues: T[]}[]}
+type EventsPerNetwork<T = any> = {[networkAddress: string]: {info: networksAttributes, returnValues: T[]}}
 
 export class EventService<E = any> {
+  #lastFromBlock: number = 0;
   #Actor: Network_v2|NetworkRegistry;
   get Actor() { return this.#Actor; }
 
@@ -21,23 +22,47 @@ export class EventService<E = any> {
               readonly chainService = new BlockChainService(),
               readonly web3Connection = new Web3Connection({web3Host, privateKey})) {}
 
-  async _getEventsOfNetworks(): Promise<EventsPerNetwork> {
-
-    const warn = (text, ret = {}) => {
-      loggerHandler.warn(text);
-      return ret;
+  async getAllNetworks() {
+    const allNetworks = await db.networks.findAll({where: {isRegistered: true}, raw: true});
+    if (!allNetworks.length) {
+      loggerHandler.warn(`${this.name} No networks found`);
+      return []
     }
+
+    return allNetworks;
+  }
+
+  async saveLastFromBlock() {
+    const dbEvent = await db.chain_events.findOne({where: {name: this.name}});
+    if (!this.#lastFromBlock) {
+      loggerHandler.warn(`${this.name} had no #lastFromBlock`);
+      return false;
+    }
+
+    if (!dbEvent) {
+      loggerHandler.warn(`${this.name} not found on db`);
+      return false;
+    }
+
+    dbEvent.lastBlock = this.#lastFromBlock;
+    await dbEvent.save();
+    loggerHandler.log(`${this.name} saved #lastFromBlock: ${this.#lastFromBlock}`);
+    return true;
+  }
+
+  async _getEventsOfNetworks(): Promise<EventsPerNetwork> {
 
     this.web3Connection.start();
 
-    const allNetworks = await db.networks.findAll({where: {isRegistered: true}, raw: true});
+    const allNetworks = await this.getAllNetworks();
     if (!allNetworks.length)
-      return warn(`${this.name} No networks found when`);
+      return {};
 
     const lastReadBlock = await db.chain_events.findOne({where: {name: this.name}});
-    if (!lastReadBlock)
-      return warn(`${this.name} had no entry on chain_events`);
-
+    if (!lastReadBlock) {
+      loggerHandler.warn(`${this.name} had no entry on chain_events`)
+      return {};
+    }
 
     if (this.fromRegistry)
       this.#Actor = new NetworkRegistry(this.web3Connection);
@@ -55,38 +80,50 @@ export class EventService<E = any> {
     const topics = [eth.abi.encodeEventSignature(event)];
     const events: Log[] = [];
     const perRequest = +(process.env.EVENTS_PER_REQUEST || 1500);
+    const networkMap = allNetworks.reduce((prev, curr) => prev = {...prev, [curr.networkAddress!]: curr}, {})
 
-    for (let fromBlock = lastReadBlock.lastBlock!; fromBlock <= toBlock; fromBlock += perRequest) {
+    for (let fromBlock = lastReadBlock.lastBlock || 0; fromBlock <= toBlock; fromBlock += perRequest) {
       if (fromBlock + perRequest >= toBlock)
         fromBlock = toBlock;
 
       loggerHandler.log(`${this.name} Fetching events from ${fromBlock} to ${toBlock}`);
 
-      events.push(...await eth.getPastLogs({fromBlock, toBlock, topics}))
+      events.push(...await eth.getPastLogs({fromBlock, toBlock, topics}));
+
+      this.#lastFromBlock = fromBlock;
     }
-
-    loggerHandler.log(`${this.name} Got ${events.length} events`);
-
-    const _networks = allNetworks.map(({networkAddress}) => networkAddress);
 
     const mapEvent = ({address, data, topics}) =>
       ({address, returnValues: eth.abi.decodeLog(event.inputs || [], data, event.anonymous ? topics : topics.slice(1))})
 
     const reduceEvents = (previous, {address, returnValues: event}) => {
       if (!previous[address])
-        previous[address] = {info: allNetworks.find(({networkAddress}) => networkAddress === address)};
+        previous[address] = {info: networkMap[address]};
 
       return ({...previous, [address]: {...previous[address], returnValues: [...previous[address].returnValues, event]}})
     }
 
-    return events
-        .filter(({address}) => _networks.includes(address))
-        .map(mapEvent)
-        .reduce(reduceEvents, {});
+    const eventsToParse = events.filter(({address}) => networkMap[address]);
+
+    loggerHandler.log(`${this.name} Got ${eventsToParse.length} events with matching topics`);
+
+    return eventsToParse.map(mapEvent).reduce(reduceEvents, {})
   }
 
   async _processEvents(blockProcessor: BlockProcessor<E>) {
-    const eventsPerNetwork = await this._getEventsOfNetworks();
+    loggerHandler.info(`${this.name} start`);
+
+    for (const [networkAddress, {info, returnValues}] of Object.entries(await this._getEventsOfNetworks()))
+      await Promise.all(
+        returnValues.map(event => {
+          loggerHandler.log(`${this.name} (${networkAddress}) processing`, event);
+          return blockProcessor(event, info);
+        }));
+
+    if (!this.query || !this.query?.networkName)
+      await this.saveLastFromBlock();
+
+    loggerHandler.info(`${this.name} finished`);
   }
 
   async getEvents() {
