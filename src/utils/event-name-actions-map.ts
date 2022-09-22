@@ -8,6 +8,7 @@ export const EventNameActionsMap = {
   getNetworkRegisteredEvents: 'NetworkRegistered',
   getOraclesChangedEvents: 'OraclesChanged',
   getBountyProposalCreatedEvents: 'BountyProposalCreated',
+  getBountyProposalDisputedEvents: 'BountyProposalDisputed',
   getBountyProposalRefusedEvents: 'BountyProposalRefused',
   getBountyPullRequestCanceledEvents: 'BountyPullRequestCanceled',
   getBountyPullRequestCreatedEvents: 'BountyPullRequestCreated',

@@ -22,6 +22,16 @@ export class EventService<E = any> {
               readonly fromRegistry = false,
               readonly web3Connection = new Web3Connection({web3Host, privateKey})) {}
 
+  async loadActorWithAddress(address: string) {
+    try {
+      this.#Actor = new (this.fromRegistry ? NetworkRegistry : Network_v2)(this.web3Connection, address);
+      await this.#Actor.loadContract();
+      loggerHandler.log(`${this.name} loaded contract (${address})`);
+    } catch (e) {
+      loggerHandler.error(`${this.name} failed to load actor`, {address, isRegistry: this.fromRegistry});
+    }
+  }
+
   async getAllNetworks() {
     const allNetworks = await db.networks.findAll({where: {isRegistered: true}, raw: true});
     if (!allNetworks.length) {
@@ -97,7 +107,7 @@ export class EventService<E = any> {
 
       events.push(...await eth.getPastLogs({fromBlock, toBlock, topics}));
 
-      this.#lastFromBlock = fromBlock;
+      this.#lastFromBlock = toBlock;
     }
 
     const mapEvent = ({address, data, topics, transactionHash}) =>
@@ -121,13 +131,21 @@ export class EventService<E = any> {
   async _processEvents(blockProcessor: BlockProcessor<E>) {
     loggerHandler.info(`${this.name} start`);
 
-    for (const [, {info, returnValues}] of Object.entries(await this._getEventsOfNetworks()))
-      await Promise.all(returnValues.map(event => blockProcessor(event, info)));
+    try {
+      for (const [networkAddress, {info, returnValues}] of Object.entries(await this._getEventsOfNetworks())) {
+        await this.loadActorWithAddress(networkAddress);
+        await Promise.all(returnValues.map(event => blockProcessor(event, info)));
 
-    if (!this.query || !this.query?.networkName)
-      await this.saveLastFromBlock();
+      }
 
-    loggerHandler.info(`${this.name} finished`);
+      if (!this.query || !this.query?.networkName)
+        await this.saveLastFromBlock();
+
+      loggerHandler.info(`${this.name} finished`);
+
+    } catch (e) {
+      loggerHandler.error(`${this.name}`, e);
+    }
   }
 
 }
