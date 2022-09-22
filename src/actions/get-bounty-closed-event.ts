@@ -2,7 +2,7 @@ import { Op } from "sequelize";
 import db from "src/db";
 import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
-import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service.js";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import { slashSplit } from "src/utils/string";
 import {EventService} from "../services/event-service";
 import {BountyClosedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
