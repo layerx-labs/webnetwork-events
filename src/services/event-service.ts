@@ -80,7 +80,7 @@ export class EventService<E = any> {
 
     const lastReadBlock = await db.chain_events.findOne({where: {name: this.name}});
     if (!lastReadBlock) {
-      loggerHandler.warn(`${this.name} had no entry on chain_events`)
+      loggerHandler.error(`${this.name} had no entry on chain_events`)
       return {};
     }
 
@@ -149,7 +149,7 @@ export class EventService<E = any> {
         await Promise.all(returnValues.map(event => blockProcessor(event, info)));
       }
 
-      if (!this.query || !this.query?.networkName)
+      if (!this.query || !this.query?.networkName || !this.query?.blockQuery)
         await this.saveLastFromBlock();
 
       loggerHandler.info(`${this.name} finished`);
