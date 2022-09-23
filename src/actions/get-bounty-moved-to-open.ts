@@ -43,7 +43,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
             createdAt: {[Op.lt]: subMilliseconds(+new Date(), draftTime)},
             network_id,
             state: "draft"
-          }
+          },
+          include: [{ association: "token" }, { association: "repository" }]
         });
 
       loggerHandler.info(`${name} found ${bounties.length} draft bounties on ${networkAddress}`);
