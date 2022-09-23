@@ -107,9 +107,10 @@ export class EventService<E = any> {
     const topics = [eth.abi.encodeEventSignature(event)];
     const events: Log[] = [];
     const perRequest = +(process.env.EVENTS_PER_REQUEST || 1500);
-    const networkMap = allNetworks.reduce((prev, curr) => prev = {...prev, [curr.networkAddress!]: curr}, {})
+    const networkMap = allNetworks.reduce((prev, curr) => prev = {...prev, [curr.networkAddress!]: curr}, {});
+    const requests = (endBlock - startBlock) / perRequest;
 
-    loggerHandler.log(`${this.name} Reading from ${startBlock} to ${endBlock}; Will total ${(endBlock - startBlock) / perRequest} requests`);
+    loggerHandler.log(`${this.name} Reading from ${startBlock} to ${endBlock}; Will total ${requests < 1 ? 1 : Math.round(requests)} requests`);
 
     let toBlock = 0;
     for (let fromBlock = startBlock; fromBlock < endBlock; fromBlock += perRequest) {
