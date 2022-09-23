@@ -109,6 +109,9 @@ export class EventService<E = any> {
     const perRequest = +(process.env.EVENTS_PER_REQUEST || 1500);
     const networkMap = allNetworks.reduce((prev, curr) => prev = {...prev, [curr.networkAddress!]: curr}, {})
 
+    loggerHandler.log(`${this.name} Reading from ${startBlock} to ${endBlock}; Will total ${(endBlock - startBlock) / perRequest} requests`);
+    if (startBlock >= endBlock)
+      loggerHandler.warn(`${this.name} It appears we already read ${startBlock} or it's bigger than endBlock`);
 
     let toBlock = 0;
     for (let fromBlock = startBlock; fromBlock < endBlock; fromBlock += perRequest) {
