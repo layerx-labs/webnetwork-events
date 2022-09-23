@@ -95,9 +95,9 @@ export async function action(
     dbBounty.state = "closed";
     await dbBounty.save();
 
-    const proposal = bounty.proposals.find(prop => prop.id === proposalId);
+    const proposal = bounty.proposals[+proposalId];
 
-    await updateUserPayments(proposal, block.transactionHash, dbBounty.id, bounty.tokenAmount);
+    await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
   }
