@@ -45,7 +45,7 @@ export class EventService<E = any> {
   async saveLastFromBlock() {
     const dbEvent = await db.chain_events.findOne({where: {name: this.name}});
     if (!this.#lastFromBlock) {
-      loggerHandler.warn(`${this.name} had no #lastFromBlock`);
+      loggerHandler.log(`${this.name} had no #lastFromBlock`);
       return false;
     }
 
@@ -110,8 +110,6 @@ export class EventService<E = any> {
     const networkMap = allNetworks.reduce((prev, curr) => prev = {...prev, [curr.networkAddress!]: curr}, {})
 
     loggerHandler.log(`${this.name} Reading from ${startBlock} to ${endBlock}; Will total ${(endBlock - startBlock) / perRequest} requests`);
-    if (startBlock >= endBlock)
-      loggerHandler.warn(`${this.name} It appears we already read ${startBlock} or it's bigger than endBlock`);
 
     let toBlock = 0;
     for (let fromBlock = startBlock; fromBlock < endBlock; fromBlock += perRequest) {
