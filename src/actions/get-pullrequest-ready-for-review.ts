@@ -34,7 +34,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       where: {issueId: dbBounty.id, githubId: pullRequest.cid.toString(), status: "draft"}})
 
     if (!dbPullRequest)
-      return logger.error(`${name} No pull request found in database for pending and id ${pullRequest.cid}`, bounty);
+      return logger.warn(`${name} No pull request found with "draft" and id ${pullRequest.cid}, maybe it was already parsed?`);
 
     dbPullRequest.status =
       pullRequest.canceled ? "canceled" : pullRequest?.ready ? "ready" : "draft";
