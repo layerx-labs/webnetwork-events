@@ -74,18 +74,17 @@ export async function action(
         {association: "token",},
         {association: "repository",},
         {association: "merge_proposals",},
+        {association: "pull_requests",},
       ],
     });
 
     if (!dbBounty)
       return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
 
-    const findDBProposal = (prop) => prop.contractId.toString() === proposalId.toString();
-
-    const dbProposal = await dbBounty.merge_proposals.find(findDBProposal);
+    const dbProposal = await db.merge_proposals.findOne({where: {issueId: dbBounty.id, scMergeId: proposalId}});
 
     if (!dbProposal)
-      logger.warn(`proposal ${proposalId} was not found in database for bounty ${dbBounty.id}`);
+      return logger.warn(`proposal ${proposalId} was not found in database for dbBounty ${dbBounty.id}`);
     else {
       const mergedPR = await mergeProposal(dbBounty, dbProposal.id, dbProposal.issueId);
       if (mergedPR)
