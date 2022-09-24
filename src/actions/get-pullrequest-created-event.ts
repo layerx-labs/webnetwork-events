@@ -25,12 +25,15 @@ export const author = "clarkjoao";
 const getPRStatus = (prStatus): string =>
   prStatus?.canceled ? "canceled" : prStatus?.ready ? "ready" : "draft";
 
-async function createCommentOnIssue(bounty: Bounty, pullRequest: PullRequest) {
-  const issueLink = `${webAppUrl}/bounty?id=${bounty.githubId}&repoId=${bounty.repository_id}`;
-  const body = `@${bounty.creatorGithub}, @${pullRequest.githubLogin} has a solution - [check your bounty](${issueLink})`;
-  const [owner, repo] = slashSplit(bounty?.repository?.githubPath as string);
-  return await GHService.createCommentOnIssue(repo, owner, bounty?.githubId as string, body);
-}
+  async function createCommentOnIssue(bounty: Bounty, pullRequest: PullRequest) {
+    const networkName = bounty?.network?.name || "bepro";
+    
+    const issueLink = `${webAppUrl}/${networkName}/bounty?id=${bounty.githubId}&repoId=${bounty.repository_id}`;
+    const body = `@${pullRequest.githubLogin} has a solution - [check your bounty](${issueLink})`;
+  
+    const [owner, repo] = slashSplit(bounty?.repository?.githubPath as string);
+    return await GHService.createCommentOnIssue(repo, owner, bounty?.githubId as string, body);
+  }
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
@@ -48,7 +51,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
       const dbBounty = await db.issues.findOne({
         where: {contractId: bountyId, issueId: bounty.cid, network_id: network.id},
-        include: [{ association: "repository" }]});
+        include: [{ association: "repository" }, { association: "network" }]});
 
       if (!dbBounty)
         return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
