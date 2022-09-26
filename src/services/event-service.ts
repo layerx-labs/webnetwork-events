@@ -7,7 +7,6 @@ import {Network_v2, NetworkRegistry, Web3Connection,} from "@taikai/dappkit";
 import {Log} from "web3-core";
 import {networksAttributes} from "../db/models/networks";
 import {EventNameActionsMap} from "../utils/event-name-actions-map";
-import {chain_events} from "../db/models/chain_events";
 
 const {NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey,} = process.env;
 
@@ -21,7 +20,8 @@ export class EventService<E = any> {
   constructor(readonly name: string,
               readonly query?: EventsQuery,
               readonly fromRegistry = false,
-              readonly web3Connection = new Web3Connection({web3Host, privateKey})) {}
+              readonly web3Connection = new Web3Connection({web3Host, privateKey}),
+              readonly onlyRegisteredNetworks = true) {}
 
   async loadActorWithAddress(address: string) {
     try {
@@ -34,7 +34,11 @@ export class EventService<E = any> {
   }
 
   async getAllNetworks() {
-    const allNetworks = await db.networks.findAll({where: {isRegistered: true}, raw: true});
+    const where = {
+      ...this.onlyRegisteredNetworks ? {isRegistered: true} : {}
+    };
+
+    const allNetworks = await db.networks.findAll({where, raw: true});
     if (!allNetworks.length) {
       loggerHandler.warn(`${this.name} No networks found`);
       return []
@@ -136,11 +140,11 @@ export class EventService<E = any> {
       return ({...previous, [address]: {...previous[address], returnValues: [...previous[address].returnValues, rest]}})
     }
 
-    const eventsToParse = events.filter(({address}) => networkMap[address]);
+    const eventsToParse = this.fromRegistry ? events : events.filter(({address}) => networkMap[address]);
 
     loggerHandler.log(`${this.name} Got ${eventsToParse.length} events with matching topics`);
 
-    return eventsToParse.map(mapEvent).reduce(reduceEvents, {})
+    return eventsToParse.map(mapEvent).reduce(reduceEvents, {});
   }
 
   async _processEvents(blockProcessor: BlockProcessor<E>) {

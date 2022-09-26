@@ -13,8 +13,13 @@ export const author = "vhcsilva";
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  const processor: BlockProcessor<NetworkCreatedEvent> = async (block, network) => {
+  const processor: BlockProcessor<NetworkCreatedEvent> = async (block, _network) => {
     const {network: createdNetworkAddress} = block.returnValues;
+
+    const network = await db.networks.findOne({where: {networkAddress: createdNetworkAddress}});
+
+    if (!network)
+      return logger.error(`network with address ${createdNetworkAddress} not found on db`);
 
     if (network.isRegistered && network.networkAddress === createdNetworkAddress)
       return logger.warn(`${name} ${createdNetworkAddress} was already registered`);
@@ -29,7 +34,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     eventsProcessed[network.name!] = [network.networkAddress!];
   }
 
-  await (new EventService(name, query, true))._processEvents(processor);
+  await (new EventService(name, query, true, undefined, false))._processEvents(processor);
 
   return eventsProcessed;
 }
