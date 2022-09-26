@@ -1,6 +1,5 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
-import NetworkService from "src/services/network-service";
 import {ERC20, Network_v2, Web3Connection,} from "@taikai/dappkit";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {EventService} from "../services/event-service";

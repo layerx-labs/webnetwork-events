@@ -20,7 +20,7 @@ export async function proposalStateProcessor(block: BountyProposalDisputedEvent,
   const {dbBounty,} = values;
 
   dbBounty.state =
-    await validateProposalState(dbBounty.state!, bounty, _service.chainService.networkService);
+    await validateProposalState(dbBounty.state!, bounty, _service.Actor as Network_v2);
 
   await dbBounty.save();
 
