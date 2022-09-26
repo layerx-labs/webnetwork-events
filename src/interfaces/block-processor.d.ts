@@ -1,6 +1,8 @@
 import {XEvents} from "@taikai/dappkit";
-import {networksAttributes as NetworkProps} from "../db/models/networks";
 
+interface Block {
+  transactionHash: string;
+  returnValues: {[p: string]: string, __length__: number}
+}
 
-export type BlockProcessor<T = any,> =
-  (block: XEvents<T>, network: Partial<NetworkProps>) => void
+export type BlockProcessor<T = any,> = (block: Block & T, network: Partial<NetworkProps>) => void

@@ -14,17 +14,12 @@ export async function action(
 ): Promise<EventsProcessed> {
   let eventsProcessed: EventsProcessed = {};
 
-  try {
+  const _service = new EventService<BountyProposalRefusedEvent>(name, query);
 
-    const _service = new EventService(name, query);
+  await _service._processEvents(
+    async (block, network) => {
+      eventsProcessed = await proposalStateProcessor(block, network, _service, eventsProcessed);
+    })
 
-    await _service.processEvents<BountyProposalRefusedEvent>(
-      async (block, network) => {
-        eventsProcessed = await proposalStateProcessor(block, network, _service, eventsProcessed);
-      })
-
-  } catch (err) {
-    logger.error(`${name} Error`, err);
-  }
   return eventsProcessed;
 }

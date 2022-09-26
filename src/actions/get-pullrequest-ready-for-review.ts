@@ -1,15 +1,11 @@
 import db from "src/db";
-import {
-  BountiesProcessed,
-  EventsProcessed,
-  EventsQuery,
-} from "src/interfaces/block-chain-service";
-import BlockChainService from "src/services/block-chain-service";
 import logger from "src/utils/logger-handler";
+import { EventsProcessed, EventsQuery, } from "src/interfaces/block-chain-service";
 import {EventService} from "../services/event-service";
-import {XEvents} from "@taikai/dappkit";
 import {BountyPullRequestReadyForReviewEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
+import {BlockProcessor} from "../interfaces/block-processor";
+import {Network_v2} from "@taikai/dappkit";
 
 export const name = "getBountyPullRequestReadyForReviewEvents";
 export const schedule = "*/12 * * * *";
@@ -18,49 +14,43 @@ export const author = "clarkjoao";
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
+  const service = new EventService(name, query);
 
-  try {
+  const processor: BlockProcessor<BountyPullRequestReadyForReviewEvent> = async (block, network) => {
+    const {bountyId, pullRequestId} = block.returnValues;
 
-    const service = new EventService(name, query);
+    const bounty = await (service.Actor as Network_v2).getBounty(bountyId);
+    if (!bounty)
+      return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
-    const processor = async (block: XEvents<BountyPullRequestReadyForReviewEvent>, network) => {
-      const {bountyId, pullRequestId} = block.returnValues;
+    const dbBounty = await db.issues.findOne({
+      where:{ issueId: bounty.cid, contractId: bountyId, network_id: network.id}})
+    if (!dbBounty)
+      return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
 
-      const bounty = await service.chainService.networkService.network.getBounty(bountyId);
-      if (!bounty)
-        return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
+    const pullRequest = bounty.pullRequests[pullRequestId];
 
-      const dbBounty = await db.issues.findOne({
-        where:{ issueId: bounty.cid, contractId: bountyId, network_id: network.id}})
-      if (!dbBounty)
-        return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
+    const dbPullRequest = await db.pull_requests.findOne({
+      where: {issueId: dbBounty.id, githubId: pullRequest.cid.toString(), status: "draft"}})
 
-      const pullRequest = bounty.pullRequests[pullRequestId];
+    if (!dbPullRequest)
+      return logger.warn(`${name} No pull request found with "draft" and id ${pullRequest.cid}, maybe it was already parsed?`);
 
-      const dbPullRequest = await db.pull_requests.findOne({
-        where: {issueId: dbBounty.id, githubId: pullRequest.cid.toString(), status: "draft"}})
+    dbPullRequest.status =
+      pullRequest.canceled ? "canceled" : pullRequest?.ready ? "ready" : "draft";
 
-      if (!dbPullRequest)
-        return logger.error(`${name} No pull request found in database for pending and id ${pullRequest.cid}`, bounty);
+    await dbPullRequest.save();
 
-      dbPullRequest.status =
-        pullRequest.canceled ? "canceled" : pullRequest?.ready ? "ready" : "draft";
-
-      await dbPullRequest.save();
-
-      if (dbBounty.state !== "ready") {
-        dbBounty.state = "ready";
-        await dbBounty.save();
-      }
-
-      eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
+    if (dbBounty.state !== "ready") {
+      dbBounty.state = "ready";
+      await dbBounty.save();
     }
 
-    await service.processEvents(processor);
-
-  } catch (err) {
-    logger.error(`${name} Error`, err);
+    eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
   }
+
+  await service._processEvents(processor);
+
 
   return eventsProcessed;
 }

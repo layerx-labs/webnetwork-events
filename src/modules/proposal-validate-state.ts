@@ -1,14 +1,12 @@
-import NetworkService from "src/services/network-service";
 import loggerHandler from "../utils/logger-handler";
-import {Bounty} from "@taikai/dappkit";
+import {Bounty, Network_v2} from "@taikai/dappkit";
 import db from "../db";
 import logger from "../utils/logger-handler";
 import {DB_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {Op} from "sequelize";
-import {name} from "../actions/get-bounty-funded-updated-event";
 
 async function bountyReadyPRsHasNoInvalidProposals(networkBounty: any,
-                                                   networkService: NetworkService): Promise<number> {
+                                                   networkService: Network_v2): Promise<number> {
   const readyPRsIds = networkBounty.pullRequests.filter((pr) => pr.ready).map((pr) => pr.id);
 
   if (!readyPRsIds.length)
@@ -25,7 +23,7 @@ async function bountyReadyPRsHasNoInvalidProposals(networkBounty: any,
       .filter((p) => readyPRsIds.includes(p.prId))
       .map(async (p) => ({
         ...p,
-        isDisputed: await networkService.network?.isProposalDisputed(networkBounty.id, p.id),
+        isDisputed: await networkService.isProposalDisputed(networkBounty.id, p.id),
       }))
   );
 
@@ -41,7 +39,7 @@ async function bountyReadyPRsHasNoInvalidProposals(networkBounty: any,
 
 export default async function validateProposalState(currentState: string,
                                                     networkBounty: any,
-                                                    networkService: NetworkService): Promise<string> {
+                                                    networkService: Network_v2): Promise<string> {
   const validation =
     await bountyReadyPRsHasNoInvalidProposals(networkBounty, networkService)
       .catch((error) => {
