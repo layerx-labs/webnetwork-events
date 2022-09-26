@@ -17,7 +17,7 @@ export interface issuesAttributes {
   updatedAt: Date;
   creatorAddress?: string;
   creatorGithub?: string;
-  amount?: number;
+  amount?: string;
   repository_id?: number;
   working?: string[];
   merged?: string;
@@ -28,8 +28,8 @@ export interface issuesAttributes {
   network_id?: number;
   contractId?: number;
   tokenId?: number;
-  fundingAmount?: number;
-  fundedAmount?: number;
+  fundingAmount?: string;
+  fundedAmount?: string;
 }
 
 export type issuesPk = "id";
@@ -46,7 +46,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   updatedAt!: Date;
   creatorAddress?: string;
   creatorGithub?: string;
-  amount?: number;
+  amount?: string;
   repository_id?: number;
   working?: string[];
   merged?: string;
@@ -57,8 +57,8 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   network_id?: number;
   contractId?: number;
   tokenId?: number;
-  fundingAmount?: number;
-  fundedAmount?: number;
+  fundingAmount?: string;
+  fundedAmount?: string;
 
   // issues hasMany developers via issueId
   developers!: developers[];
@@ -153,7 +153,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       allowNull: true
     },
     amount: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     repository_id: {
@@ -210,11 +210,11 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       }
     },
     fundingAmount: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     fundedAmount: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING(255),
       allowNull: true
     }
   }, {

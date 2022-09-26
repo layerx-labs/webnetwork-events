@@ -6,6 +6,7 @@ import {BountyFunded} from "@taikai/dappkit/dist/src/interfaces/events/network-v
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
+import BigNumber from "bignumber.js";
 
 export const name = "getBountyFundedEvents";
 export const schedule = "*/14 * * * *";
@@ -31,7 +32,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     dbBounty.amount =
       dbBounty.fundedAmount =
-        bounty.funding.reduce((prev, current) => prev + +current.amount, 0);
+        bounty.funding.reduce((prev, current) => BigNumber(current.amount).plus(prev), BigNumber(0)).toString();
 
     await dbBounty.save();
 

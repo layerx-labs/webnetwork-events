@@ -51,8 +51,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     dbBounty.state = "draft";
     dbBounty.creatorAddress = bounty.creator;
     dbBounty.creatorGithub = bounty.githubUser;
-    dbBounty.amount = +bounty.tokenAmount;
-    dbBounty.fundingAmount = +bounty.fundingAmount;
+    dbBounty.amount = bounty.tokenAmount.toString();
+    dbBounty.fundingAmount = bounty.fundingAmount.toString();
     dbBounty.branch = bounty.branch;
     dbBounty.title = bounty.title;
     dbBounty.contractId = +id;

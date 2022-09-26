@@ -5,6 +5,7 @@ import {EventsProcessed,EventsQuery,} from "src/interfaces/block-chain-service";
 import {OraclesChangedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {EventService} from "../services/event-service";
 import {BlockProcessor} from "../interfaces/block-processor";
+import BigNumber from "bignumber.js";
 
 export const name = "getOraclesChangedEvents";
 export const schedule = "*/30 * * * *";
@@ -30,13 +31,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     if (!decimals)
       decimals = (service.Actor as Network_v2).networkToken.decimals;
 
-    const actorsNewTotal = fromSmartContractDecimals(newLockedTotal, decimals);
+    const actorsNewTotal = BigNumber(fromSmartContractDecimals(newLockedTotal, decimals));
     const networkCouncilMembers = network.councilMembers || [];
     const actorExistsInDb = networkCouncilMembers.some(address => actor === address);
 
-    if (actorExistsInDb && actorsNewTotal < councilAmount)
+    if (actorExistsInDb && actorsNewTotal.lt(councilAmount))
       dbNetwork.councilMembers = networkCouncilMembers.filter(address => address !== actor);
-    else if (!actorExistsInDb && actorsNewTotal >= councilAmount)
+    else if (!actorExistsInDb && actorsNewTotal.gte(councilAmount))
       dbNetwork.councilMembers = [...networkCouncilMembers, actor];
 
     await dbNetwork.save();

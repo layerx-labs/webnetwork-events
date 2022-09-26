@@ -119,7 +119,7 @@ export default async function twitterTweet({entity, event, bountyId, networkName
   if (bounty.title && bounty.title.length > 29)
     bounty.title = bounty.title.slice(0, 29).concat(`...`);
 
-  bounty?.amount && formatNumberToNScale(bounty?.amount);
+  bounty?.amount && formatNumberToNScale(+bounty?.amount);
 
   let title = events[entity][event]?.title();
   let body = events[entity][event]?.body(bounty);

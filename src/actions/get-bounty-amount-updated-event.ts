@@ -30,7 +30,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       if (!dbBounty)
         logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
       else {
-        dbBounty.amount = +bounty.tokenAmount;
+        dbBounty.amount = bounty.tokenAmount.toString();
         await dbBounty.save();
 
         eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
