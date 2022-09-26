@@ -7,6 +7,7 @@ import {Network_v2, NetworkRegistry, Web3Connection,} from "@taikai/dappkit";
 import {Log} from "web3-core";
 import {networksAttributes} from "../db/models/networks";
 import {EventNameActionsMap} from "../utils/event-name-actions-map";
+import {chain_events} from "../db/models/chain_events";
 
 const {NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey,} = process.env;
 
@@ -78,10 +79,11 @@ export class EventService<E = any> {
       }
     }
 
-    const lastReadBlock = await db.chain_events.findOne({where: {name: this.name}});
+    let lastReadBlock = await db.chain_events.findOne({where: {name: this.name}});
     if (!lastReadBlock) {
-      loggerHandler.error(`${this.name} had no entry on chain_events`)
-      return {};
+      loggerHandler.warn(`${this.name} had no entry on chain_events, created`);
+      await db.chain_events.create({name: this.name, lastBlock: 0});
+      lastReadBlock = await db.chain_events.findOne({where: {name: this.name}});
     }
 
     if (this.fromRegistry)
@@ -102,7 +104,7 @@ export class EventService<E = any> {
     }
 
     const eth = this.web3Connection.eth;
-    const startBlock = this.query?.blockQuery?.from || lastReadBlock.lastBlock || 0;
+    const startBlock = this.query?.blockQuery?.from || lastReadBlock!.lastBlock || 0;
     const endBlock = this.query?.blockQuery?.to || await eth.getBlockNumber();
     const topics = [eth.abi.encodeEventSignature(event)];
     const events: Log[] = [];
