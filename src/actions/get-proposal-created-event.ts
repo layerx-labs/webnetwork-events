@@ -45,7 +45,8 @@ export async function action(
       issueId: dbBounty.id,
       pullRequestId: dbPullRequest.id,
       githubLogin: dbUser?.githubLogin,
-      creator: proposal.creator
+      creator: proposal.creator,
+      contractId: proposal.id
     });
 
     if (dbBounty.state !== "proposal") {

@@ -36,10 +36,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     if (!dbPullRequest)
       return logger.warn(`${name} No pull request found with "draft" and id ${pullRequest.cid}, maybe it was already parsed?`);
 
-    dbPullRequest.status =
-      pullRequest.canceled ? "canceled" : pullRequest?.ready ? "ready" : "draft";
+    if (!["closed", "merged"].includes(dbPullRequest.status!.toString())) {
+      dbPullRequest.status =
+        pullRequest.canceled ? "canceled" : pullRequest?.ready ? "ready" : "draft";
 
-    await dbPullRequest.save();
+      await dbPullRequest.save();
+    }
 
     if (dbBounty.state !== "ready") {
       dbBounty.state = "ready";

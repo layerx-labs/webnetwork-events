@@ -26,6 +26,9 @@ async function mergeProposal(bounty, id, issueId) {
   await GHService.mergeProposal(repo, owner, pullRequest?.githubId as string);
   await GHService.issueClose(repo, owner, bounty?.githubId);
 
+  pullRequest.status = "merged";
+  await pullRequest.save();
+
   return pullRequest;
 }
 
@@ -34,14 +37,15 @@ async function closePullRequests(bounty, mergedPullRequestId) {
     where: {
       issueId: bounty.id,
       githubId: { [Op.not]: mergedPullRequestId },
-    },
-    raw: true,
+    }
   });
 
   const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
 
   for (const pr of pullRequests) {
     await GHService.pullrequestClose(owner, repo, pr.githubId as string);
+    pr.status = "closed";
+    await pr.save();
   }
 }
 
@@ -86,7 +90,7 @@ export async function action(
     if (!dbProposal)
       return logger.warn(`proposal ${proposalId} was not found in database for dbBounty ${dbBounty.id}`);
     else {
-      const mergedPR = await mergeProposal(dbBounty, dbProposal.id, dbProposal.issueId);
+      const mergedPR = await mergeProposal(dbBounty, dbProposal.pullRequestId, dbProposal.issueId);
       if (mergedPR)
         await closePullRequests(dbBounty, mergedPR.githubId);
     }
@@ -94,8 +98,6 @@ export async function action(
     dbBounty.merged = dbProposal?.scMergeId;
     dbBounty.state = "closed";
     await dbBounty.save();
-
-    const proposal = bounty.proposals[+proposalId];
 
     await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
 
