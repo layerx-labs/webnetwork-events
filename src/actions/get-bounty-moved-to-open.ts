@@ -27,6 +27,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     const web3Connection = new Web3Connection({web3Host, privateKey});
     await web3Connection.start();
 
+    const timeOnChain = await web3Connection.Web3.eth.getBlock(`latest`).then(({ timestamp }) => +timestamp * 1000);
+
     const networks = await db.networks.findAll({where: {isRegistered: true}, raw: true});
     if (!networks || !networks.length) {
       loggerHandler.warn(`${name} found no networks`);
@@ -40,7 +42,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       const bounties =
         await db.issues.findAll({
           where: {
-            createdAt: {[Op.lt]: subMilliseconds(+new Date(), draftTime)},
+            createdAt: {[Op.lt]: subMilliseconds(timeOnChain, draftTime)},
             network_id,
             state: "draft"
           },
