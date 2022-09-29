@@ -8,6 +8,8 @@ import { Network_v2, Web3Connection } from "@taikai/dappkit";
 import loggerHandler from "src/utils/logger-handler";
 import { slashSplit } from "src/utils/string";
 import GHService from "src/services/github";
+import { subHours } from "date-fns";
+import { Op } from "sequelize";
 
 export const name = "deletePendingBounties";
 export const schedule = "0 0 * * *";
@@ -42,8 +44,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       await _network.loadContract();
       const numberNetworkIssues = await _network.bountiesIndex();
       const pendingBounties = await db.issues.findAll({
-        where: { state: "pending", network_id },
-        include: [{ association: "repository" }]
+        where: { 
+            state: "pending", 
+            network_id, 
+            createdAt: {[Op.lt]: subHours(+new Date(), 24)}, 
+        },
+        include: [{ association: "repository" }],
       });
 
       if (!pendingBounties || !pendingBounties.length) continue;
