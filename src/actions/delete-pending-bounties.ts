@@ -77,7 +77,6 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           const [owner, repo] = slashSplit(dbBounty.repository?.githubPath);
 
           await GHService.issueClose(repo, owner, dbBounty?.githubId)
-            .catch(e => logger.error(`${name} Failed to close ${owner}/${repo}/issues/${dbBounty.githubId}`, e));
 
           await dbBounty.destroy();
 
