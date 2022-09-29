@@ -10,7 +10,7 @@ import { slashSplit } from "src/utils/string";
 import GHService from "src/services/github";
 
 export const name = "deletePendingBounties";
-export const schedule = "*/1 * * * *";
+export const schedule = "* 0 * * *";
 export const description = "delete bounties pending and closed issue on github";
 export const author = "MarcusviniciusLsantos";
 
