@@ -52,43 +52,36 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         include: [{ association: "repository" }],
       });
 
-      if (!pendingBounties || !pendingBounties.length) continue;
-
       loggerHandler.info(
         `${name} found ${pendingBounties?.length} pending bounties at ${networkName}`
       );
 
-      const cidBounties: string[] = await Promise.all(
-        [...Array(numberNetworkIssues).keys()].map(async (id) => {
-          return await _network.getBounty(id).then((bounty) => bounty.cid);
-        })
-      );
+      if (!pendingBounties || !pendingBounties.length) continue;
 
       for (const dbBounty of pendingBounties) {
+        if(dbBounty?.issueId){
+            const isBountyOnNetwork = await _network.cidBountyId(dbBounty.issueId)
 
-        const isBountyOnNetwork = cidBounties.find(
-          (cid) => cid === dbBounty.issueId
-        );
+            if (isBountyOnNetwork === 0 && dbBounty?.githubId) {
 
-        if (!isBountyOnNetwork && dbBounty?.githubId) {
-
-          logger.info(`${name} Removing pending bounty ${dbBounty.issueId}`);
-
-          const [owner, repo] = slashSplit(dbBounty.repository?.githubPath);
-
-          await GHService.issueClose(repo, owner, dbBounty?.githubId)
-
-          await dbBounty.destroy();
-
-          eventsProcessed[networkName] = {
-            ...eventsProcessed[networkName],
-            [dbBounty.issueId!.toString()]: {
-              bounty: dbBounty,
-              eventBlock: null,
-            },
-          };
-
-          logger.info(`${name} Removed pending bounty ${dbBounty.issueId}`);
+                logger.info(`${name} Removing pending bounty ${dbBounty.issueId}`);
+      
+                const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
+      
+                await GHService.issueClose(repo, owner, dbBounty?.githubId)
+      
+                await dbBounty.destroy();
+      
+                eventsProcessed[networkName] = {
+                  ...eventsProcessed[networkName],
+                  [dbBounty.issueId!.toString()]: {
+                    bounty: dbBounty,
+                    eventBlock: null,
+                  },
+                };
+      
+                logger.info(`${name} Removed pending bounty ${dbBounty.issueId}`);
+              }
         }
       }
     }
