@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Sequelize, Dialect } from "sequelize";
+import { Dialect, Sequelize } from "sequelize";
 import { initModels } from "./models/init-models";
 
 const {
@@ -10,6 +10,7 @@ const {
   NEXT_DB_USERNAME: username,
   NEXT_DB_DIALECT: dialect,
   NEXT_DB_LOG,
+  NEXT_DB_SSL,
 } = process.env;
 
 if ([database, host, password, port, username].some((v) => !v))
@@ -23,7 +24,13 @@ const options = {
   dialect: (dialect as Dialect) || "postgres",
   host: host || "localhost",
   port: +(port || 54320),
-  logging: !NEXT_DB_LOG ? false : console.log
+  logging: !NEXT_DB_LOG ? false : console.log,
+  dialectOptions: {
+    ssl: {
+      required: !NEXT_DB_SSL ? false : true,
+      rejectUnauthorized: false,
+    },
+  },
 };
 
 const con = new Sequelize(
