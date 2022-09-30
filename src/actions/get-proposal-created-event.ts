@@ -26,7 +26,7 @@ export async function action(
     if (!bounty)
       return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
-    const values = await validateProposal(bounty, prId, proposalId, network.id);
+    const values = await validateProposal(bounty, prId, proposalId, network.id, false);
     if (!values?.proposal || !values?.dbBounty || !values?.dbPullRequest)
       return;
 

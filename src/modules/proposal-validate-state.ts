@@ -47,10 +47,10 @@ export default async function validateProposalState(currentState: string,
         return -1;
       });
 
-  return [0,1].includes(validation) ? "open" : [2, 3].includes(validation) ? "ready" : currentState;
+  return [0,1].includes(validation) ? "open" : 3 === validation ? "ready" : currentState;
 }
 
-export async function validateProposal(bounty: Bounty, prId: number, proposalId: number, network_id: number) {
+export async function validateProposal(bounty: Bounty, prId: number, proposalId: number, network_id: number, isProposalRequired = true) {
   const dbBounty = await db.issues.findOne({
     where: {contractId: bounty.id, issueId: bounty.cid, network_id}})
   if (!dbBounty)
@@ -70,9 +70,12 @@ export async function validateProposal(bounty: Bounty, prId: number, proposalId:
     return logger.error(`Could not find proposal for ${prId}`, bounty);
 
   const dbProposal = await db.merge_proposals.findOne({
-    where: {pullRequestId: dbPullRequest.id, issueId: dbBounty.id, contractId: +proposalId}})
-  if (dbProposal)
+    where: {pullRequestId: dbPullRequest.id, issueId: dbBounty.id, contractId: +proposalId}});
+  if (!isProposalRequired && dbProposal)
     return logger.warn(`Proposal ${proposalId} already exists`, bounty);
+
+  if (isProposalRequired && !dbProposal)
+    return logger.warn(`Could not find proposal ${proposalId} in datavase for network ${network_id}`, bounty);
 
   const dbUser = await db.users.findOne({
     where: {address: {[Op.iLike]: proposal.creator.toLowerCase()}}});
