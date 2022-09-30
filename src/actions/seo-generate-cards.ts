@@ -27,12 +27,12 @@ export async function action(issueId?: string) {
       logger.warn(`${name} not found on database`);
 
     const where = {
-      ... issueId
+      ...(issueId
         ? {issueId}
         : {[Op.or]: [
             {seoImage: null},
             {updatedAt: {[Op.gt]: dbEvent?.updatedAt || dbEvent?.createdAt || new Date()}}
-          ]}
+          ]})
     };
 
     const include = [

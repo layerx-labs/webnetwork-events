@@ -4,12 +4,17 @@ import db from "src/db";
 
 const seoRoutes = Router();
 
-seoRoutes.get("/:issueId", async (req, res) => {
-  const { issueId } = req.params;
+seoRoutes.get("/", async (req, res) => {
+  const { issueId } = req.query;
+
+  if (!issueId)
+    return res.status(400).json({
+      message: "Missing IssueId",
+    });
 
   const bounty = await db.issues.findOne({
     where: {
-      issueId,
+      issueId: issueId as string,
     },
   });
 
@@ -18,8 +23,8 @@ seoRoutes.get("/:issueId", async (req, res) => {
   return res.status(200).json(bounty?.seoImage);
 });
 
-seoRoutes.post("/:issueId", async (req, res) => {
-  const { issueId } = req.params;
+seoRoutes.post("/", async (req, res) => {
+  const { issueId } = req.query;
   const bounties = await seoGenerateCard(issueId as string);
 
   return res.status(200).json(bounties);
