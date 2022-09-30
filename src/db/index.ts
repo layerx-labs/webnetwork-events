@@ -27,7 +27,7 @@ const options = {
   logging: !NEXT_DB_LOG ? false : console.log,
   dialectOptions: {
     ssl: {
-      required: !NEXT_DB_SSL ? false : true,
+      required: NEXT_DB_SSL === "true" ? true : false,
       rejectUnauthorized: false,
     },
   },
