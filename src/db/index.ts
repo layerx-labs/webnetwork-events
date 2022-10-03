@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Dialect, Sequelize } from "sequelize";
+import { Dialect, Options, Sequelize } from "sequelize";
 import { initModels } from "./models/init-models";
 
 const {
@@ -15,9 +15,9 @@ const {
 
 if ([database, host, password, port, username].some((v) => !v))
   throw new Error(`Missing database variables`);
+console.log(NEXT_DB_SSL === "true");
 
-// ts-ignore
-const options = {
+const options: Options = {
   username: username || "github",
   password: password || "github",
   database: database || "github",
@@ -25,18 +25,20 @@ const options = {
   host: host || "localhost",
   port: +(port || 54320),
   logging: !NEXT_DB_LOG ? false : console.log,
-  dialectOptions: {
-    ssl: {
-      required: NEXT_DB_SSL === "true" ? true : false,
-      rejectUnauthorized: false,
-    },
-  },
 };
 
+if (NEXT_DB_SSL === "true")
+  options.dialectOptions = {
+    ssl: {
+      required: true,
+      rejectUnauthorized: false,
+    },
+  };
+
 const con = new Sequelize(
-  options.database,
-  options.username,
-  options.password,
+  options.database!,
+  options.username!,
+  options.password!,
   options
 );
 
