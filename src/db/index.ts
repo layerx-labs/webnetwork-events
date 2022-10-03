@@ -15,7 +15,6 @@ const {
 
 if ([database, host, password, port, username].some((v) => !v))
   throw new Error(`Missing database variables`);
-console.log(NEXT_DB_SSL === "true");
 
 const options: Options = {
   username: username || "github",
