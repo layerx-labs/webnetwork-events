@@ -33,6 +33,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     dbBounty.amount =
       dbBounty.fundedAmount =
         bounty.funding.reduce((prev, current) => prev.plus(current.amount), BigNumber(0)).toFixed();
+        
+    dbBounty.fundedAt = new Date()
 
     await dbBounty.save();
 
