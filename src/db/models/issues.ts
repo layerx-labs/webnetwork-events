@@ -30,6 +30,7 @@ export interface issuesAttributes {
   tokenId?: number;
   fundingAmount?: string;
   fundedAmount?: string;
+  fundedAt?: Date;
 }
 
 export type issuesPk = "id";
@@ -59,6 +60,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   tokenId?: number;
   fundingAmount?: string;
   fundedAmount?: string;
+  fundedAt?: Date;
 
   // issues hasMany developers via issueId
   developers!: developers[];
@@ -215,6 +217,10 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
     },
     fundedAmount: {
       type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    fundedAt: {
+      type: DataTypes.DATE,
       allowNull: true
     }
   }, {
