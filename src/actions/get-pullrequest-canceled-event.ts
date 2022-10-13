@@ -17,7 +17,7 @@ export const author = "clarkjoao";
 
 async function closePullRequest(bounty: Bounty, pullRequest: PullRequest) {
   const [owner, repo] = slashSplit(bounty?.repository?.githubPath as string);
-  await GHService.pullrequestClose(repo, owner, pullRequest?.githubId as string);
+  await GHService.pullrequestClose(owner, repo, pullRequest?.githubId as string);
 
   const body = `This pull request was closed ${pullRequest?.githubLogin ? `by @${pullRequest.githubLogin}` : ""}`;
   await GHService.createCommentOnIssue(repo, owner, bounty?.githubId as string, body);
