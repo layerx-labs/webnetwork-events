@@ -7,7 +7,7 @@ import {Op} from "sequelize";
 
 async function bountyReadyPRsHasNoInvalidProposals(networkBounty: any,
                                                    networkService: Network_v2): Promise<number> {
-  const readyPRsIds = networkBounty.pullRequests.filter((pr) => pr.ready).map((pr) => pr.id);
+  const readyPRsIds = networkBounty.pullRequests.filter((pr) => pr.ready && !pr.canceled).map((pr) => pr.id);
 
   if (!readyPRsIds.length)
     return 0;
