@@ -8,21 +8,16 @@
 
 <p align="center">
   <a href="#2-quick-started">Quick Started</a> •
-  <a href="#3-environment-configuration">Enviroment</a> •
-  <a href="#4-running">Running</a> •
-  <a href="#5-contributing">Contributing</a> •
-  <a href="#6-join-the-community">Community</a>
+  <a href="#3-documentation">Documentation</a> •
+  <a href="#4-contributing">Contributing</a> •
+  <a href="#5-join-the-community">Community</a>
 </p>
 
 ---
 
-<br>
-
 <h3 align="center">
   We are delighted to announce the release of <a href="https://app.bepro.network/">Bepro Network's v2 </a> protocol. Try it.
 </h3>
-
-<br>
 
 #
 
