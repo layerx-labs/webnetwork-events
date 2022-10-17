@@ -53,8 +53,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     dbPullRequest.status = "canceled";
     await dbPullRequest.save();
 
-    if (bounty.pullRequests.some(({ready, canceled}) => ready && !canceled)) {
-      dbBounty.state = "open";
+    if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
+      if (bounty.pullRequests.some(({ready, canceled}) => ready && !canceled))
+        dbBounty.state = "ready";
+      else
+        dbBounty.state = "open";
+
       await dbBounty.save();
     }
 

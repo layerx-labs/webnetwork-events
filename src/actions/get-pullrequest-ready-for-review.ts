@@ -43,7 +43,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       await dbPullRequest.save();
     }
 
-    if (dbBounty.state !== "ready") {
+    if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
       dbBounty.state = "ready";
       await dbBounty.save();
     }

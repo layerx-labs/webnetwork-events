@@ -49,7 +49,7 @@ export async function action(
       contractId: proposal.id
     });
 
-    if (dbBounty.state !== "proposal") {
+    if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
       dbBounty.state = "proposal";
       await dbBounty.save();
     }

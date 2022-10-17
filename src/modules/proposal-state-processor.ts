@@ -19,8 +19,9 @@ export async function proposalStateProcessor(block: BountyProposalDisputedEvent,
 
   const {dbBounty,} = values;
 
-  dbBounty.state =
-    await validateProposalState(dbBounty.state!, bounty, _service.Actor as Network_v2);
+  if (!["canceled", "closed"].includes(dbBounty.state!))
+    dbBounty.state =
+      await validateProposalState(dbBounty.state!, bounty, _service.Actor as Network_v2);
 
   await dbBounty.save();
 
