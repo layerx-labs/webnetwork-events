@@ -47,7 +47,7 @@ export default async function validateProposalState(currentState: string,
         return -1;
       });
 
-  return [0,1].includes(validation) ? "open" : 3 === validation ? "ready" : currentState;
+  return 0 === validation ? "open" : [1, 3].includes(validation) ? "ready" : currentState;
 }
 
 export async function validateProposal(bounty: Bounty, prId: number, proposalId: number, network_id: number, isProposalRequired = true) {
