@@ -56,6 +56,16 @@ export default async function generateBountyCards(issue) {
     html,
     content,
     type: "jpeg",
+    puppeteerArgs: {
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--headless",
+        "--disable-gpu",
+        "--disable-dev-shm-usage",
+      ],
+    },
   })) as string;
 
   return Buffer.from(card);
