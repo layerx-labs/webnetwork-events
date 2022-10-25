@@ -9,12 +9,12 @@ export const schedule = "*/10 * * * *";
 export const description = "Try generate SeoCards for all updated or new bounties";
 export const author = "clarkjoao";
 
-const {NEXT_IPFS_PROJECT_ID, NEXT_IPFS_PROJECT_SECRET, NEXT_IPFS_UPLOAD_ENDPOINT} = process.env;
+const {IPFS_PROJECT_ID, IPFS_PROJECT_SECRET, IPFS_UPLOAD_ENDPOINT} = process.env;
 
 export async function action(issueId?: string) {
   const bountiesProcessed: any[] = [];
 
-  if ([NEXT_IPFS_PROJECT_ID, NEXT_IPFS_PROJECT_SECRET, NEXT_IPFS_UPLOAD_ENDPOINT].some(v => !v)) {
+  if ([IPFS_PROJECT_ID, IPFS_PROJECT_SECRET, IPFS_UPLOAD_ENDPOINT].some(v => !v)) {
     logger.warn(`${name} Missing id, secret or baseURL, for IPFService`);
     return bountiesProcessed;
   }
@@ -22,7 +22,7 @@ export async function action(issueId?: string) {
   try {
     logger.info(`${name} start`);
 
-    const dbEvent = await db.chain_events.findOne({where: {name}});
+    const dbEvent = await db.chain_events.findOrCreate({where: {name}});
     if (!dbEvent)
       logger.warn(`${name} not found on database`);
 

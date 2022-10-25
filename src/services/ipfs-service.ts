@@ -6,9 +6,9 @@ import { v4 as uuidv4 } from "uuid";
 import loggerHandler from "../utils/logger-handler";
 
 const {
-  NEXT_IPFS_PROJECT_ID: id,
-  NEXT_IPFS_PROJECT_SECRET: secret,
-  NEXT_IPFS_UPLOAD_ENDPOINT: baseURL,
+  IPFS_PROJECT_ID: id,
+  IPFS_PROJECT_SECRET: secret,
+  IPFS_UPLOAD_ENDPOINT: baseURL,
 } = process.env;
 
 const auth = "Basic " + Buffer.from(id + ":" + secret).toString("base64");
