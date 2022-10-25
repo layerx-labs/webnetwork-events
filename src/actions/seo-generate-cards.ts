@@ -22,10 +22,12 @@ export async function action(issueId?: string) {
   try {
     logger.info(`${name} start`);
 
-    const dbEvent = await db.chain_events.findOrCreate({where: {name}});
-    if (!dbEvent)
+    const dbEvent = await db.chain_events.findOne({where: {name}});
+    if (!dbEvent){
       logger.warn(`${name} not found on database`);
-
+      await db.chain_events.create({name});
+    }
+      
     const where = {
       ...(issueId
         ? {issueId}
@@ -72,6 +74,12 @@ export async function action(issueId?: string) {
         continue;
       }
     }
+
+    if(dbEvent?.lastBlock){
+      dbEvent.lastBlock += 1;
+      await dbEvent.save();
+    }
+
   } catch (err) {
     logger.error(`${name} Error`, err);
   }
