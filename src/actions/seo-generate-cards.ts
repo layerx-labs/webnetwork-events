@@ -9,12 +9,12 @@ export const schedule = "*/10 * * * *";
 export const description = "Try generate SeoCards for all updated or new bounties";
 export const author = "clarkjoao";
 
-const {NEXT_IPFS_PROJECT_ID, NEXT_IPFS_PROJECT_SECRET, NEXT_PUBLIC_IPFS_BASE} = process.env;
+const {NEXT_IPFS_PROJECT_ID, NEXT_IPFS_PROJECT_SECRET, NEXT_IPFS_UPLOAD_ENDPOINT} = process.env;
 
 export async function action(issueId?: string) {
   const bountiesProcessed: any[] = [];
 
-  if ([NEXT_IPFS_PROJECT_ID, NEXT_IPFS_PROJECT_SECRET, NEXT_PUBLIC_IPFS_BASE].some(v => !v)) {
+  if ([NEXT_IPFS_PROJECT_ID, NEXT_IPFS_PROJECT_SECRET, NEXT_IPFS_UPLOAD_ENDPOINT].some(v => !v)) {
     logger.warn(`${name} Missing id, secret or baseURL, for IPFService`);
     return bountiesProcessed;
   }
