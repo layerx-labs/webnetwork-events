@@ -39,7 +39,7 @@ export async function action(
     const [owner, repo] = slashSplit(dbBounty.repository.githubPath);
 
     await GHService.issueClose(repo, owner, dbBounty.githubId)
-      .catch(e => logger.error(`${name} Failed to close ${owner}/${repo}/issues/${dbBounty.githubId}`, e));
+      .catch(e => logger.error(`${name} Failed to close ${owner}/${repo}/issues/${dbBounty.githubId}`, e?.message || e.toString()));
 
     dbBounty.state = `canceled`;
     await dbBounty.save();

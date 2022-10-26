@@ -87,8 +87,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       }
     }
 
-  } catch (err) {
-    logger.error(`${name} Error`, err);
+  } catch (err: any) {
+    logger.error(`${name} Error`, err?.message || err.toString());
   }
 
   return eventsProcessed;

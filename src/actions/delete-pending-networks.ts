@@ -32,8 +32,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         logger.info(`${name} Network ${network.networkAddress} and it's repositories were deleted`);
       }
     }
-  } catch (err) {
-    logger.error(`${name} Error`, err);
+  } catch (err: any) {
+    logger.error(`${name} Error`, err?.message || err.toString());
   }
 
   return eventsProcessed;

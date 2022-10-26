@@ -40,8 +40,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
               });
 
               return tokenAddress;
-            } catch (e) {
-              logger.warn(`${name} Failed to create ${tokenAddress} in database`, e);
+            } catch (e: any) {
+              logger.warn(`${name} Failed to create ${tokenAddress} in database`, e?.message || e.toString());
               return;
             }
           }));

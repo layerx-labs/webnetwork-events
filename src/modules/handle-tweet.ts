@@ -140,7 +140,7 @@ export default async function twitterTweet({entity, event, bountyId, networkName
         return value;
       })
       .catch((err) => {
-        loggerHandler.error("Error creating Tweet", err);
+        loggerHandler.error("Error creating Tweet", err?.message || err.toString());
       });
   } else {
     loggerHandler.error("This Tweet cannot be created. Because it contains more than 280 characters", Tweet);

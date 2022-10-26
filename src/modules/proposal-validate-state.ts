@@ -42,8 +42,8 @@ export default async function validateProposalState(currentState: string,
                                                     networkService: Network_v2): Promise<string> {
   const validation =
     await bountyReadyPRsHasNoInvalidProposals(networkBounty, networkService)
-      .catch((error) => {
-        loggerHandler.error(`Failed bountyReadyPRsHasNoInvalidProposals`, error);
+      .catch((err) => {
+        loggerHandler.error(`Failed bountyReadyPRsHasNoInvalidProposals`, err?.message || err.toString());
         return -1;
       });
 
