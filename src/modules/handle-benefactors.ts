@@ -30,13 +30,12 @@ export async function handleBenefactors(
           }
         const { contractId, issueId } = benefactor
         
-        if(method === "both"){
-            if(notOnDatabase(item, key)) await db.benefactors.create(benefactor)
-            else if(onDatabase(item)) await db.benefactors.destroy({ where: { contractId, issueId } })
-        }else if(method === "delete"){
-            if(onDatabase(item)) await db.benefactors.destroy({ where: { contractId, issueId } })
-        }else if(method === "create"){
-            if(notOnDatabase(item, key)) await db.benefactors.create(benefactor)
+        if(method === ("both" || "create") && notOnDatabase(item, key)){
+            await db.benefactors.create(benefactor)
+        }
+        
+        if(method === ("both" || "delete") && onDatabase(item)){
+            await db.benefactors.destroy({ where: { contractId, issueId } })
         }
     }
   
