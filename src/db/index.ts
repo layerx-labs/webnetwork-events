@@ -3,14 +3,14 @@ import { Dialect, Options, Sequelize } from "sequelize";
 import { initModels } from "./models/init-models";
 
 const {
-  NEXT_DB_DATABASE: database,
-  NEXT_DB_HOST: host,
-  NEXT_DB_PASSWORD: password,
-  NEXT_DB_PORT: port,
-  NEXT_DB_USERNAME: username,
-  NEXT_DB_DIALECT: dialect,
-  NEXT_DB_LOG,
-  NEXT_DB_SSL,
+  DB_DATABASE: database,
+  DB_HOST: host,
+  DB_PASSWORD: password,
+  DB_PORT: port,
+  DB_USERNAME: username,
+  DB_DIALECT: dialect,
+  DB_LOG,
+  DB_SSL,
 } = process.env;
 
 if ([database, host, password, port, username].some((v) => !v))
@@ -23,10 +23,10 @@ const options: Options = {
   dialect: (dialect as Dialect) || "postgres",
   host: host || "localhost",
   port: +(port || 54320),
-  logging: !NEXT_DB_LOG ? false : console.log,
+  logging: !DB_LOG ? false : console.log,
 };
 
-if (NEXT_DB_SSL === "true")
+if (DB_SSL === "true")
   options.dialectOptions = {
     ssl: {
       required: true,

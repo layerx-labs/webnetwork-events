@@ -3,7 +3,7 @@
 </h2>
 
 <h3 align="center">
- This project is a microservice to check and process events mined at chain for update <a href="https://github.com/bepronetwork/web-network">Web Network</a>. learn more <a href="https://bepronetwork.medium.com/what-is-bepro-network-6ec4054d2020">about</a>.
+ This project is a API service to check and process events mined at chain to keep <a href="https://github.com/bepronetwork/web-network">Web Network</a> updated.<br> Learn more <a href="https://bepronetwork.medium.com/what-is-bepro-network-6ec4054d2020">about</a>.
 </h3>
 
 <p align="center">
@@ -16,16 +16,18 @@
 ---
 
 <h3 align="center">
-  We are delighted to announce the release of <a href="https://app.bepro.network/">Bepro Network's v2 </a> protocol. Try it.
+  We are delighted to announce the release of <a href="https://app.bepro.network/">Bepro Network's v2 </a> protocol and we would invite to try it.
 </h3>
 
-#
+---
+
+This project is an API to listen events from blockchain and manage the database for keep [web-network](https://github.com/bepronetwork/web-network) updated.
+
+It is able to run as `http server` and as a `cronjob`, and it's essential for running web-network correctly.
 
 ## 1. Prerequisites
 
 - [NodeJS](https://nodejs.dev/) in v16.13 or newer.
-
-<br>
 
 ## 2. Quick Started
 
@@ -38,55 +40,47 @@ $ npm install
 Create a new .env file based on the default example.
 
 ```console
-$ cp .env.exemple .env
+$ cp .env.example .env
 ```
 
-Run http server:
+`Remember to fill in the .env with your enviroment values`
+
+Run as http server:
 
 ```bash
 $ npm run dev
 ```
 
-Run cron module:
+Run as cronjob module:
 
 ```bash
 $ npm run build
 $ npm run start:cron
 ```
 
-<br>
-
 ## 3. Documentation
-
-<br>
 
 ### 3.1 Architecture
 
-| folder  | description                                |
+| Folder  | Description                                |
 | ------- | ------------------------------------------ |
 | db      | models and configuration                   |
 | tools   | scripting tools                            |
 | actions | event-reader actions to be consumed by cma |
 | utils   | helpers for developers                     |
 
-<br>
-
 ### 3.2 Scripts
 
-| Script        | description              |
+| Script        | Description              |
 | ------------- | ------------------------ |
 | update-models | pull models from db      |
 | dev           | run http server dev mode |
 | start:server  | run http server          |
-| start:cron    | run cron moduel          |
-
-<br>
+| start:cron    | run cronjob              |
 
 ## 4. Contributing
 
 See [CONTRIBUTING.md](https://github.com/bepro/webapp/CONTRIBUTING.md) for our guide to contributing to web-network.
-
-<br>
 
 ## 5. Join the community
 
@@ -94,5 +88,3 @@ See [CONTRIBUTING.md](https://github.com/bepro/webapp/CONTRIBUTING.md) for our g
 - [Telegram](https://t.me/betprotocol)
 - [Medium](https://bepronetwork.medium.com)
 - [WebSite](https://www.bepro.network)
-
-<br/>

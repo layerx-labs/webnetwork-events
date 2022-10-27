@@ -8,7 +8,7 @@ import {Log} from "web3-core";
 import {networksAttributes} from "../db/models/networks";
 import {EventNameActionsMap} from "../utils/event-name-actions-map";
 
-const {NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey,} = process.env;
+const {PUBLIC_WEB3_CONNECTION: web3Host, WALLET_PRIVATE_KEY: privateKey,} = process.env;
 
 type EventsPerNetwork<T = any> = {[networkAddress: string]: {info: networksAttributes, returnValues: T[]}}
 

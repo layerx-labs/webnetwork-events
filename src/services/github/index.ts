@@ -6,7 +6,7 @@ import * as IssueQueries from "./graphql/issue";
 import * as PullRequestQueries from "./graphql/pull-request";
 import * as RepositoryQueries from "./graphql/repository";
 
-const { NEXT_PUBLIC_GH_TOKEN: token } = process.env;
+const { PUBLIC_GH_TOKEN: token } = process.env;
 
 const githubAPI = new Octokit({ auth: token }).graphql;
 
