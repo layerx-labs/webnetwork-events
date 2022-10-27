@@ -10,7 +10,7 @@ export async function handleBenefactors(
     method: "create" | "delete" | "both",
     eventName: string
   ) {
-    if (!benefactors.length) return;
+    if (!benefactors.length || benefactors.length === 0) return;
   
     const notOnDatabase = ({ amount }: Benefactor, key: number) => {
       return (
