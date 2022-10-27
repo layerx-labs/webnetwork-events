@@ -8,6 +8,7 @@ import {BountyCanceledEvent} from "@taikai/dappkit/dist/src/interfaces/events/ne
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
+import { handleBenefactors } from "src/modules/handle-benefactors";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -42,6 +43,9 @@ export async function action(
       .catch(e => logger.error(`${name} Failed to close ${owner}/${repo}/issues/${dbBounty.githubId}`, e));
 
     dbBounty.state = `canceled`;
+
+    await handleBenefactors(bounty.funding, dbBounty, "delete" , name)
+    
     await dbBounty.save();
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
