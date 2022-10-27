@@ -9,6 +9,7 @@ import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.c
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
 import { handleBenefactors } from "src/modules/handle-benefactors";
+import BigNumber from "bignumber.js";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -29,7 +30,7 @@ export async function action(
 
     const dbBounty = await db.issues.findOne({
         where: { contractId: block.returnValues.id, issueId: bounty.cid, network_id: network.id, },
-        include: [{ association: "token" }, { association: "repository" }],});
+        include: [{ association: "token" }, { association: "repository" }, { association: "benefactors" }] ,});
 
     if (!dbBounty)
       return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
@@ -44,7 +45,10 @@ export async function action(
 
     dbBounty.state = `canceled`;
 
-    await handleBenefactors(bounty.funding, dbBounty, "delete" , name)
+    if(bounty.funding.length > 0){
+      await handleBenefactors(bounty.funding, dbBounty, "delete" , name)
+      dbBounty.fundedAmount = bounty.funding.reduce((prev, current) => prev.plus(current.amount), BigNumber(0)).toFixed()
+    } 
     
     await dbBounty.save();
 
