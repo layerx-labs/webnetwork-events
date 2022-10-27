@@ -25,6 +25,8 @@ import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
+import { benefactors as _benefactors } from "./benefactor";
+import type { benefactorAttributes, benefactorCreationAttributes } from "./benefactor";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -40,6 +42,7 @@ export {
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
+  _benefactors as benefactors
 };
 
 export type {
@@ -69,6 +72,8 @@ export type {
   usersCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
+  benefactorAttributes,
+  benefactorCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -85,6 +90,7 @@ export function initModels(sequelize: Sequelize) {
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
+  const benefactors = _benefactors.initModel(sequelize);
 
   developers.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(developers, { as: "developers", foreignKey: "issueId"});
@@ -94,6 +100,7 @@ export function initModels(sequelize: Sequelize) {
   issues.hasMany(pull_requests, { as: "pull_requests", foreignKey: "issueId"});
   users_payments.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(users_payments, { as: "users_payments", foreignKey: "issueId"});
+  issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
   issues.belongsTo(networks, { as: "network", foreignKey: "network_id"});
   networks.hasMany(issues, { as: "issues", foreignKey: "network_id"});
   network_tokens.belongsTo(networks, { as: "network", foreignKey: "networkId"});
@@ -123,5 +130,6 @@ export function initModels(sequelize: Sequelize) {
     tokens: tokens,
     users: users,
     users_payments: users_payments,
+    benefactors: benefactors
   };
 }

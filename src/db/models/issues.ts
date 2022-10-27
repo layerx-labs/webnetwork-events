@@ -5,6 +5,7 @@ import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 import type { networks, networksId } from './networks';
 import type { pull_requests, pull_requestsId } from './pull_requests';
 import type { repositories, repositoriesId } from './repositories';
+import { benefactorId, benefactors } from './benefactor';
 import type { tokens, tokensId } from './tokens';
 import type { users_payments, users_paymentsId } from './users_payments';
 
@@ -98,6 +99,18 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   hasPull_request!: Sequelize.HasManyHasAssociationMixin<pull_requests, pull_requestsId>;
   hasPull_requests!: Sequelize.HasManyHasAssociationsMixin<pull_requests, pull_requestsId>;
   countPull_requests!: Sequelize.HasManyCountAssociationsMixin;
+  // issues hasMany benefactor via issueId
+  benefactors!: benefactors[];
+  getbenefactors!: Sequelize.HasManyGetAssociationsMixin<benefactors>;
+  setbenefactors!: Sequelize.HasManySetAssociationsMixin<benefactors, benefactorId>;
+  addbenefactor!: Sequelize.HasManyAddAssociationMixin<benefactors, benefactorId>;
+  addbenefactors!: Sequelize.HasManyAddAssociationsMixin<benefactors, benefactorId>;
+  createbenefactor!: Sequelize.HasManyCreateAssociationMixin<benefactors>;
+  removebenefactor!: Sequelize.HasManyRemoveAssociationMixin<benefactors, benefactorId>;
+  removebenefactors!: Sequelize.HasManyRemoveAssociationsMixin<benefactors, benefactorId>;
+  hasbenefactor!: Sequelize.HasManyHasAssociationMixin<benefactors, benefactorId>;
+  hasbenefactors!: Sequelize.HasManyHasAssociationsMixin<benefactors, benefactorId>;
+  countbenefactors!: Sequelize.HasManyCountAssociationsMixin;
   // issues hasMany users_payments via issueId
   users_payments!: users_payments[];
   getUsers_payments!: Sequelize.HasManyGetAssociationsMixin<users_payments>;
