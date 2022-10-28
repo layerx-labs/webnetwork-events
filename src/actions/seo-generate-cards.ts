@@ -81,7 +81,7 @@ export async function action(issueId?: string) {
     }
 
   } catch (err) {
-    logger.error(`${name} Error`, err?.message || err.toString());
+    logger.error(`${name} Error`, err);
   }
 
   return bountiesProcessed;
