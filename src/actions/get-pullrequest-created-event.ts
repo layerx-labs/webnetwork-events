@@ -61,6 +61,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     dbPullRequest.userRepo = pullRequest.userRepo;
     dbPullRequest.userBranch = pullRequest.userBranch;
     dbPullRequest.contractId = pullRequest.id;
+    dbPullRequest.userAddress = pullRequest.creator;
 
     await dbPullRequest.save();
 
