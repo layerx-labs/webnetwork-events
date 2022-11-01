@@ -80,8 +80,8 @@ export async function action(issueId?: string) {
       await dbEvent.save();
     }
 
-  } catch (err) {
-    logger.error(`${name} Error`, err);
+  } catch (err: any) {
+    logger.error(`${name} Error`, err?.message || err.toString());
   }
 
   return bountiesProcessed;
