@@ -2,7 +2,7 @@ import fs from "fs";
 import nodeHtmlToImage from "node-html-to-image";
 import path from "path";
 import BigNumber from "bignumber.js";
-
+import { formatNumberToNScale } from "src/utils/formatNumber";
 import { slashSplit } from "src/utils/string";
 
 function image2base64(imagePathName: string) {
@@ -44,9 +44,9 @@ export default async function generateBountyCards(issue) {
     state: issue?.state,
     title: issue?.title,
     repository: slashSplit(issue?.repository?.githubPath)[1] || "",
-    amount: new Intl.NumberFormat("en").format(issue?.amount || 0),
-    fundingAmount: new Intl.NumberFormat("en").format(issue?.fundingAmount || 0),
-    fundedAmount: new Intl.NumberFormat("en").format(issue?.fundedAmount || 0),
+    amount: formatNumberToNScale(issue?.amount || 0),
+    fundingAmount: formatNumberToNScale(issue?.fundingAmount || 0),
+    fundedAmount: formatNumberToNScale(issue?.fundedAmount || 0),
     isFudingBounty: BigNumber(issue?.fundingAmount).gt(0),
     working: issue?.working?.length || 0,
     proposals: issue?.merge_proposals?.length || 0,
