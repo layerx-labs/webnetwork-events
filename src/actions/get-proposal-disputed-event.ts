@@ -1,8 +1,8 @@
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import logger from "src/utils/logger-handler";
 import {EventService} from "../services/event-service";
 import {BountyProposalDisputedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {proposalStateProcessor} from "../modules/proposal-state-processor";
+import { disputeProcessor } from "src/modules/dispute-processor";
 
 export const name = "getBountyProposalDisputedEvents";
 export const schedule = "*/14 * * * *";
@@ -16,6 +16,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
   await _service._processEvents(
     async (block, network) => {
+      await disputeProcessor(block, network, _service);
       eventsProcessed = await proposalStateProcessor(block, network, _service, eventsProcessed);
     });
 
