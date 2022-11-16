@@ -9,6 +9,7 @@ import {BountyClosedEvent} from "@taikai/dappkit/dist/src/interfaces/events/netw
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
+import { updateCuratorProposalParams } from "src/modules/handle-curators";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
@@ -59,6 +60,11 @@ async function updateUserPayments(proposal, transactionHash, issueId, tokenAmoun
         issueId, transactionHash,})));
 }
 
+async function updateCuratorProposal(address: string) {
+  const curator = await db.curators.findOne({ where: { address }})
+  if(curator) return await updateCuratorProposalParams(curator, "acceptedProposals")
+}
+
 export async function action(
   query?: EventsQuery
 ): Promise<EventsProcessed> {
@@ -100,6 +106,8 @@ export async function action(
     await dbBounty.save();
 
     await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
+    
+    await updateCuratorProposal(bounty.proposals[+proposalId].creator)
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
   }
