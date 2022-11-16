@@ -14,6 +14,7 @@ import { action as getProposalRefused } from "src/actions/get-proposal-refused-e
 import { action as getPullRequestCanceled } from "src/actions/get-pullrequest-canceled-event";
 import { action as getPullRequestCreated } from "src/actions/get-pullrequest-created-event";
 import { action as getPullRequestReadyForReview } from "src/actions/get-pullrequest-ready-for-review";
+import { action as getOraclesTransferEvents } from "src/actions/get-oracles-transfer-events";
 import {
   BountiesProcessed,
   EventsProcessed,
@@ -38,6 +39,7 @@ const events = {
   },
   oracles: {
     changed: getOraclesChangedEvents,
+    transfer: getOraclesTransferEvents
   },
   proposal: {
     created: getProposalCreated,
