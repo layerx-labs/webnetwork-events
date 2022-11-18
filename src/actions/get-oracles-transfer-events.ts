@@ -15,11 +15,15 @@ export const author = "marcusviniciusLsantos";
 
 
 async function handleTransfers(addresses: string[], councilAmount: string, networkId: number, service) {
- return Promise.all(addresses.map(async address => {
-      const actorTotalVotes = BigNumber(await (service.Actor as Network_v2).getOraclesOf(address));
+  const decimals = (service.Actor as Network_v2).networkToken.decimals
 
-      return await handleCurators(address, actorTotalVotes, councilAmount, networkId)
-  }))
+  return Promise.all(
+    addresses.map((address) =>
+      service.Actor.getOraclesOf(address).then((votes) =>
+        handleCurators(address, BigNumber(votes), councilAmount, networkId, decimals)
+      )
+    )
+  );
 }
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {

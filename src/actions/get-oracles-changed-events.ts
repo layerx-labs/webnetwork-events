@@ -37,7 +37,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     const actorExistsInDb = networkCouncilMembers.some(address => actor === address);
     const actorTotalVotes = BigNumber(await (service.Actor as Network_v2).getOraclesOf(actor))
 
-    await handleCurators(actor, actorTotalVotes, councilAmount, dbNetwork.id)
+    await handleCurators(actor, actorTotalVotes, councilAmount, dbNetwork.id, decimals)
     
     if (actorExistsInDb && actorsNewTotal.lt(councilAmount))
       dbNetwork.councilMembers = networkCouncilMembers.filter(address => address !== actor);

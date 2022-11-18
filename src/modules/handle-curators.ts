@@ -6,7 +6,8 @@ export async function handleCurators(
   address: string,
   totalVotes: BigNumber,
   councilAmount: number | string,
-  networkId: number
+  networkId: number,
+  decimals: number
 ) {
   const isCurator = totalVotes.gte(councilAmount);
   const curatorInDb = await db.curators.findOne({ where: { address, networkId } });
@@ -23,7 +24,7 @@ export async function handleCurators(
       address,
       networkId,
       isCurrentlyCurator: true,
-      tokensLocked: totalVotes.toFixed(),
+      tokensLocked: totalVotes.toFixed(decimals),
     });
   }
 
