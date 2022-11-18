@@ -11,17 +11,20 @@ import logger from "src/utils/logger-handler";
 
 export async function disputeProcessor(block: Block & BountyProposalDisputedEvent, network, _service, isProposalRequired = true) {
     const {bountyId, prId, proposalId,} = block.returnValues;
+
+    const service = _service as EventService;
+    const Actor = service.Actor as Network_v2;
   
-    const { from: actorAddress } = await ((_service as EventService).web3Connection as Web3Connection).Web3.eth.getTransaction(block.transactionHash)
+    const { from: actorAddress } = await (service.web3Connection as Web3Connection).Web3.eth.getTransaction(block.transactionHash)
   
-    const bounty = await ((_service as EventService).Actor as Network_v2).getBounty(bountyId);
-  
+    const bounty = await Actor.getBounty(bountyId);
+
     if (!bounty)
       return logger.error(NETWORK_BOUNTY_NOT_FOUND('dispute-processor', bountyId, network.networkAddress));
   
     const values = await validateProposal(bounty, prId, proposalId, network.id, isProposalRequired);
   
-    const actorTotalVotes = BigNumber(await ((_service as EventService).Actor as Network_v2).getOraclesOf(actorAddress));
+    const actorTotalVotes = BigNumber(await Actor.getOraclesOf(actorAddress));
   
     if (values?.dbBounty  && values?.dbProposal && actorAddress && actorTotalVotes.gt(0)){
       const {dbBounty, dbProposal} = values
@@ -37,7 +40,7 @@ export async function disputeProcessor(block: Block & BountyProposalDisputedEven
           weight: actorTotalVotes.toFixed()
         })
   
-        const isDisputed = await ((_service as EventService).Actor as Network_v2).isProposalDisputed(bounty.id, proposalId)
+        const isDisputed = await Actor.isProposalDisputed(bounty.id, proposalId)
   
         if(isDisputed) {
           const curator = await db.curators.findOne({ where: { address: bounty.proposals[proposalId].creator }})
