@@ -43,7 +43,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     const pullRequest = bounty.pullRequests[pullRequestId];
 
     const dbPullRequest = await db.pull_requests.findOne({
-      where:{ issueId: dbBounty.id, githubId: pullRequest.cid.toString(), contractId: pullRequest.id}});
+      where:{ issueId: dbBounty.id, githubId: pullRequest.cid.toString(), contractId: pullRequest.id, network_id: network?.id}});
 
     if (!dbPullRequest)
       return logger.error(`${name} Pull request ${pullRequest.cid} not found in database`, bounty)

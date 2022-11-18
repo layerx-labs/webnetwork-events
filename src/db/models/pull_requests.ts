@@ -2,6 +2,7 @@ import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { issues, issuesId } from './issues';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
+import type { networks, networksId } from './networks';
 
 export interface pull_requestsAttributes {
   id: number;
@@ -10,18 +11,18 @@ export interface pull_requestsAttributes {
   createdAt: Date;
   updatedAt: Date;
   githubLogin?: string;
-  branch?: string;
   reviewers?: string[];
   userRepo?: string;
   userBranch?: string;
-  userAddress?: string;
   status?: string;
   contractId?: number;
+  userAddress?: string;
+  network_id?: number;
 }
 
 export type pull_requestsPk = "id";
 export type pull_requestsId = pull_requests[pull_requestsPk];
-export type pull_requestsOptionalAttributes = "id" | "githubId" | "issueId" | "createdAt" | "updatedAt" | "githubLogin" | "branch" | "reviewers" | "userRepo" | "userBranch" | "status" | "contractId";
+export type pull_requestsOptionalAttributes = "id" | "githubId" | "issueId" | "createdAt" | "updatedAt" | "githubLogin" | "reviewers" | "userRepo" | "userBranch" | "status" | "contractId" | "userAddress" | "network_id";
 export type pull_requestsCreationAttributes = Optional<pull_requestsAttributes, pull_requestsOptionalAttributes>;
 
 export class pull_requests extends Model<pull_requestsAttributes, pull_requestsCreationAttributes> implements pull_requestsAttributes {
@@ -31,19 +32,24 @@ export class pull_requests extends Model<pull_requestsAttributes, pull_requestsC
   createdAt!: Date;
   updatedAt!: Date;
   githubLogin?: string;
-  branch?: string;
   reviewers?: string[];
   userRepo?: string;
   userBranch?: string;
-  userAddress?: string;
   status?: string;
   contractId?: number;
+  userAddress?: string;
+  network_id?: number;
 
   // pull_requests belongsTo issues via issueId
   issue!: issues;
   getIssue!: Sequelize.BelongsToGetAssociationMixin<issues>;
   setIssue!: Sequelize.BelongsToSetAssociationMixin<issues, issuesId>;
   createIssue!: Sequelize.BelongsToCreateAssociationMixin<issues>;
+  // pull_requests belongsTo networks via network_id
+  network!: networks;
+  getNetwork!: Sequelize.BelongsToGetAssociationMixin<networks>;
+  setNetwork!: Sequelize.BelongsToSetAssociationMixin<networks, networksId>;
+  createNetwork!: Sequelize.BelongsToCreateAssociationMixin<networks>;
   // pull_requests hasMany merge_proposals via pullRequestId
   merge_proposals!: merge_proposals[];
   getMerge_proposals!: Sequelize.HasManyGetAssociationsMixin<merge_proposals>;
@@ -81,10 +87,6 @@ export class pull_requests extends Model<pull_requestsAttributes, pull_requestsC
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    branch: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
     reviewers: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
@@ -98,10 +100,6 @@ export class pull_requests extends Model<pull_requestsAttributes, pull_requestsC
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    userAddress: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
     status: {
       type: DataTypes.STRING(255),
       allowNull: true
@@ -109,6 +107,18 @@ export class pull_requests extends Model<pull_requestsAttributes, pull_requestsC
     contractId: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    userAddress: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    network_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'networks',
+        key: 'id'
+      }
     }
   }, {
     tableName: 'pull_requests',

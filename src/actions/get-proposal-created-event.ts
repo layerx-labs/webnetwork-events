@@ -36,17 +36,17 @@ export async function action(
     if (!dbIssue)
       return logger.warn(`${name} Issue ${bounty.cid} not found`);
 
-    const dbProposal = await db.merge_proposals.findOne({where: {scMergeId: proposal.id.toString(), issueId: dbIssue?.id}});
+    const dbProposal = await db.merge_proposals.findOne({where: {contractId: proposal.id, issueId: dbIssue?.id, network_id: network?.id}});
     if (dbProposal)
       return logger.warn(`${name} Proposal with id ${proposalId} was already parsed`);
 
     await db.merge_proposals.create({
-      scMergeId: proposal.id.toString(),
       issueId: dbBounty.id,
       pullRequestId: dbPullRequest.id,
       githubLogin: dbUser?.githubLogin,
       creator: proposal.creator,
-      contractId: proposal.id
+      contractId: proposal.id,
+      network_id: network?.id
     });
 
     if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {

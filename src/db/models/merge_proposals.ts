@@ -1,11 +1,11 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { issues, issuesId } from './issues';
+import type { networks, networksId } from './networks';
 import type { pull_requests, pull_requestsId } from './pull_requests';
 
 export interface merge_proposalsAttributes {
   id: number;
-  scMergeId?: string;
   issueId?: number;
   pullRequestId?: number;
   createdAt: Date;
@@ -13,16 +13,16 @@ export interface merge_proposalsAttributes {
   githubLogin?: string;
   contractId?: number;
   creator?: string;
+  network_id?: number;
 }
 
 export type merge_proposalsPk = "id";
 export type merge_proposalsId = merge_proposals[merge_proposalsPk];
-export type merge_proposalsOptionalAttributes = "id" | "scMergeId" | "issueId" | "pullRequestId" | "createdAt" | "updatedAt" | "githubLogin" | "contractId" | "creator";
+export type merge_proposalsOptionalAttributes = "id" | "issueId" | "pullRequestId" | "createdAt" | "updatedAt" | "githubLogin" | "contractId" | "creator" | "network_id";
 export type merge_proposalsCreationAttributes = Optional<merge_proposalsAttributes, merge_proposalsOptionalAttributes>;
 
 export class merge_proposals extends Model<merge_proposalsAttributes, merge_proposalsCreationAttributes> implements merge_proposalsAttributes {
   id!: number;
-  scMergeId?: string;
   issueId?: number;
   pullRequestId?: number;
   createdAt!: Date;
@@ -30,12 +30,18 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
   githubLogin?: string;
   contractId?: number;
   creator?: string;
+  network_id?: number;
 
   // merge_proposals belongsTo issues via issueId
   issue!: issues;
   getIssue!: Sequelize.BelongsToGetAssociationMixin<issues>;
   setIssue!: Sequelize.BelongsToSetAssociationMixin<issues, issuesId>;
   createIssue!: Sequelize.BelongsToCreateAssociationMixin<issues>;
+  // merge_proposals belongsTo networks via network_id
+  network!: networks;
+  getNetwork!: Sequelize.BelongsToGetAssociationMixin<networks>;
+  setNetwork!: Sequelize.BelongsToSetAssociationMixin<networks, networksId>;
+  createNetwork!: Sequelize.BelongsToCreateAssociationMixin<networks>;
   // merge_proposals belongsTo pull_requests via pullRequestId
   pullRequest!: pull_requests;
   getPullRequest!: Sequelize.BelongsToGetAssociationMixin<pull_requests>;
@@ -49,10 +55,6 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
-    },
-    scMergeId: {
-      type: DataTypes.STRING(255),
-      allowNull: true
     },
     issueId: {
       type: DataTypes.INTEGER,
@@ -81,6 +83,14 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
     creator: {
       type: DataTypes.STRING(255),
       allowNull: true
+    },
+    network_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'networks',
+        key: 'id'
+      }
     }
   }, {
     tableName: 'merge_proposals',
