@@ -19,8 +19,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     const {tokens, operation, kind} = block.returnValues as any;
     const dbTokens = await db.tokens.findAll();
 
+    const isTransactional = kind === "transactional";
+
     const onDatabase = (address) => tokens.includes(address);
-    const notOnDatabase = (token) => !dbTokens.some((t) => t.address === token);
+    const notOnDatabase = (token) => !dbTokens.some((t) => t.address === token && t.isTransactional === isTransactional);
 
     let result: number[]|string[] = [];
 
@@ -36,7 +38,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
                 name: await erc20.name(),
                 symbol: await erc20.symbol(),
                 address: tokenAddress,
-                isTransactional: kind === "transactional"
+                isTransactional
               });
 
               return tokenAddress;

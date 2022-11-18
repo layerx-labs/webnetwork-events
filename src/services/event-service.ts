@@ -70,7 +70,7 @@ export class EventService<E = any> {
     this.web3Connection.start();
 
     const allNetworks = await this.getAllNetworks();
-    if (!allNetworks.length)
+    if (!allNetworks.length && !this.fromRegistry)
       return {};
 
     if (this.query?.networkName) {
