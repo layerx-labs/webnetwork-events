@@ -35,9 +35,9 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     const actorsNewTotal = BigNumber(fromSmartContractDecimals(newLockedTotal, decimals));
     const networkCouncilMembers = network.councilMembers || [];
     const actorExistsInDb = networkCouncilMembers.some(address => actor === address);
-    const actorTotalVotes = BigNumber(await (service.Actor as Network_v2).getOraclesOf(actor))
+    const actorTotalVotes = await (service.Actor as Network_v2).getOraclesOf(actor)
 
-    await handleCurators(actor, actorTotalVotes, councilAmount, dbNetwork.id, decimals)
+    await handleCurators(actor, actorTotalVotes, councilAmount, dbNetwork.id)
     
     if (actorExistsInDb && actorsNewTotal.lt(councilAmount))
       dbNetwork.councilMembers = networkCouncilMembers.filter(address => address !== actor);

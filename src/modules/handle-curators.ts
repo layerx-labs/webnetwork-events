@@ -4,17 +4,16 @@ import { curators } from "src/db/models/curators";
 
 export async function handleCurators(
   address: string,
-  totalVotes: BigNumber,
+  totalVotes: string,
   councilAmount: number | string,
-  networkId: number,
-  decimals: number
+  networkId: number
 ) {
-  const isCurator = totalVotes.gte(councilAmount);
+  const isCurator = BigNumber(totalVotes).gte(councilAmount);
   const curatorInDb = await db.curators.findOne({ where: { address, networkId } });
 
   if (curatorInDb) {
     curatorInDb.isCurrentlyCurator = isCurator;
-    curatorInDb.tokensLocked = totalVotes.toFixed();
+    curatorInDb.tokensLocked = totalVotes
 
     await curatorInDb.save();
 
@@ -24,7 +23,7 @@ export async function handleCurators(
       address,
       networkId,
       isCurrentlyCurator: true,
-      tokensLocked: totalVotes.toFixed(decimals),
+      tokensLocked: totalVotes
     });
   }
 

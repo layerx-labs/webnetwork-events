@@ -20,7 +20,7 @@ async function handleTransfers(addresses: string[], councilAmount: string, netwo
   return Promise.all(
     addresses.map((address) =>
       service.Actor.getOraclesOf(address).then((votes) =>
-        handleCurators(address, BigNumber(votes), councilAmount, networkId, decimals)
+        handleCurators(address, votes, councilAmount, networkId)
       )
     )
   );
