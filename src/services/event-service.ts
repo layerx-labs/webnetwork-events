@@ -47,6 +47,13 @@ export class EventService<E = any> {
     return allNetworks;
   }
 
+  async getRegistryAddress() {
+    return db.settings.findOne({
+      where: { visibility: "public", group: "contracts", key: "networkRegistry" },
+      raw: true,
+    });
+  }
+
   async saveLastFromBlock() {
     const dbEvent = await db.chain_events.findOne({where: {name: this.name}});
     if (!this.#lastFromBlock) {
@@ -70,6 +77,8 @@ export class EventService<E = any> {
     this.web3Connection.start();
 
     const allNetworks = await this.getAllNetworks();
+    const registryAddress = this.fromRegistry ? await this.getRegistryAddress() : undefined;
+
     if (!allNetworks.length && !this.fromRegistry)
       return {};
 
@@ -142,7 +151,7 @@ export class EventService<E = any> {
       return ({...previous, [address]: {...previous[address], returnValues: [...previous[address].returnValues, rest]}})
     }
 
-    const eventsToParse = this.fromRegistry ? events : events.filter(({address}) => networkMap[address]);
+    const eventsToParse = events.filter(({address}) => this.fromRegistry ? address === registryAddress?.value : networkMap[address]);
 
     loggerHandler.log(`${this.name} Got ${eventsToParse.length} events with matching topics`);
 
