@@ -1,6 +1,8 @@
 import type { Sequelize } from "sequelize";
 import { SequelizeMeta as _SequelizeMeta } from "./SequelizeMeta";
 import type { SequelizeMetaAttributes, SequelizeMetaCreationAttributes } from "./SequelizeMeta";
+import { benefactors as _benefactors } from "./benefactors";
+import type { benefactorsAttributes, benefactorsCreationAttributes } from "./benefactors";
 import { chain_events as _chain_events } from "./chain_events";
 import type { chain_eventsAttributes, chain_eventsCreationAttributes } from "./chain_events";
 import { developers as _developers } from "./developers";
@@ -34,6 +36,7 @@ import type { disputeAttributes, disputeCreationAttributes } from "./disputes";
 
 export {
   _SequelizeMeta as SequelizeMeta,
+  _benefactors as benefactors,
   _chain_events as chain_events,
   _developers as developers,
   _issues as issues,
@@ -54,6 +57,8 @@ export {
 export type {
   SequelizeMetaAttributes,
   SequelizeMetaCreationAttributes,
+  benefactorsAttributes,
+  benefactorsCreationAttributes,
   chain_eventsAttributes,
   chain_eventsCreationAttributes,
   developersAttributes,
@@ -88,6 +93,7 @@ export type {
 
 export function initModels(sequelize: Sequelize) {
   const SequelizeMeta = _SequelizeMeta.initModel(sequelize);
+  const benefactors = _benefactors.initModel(sequelize);
   const chain_events = _chain_events.initModel(sequelize);
   const developers = _developers.initModel(sequelize);
   const issues = _issues.initModel(sequelize);
@@ -104,6 +110,8 @@ export function initModels(sequelize: Sequelize) {
   const curators = _curators.initModel(sequelize);
   const disputes = _disputes.initModel(sequelize);
 
+  benefactors.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
+  issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
   developers.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(developers, { as: "developers", foreignKey: "issueId"});
   merge_proposals.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
@@ -112,11 +120,14 @@ export function initModels(sequelize: Sequelize) {
   issues.hasMany(pull_requests, { as: "pull_requests", foreignKey: "issueId"});
   users_payments.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(users_payments, { as: "users_payments", foreignKey: "issueId"});
-  issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
   issues.belongsTo(networks, { as: "network", foreignKey: "network_id"});
   networks.hasMany(issues, { as: "issues", foreignKey: "network_id"});
+  merge_proposals.belongsTo(networks, { as: "network", foreignKey: "network_id"});
+  networks.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "network_id"});
   network_tokens.belongsTo(networks, { as: "network", foreignKey: "networkId"});
   networks.hasMany(network_tokens, { as: "network_tokens", foreignKey: "networkId"});
+  pull_requests.belongsTo(networks, { as: "network", foreignKey: "network_id"});
+  networks.hasMany(pull_requests, { as: "pull_requests", foreignKey: "network_id"});
   repositories.belongsTo(networks, { as: "network", foreignKey: "network_id"});
   networks.hasMany(repositories, { as: "repositories", foreignKey: "network_id"});
   merge_proposals.belongsTo(pull_requests, { as: "pullRequest", foreignKey: "pullRequestId"});
@@ -133,6 +144,7 @@ export function initModels(sequelize: Sequelize) {
 
   return {
     SequelizeMeta: SequelizeMeta,
+    benefactors: benefactors,
     chain_events: chain_events,
     developers: developers,
     issues: issues,

@@ -16,9 +16,9 @@ export const schedule = "*/12 * * * *";
 export const description = "Move to 'Closed' status the bounty";
 export const author = "clarkjoao";
 
-async function mergeProposal(bounty, id, issueId) {
+async function mergeProposal(bounty, id, issueId, network_id) {
   const pullRequest =
-    await db.pull_requests.findOne({where: {id, issueId},});
+    await db.pull_requests.findOne({where: {id, issueId, network_id},});
 
   if (!pullRequest) return;
 
@@ -33,11 +33,12 @@ async function mergeProposal(bounty, id, issueId) {
   return pullRequest;
 }
 
-async function closePullRequests(bounty, mergedPullRequestId) {
+async function closePullRequests(bounty, mergedPullRequestId, network_id) {
   const pullRequests = await db.pull_requests.findAll({
     where: {
       issueId: bounty.id,
       githubId: { [Op.not]: mergedPullRequestId },
+      network_id
     }
   });
 
@@ -91,17 +92,17 @@ export async function action(
     if (!dbBounty)
       return logger.error(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
 
-    const dbProposal = await db.merge_proposals.findOne({where: {issueId: dbBounty.id, scMergeId: proposalId}});
+    const dbProposal = await db.merge_proposals.findOne({where: {issueId: dbBounty.id, contractId: proposalId, network_id: network?.id}});
 
     if (!dbProposal)
       return logger.warn(`proposal ${proposalId} was not found in database for dbBounty ${dbBounty.id}`);
     else {
-      const mergedPR = await mergeProposal(dbBounty, dbProposal.pullRequestId, dbProposal.issueId);
+      const mergedPR = await mergeProposal(dbBounty, dbProposal.pullRequestId, dbProposal.issueId, network?.id);
       if (mergedPR)
-        await closePullRequests(dbBounty, mergedPR.githubId);
+        await closePullRequests(dbBounty, mergedPR.githubId, network?.id);
     }
 
-    dbBounty.merged = dbProposal?.scMergeId;
+    dbBounty.merged = dbProposal?.contractId as any;
     dbBounty.state = "closed";
     await dbBounty.save();
 

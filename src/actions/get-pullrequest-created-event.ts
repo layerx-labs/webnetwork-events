@@ -52,7 +52,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     const pullRequest = bounty.pullRequests[pullRequestId];
 
     const dbPullRequest = await db.pull_requests.findOne({
-      where: {issueId: dbBounty.id, githubId: pullRequest.cid.toString(), status: "pending"}});
+      where: {issueId: dbBounty.id, githubId: pullRequest.cid.toString(), status: "pending", network_id: network?.id}});
 
     if (!dbPullRequest)
       return logger.warn(`${name} No pull request found with "pending" and id ${pullRequest.cid}, maybe it was already parsed?`);

@@ -1,11 +1,11 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { benefactors, benefactorsId } from './benefactors';
 import type { developers, developersId } from './developers';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 import type { networks, networksId } from './networks';
 import type { pull_requests, pull_requestsId } from './pull_requests';
 import type { repositories, repositoriesId } from './repositories';
-import { benefactorId, benefactors } from './benefactor';
 import type { tokens, tokensId } from './tokens';
 import type { users_payments, users_paymentsId } from './users_payments';
 
@@ -36,7 +36,7 @@ export interface issuesAttributes {
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "tokenId" | "fundingAmount" | "fundedAmount";
+export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "tokenId" | "fundingAmount" | "fundedAmount" | "fundedAt";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
@@ -63,6 +63,18 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   fundedAmount?: string;
   fundedAt?: Date;
 
+  // issues hasMany benefactors via issueId
+  benefactors!: benefactors[];
+  getBenefactors!: Sequelize.HasManyGetAssociationsMixin<benefactors>;
+  setBenefactors!: Sequelize.HasManySetAssociationsMixin<benefactors, benefactorsId>;
+  addBenefactor!: Sequelize.HasManyAddAssociationMixin<benefactors, benefactorsId>;
+  addBenefactors!: Sequelize.HasManyAddAssociationsMixin<benefactors, benefactorsId>;
+  createBenefactor!: Sequelize.HasManyCreateAssociationMixin<benefactors>;
+  removeBenefactor!: Sequelize.HasManyRemoveAssociationMixin<benefactors, benefactorsId>;
+  removeBenefactors!: Sequelize.HasManyRemoveAssociationsMixin<benefactors, benefactorsId>;
+  hasBenefactor!: Sequelize.HasManyHasAssociationMixin<benefactors, benefactorsId>;
+  hasBenefactors!: Sequelize.HasManyHasAssociationsMixin<benefactors, benefactorsId>;
+  countBenefactors!: Sequelize.HasManyCountAssociationsMixin;
   // issues hasMany developers via issueId
   developers!: developers[];
   getDevelopers!: Sequelize.HasManyGetAssociationsMixin<developers>;
@@ -99,18 +111,6 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   hasPull_request!: Sequelize.HasManyHasAssociationMixin<pull_requests, pull_requestsId>;
   hasPull_requests!: Sequelize.HasManyHasAssociationsMixin<pull_requests, pull_requestsId>;
   countPull_requests!: Sequelize.HasManyCountAssociationsMixin;
-  // issues hasMany benefactor via issueId
-  benefactors!: benefactors[];
-  getbenefactors!: Sequelize.HasManyGetAssociationsMixin<benefactors>;
-  setbenefactors!: Sequelize.HasManySetAssociationsMixin<benefactors, benefactorId>;
-  addbenefactor!: Sequelize.HasManyAddAssociationMixin<benefactors, benefactorId>;
-  addbenefactors!: Sequelize.HasManyAddAssociationsMixin<benefactors, benefactorId>;
-  createbenefactor!: Sequelize.HasManyCreateAssociationMixin<benefactors>;
-  removebenefactor!: Sequelize.HasManyRemoveAssociationMixin<benefactors, benefactorId>;
-  removebenefactors!: Sequelize.HasManyRemoveAssociationsMixin<benefactors, benefactorId>;
-  hasbenefactor!: Sequelize.HasManyHasAssociationMixin<benefactors, benefactorId>;
-  hasbenefactors!: Sequelize.HasManyHasAssociationsMixin<benefactors, benefactorId>;
-  countbenefactors!: Sequelize.HasManyCountAssociationsMixin;
   // issues hasMany users_payments via issueId
   users_payments!: users_payments[];
   getUsers_payments!: Sequelize.HasManyGetAssociationsMixin<users_payments>;

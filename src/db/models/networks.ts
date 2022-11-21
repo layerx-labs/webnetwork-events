@@ -1,7 +1,9 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { issues, issuesId } from './issues';
+import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 import type { network_tokens, network_tokensId } from './network_tokens';
+import type { pull_requests, pull_requestsId } from './pull_requests';
 import type { repositories, repositoriesId } from './repositories';
 
 export interface networksAttributes {
@@ -54,6 +56,18 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
   hasIssue!: Sequelize.HasManyHasAssociationMixin<issues, issuesId>;
   hasIssues!: Sequelize.HasManyHasAssociationsMixin<issues, issuesId>;
   countIssues!: Sequelize.HasManyCountAssociationsMixin;
+  // networks hasMany merge_proposals via network_id
+  merge_proposals!: merge_proposals[];
+  getMerge_proposals!: Sequelize.HasManyGetAssociationsMixin<merge_proposals>;
+  setMerge_proposals!: Sequelize.HasManySetAssociationsMixin<merge_proposals, merge_proposalsId>;
+  addMerge_proposal!: Sequelize.HasManyAddAssociationMixin<merge_proposals, merge_proposalsId>;
+  addMerge_proposals!: Sequelize.HasManyAddAssociationsMixin<merge_proposals, merge_proposalsId>;
+  createMerge_proposal!: Sequelize.HasManyCreateAssociationMixin<merge_proposals>;
+  removeMerge_proposal!: Sequelize.HasManyRemoveAssociationMixin<merge_proposals, merge_proposalsId>;
+  removeMerge_proposals!: Sequelize.HasManyRemoveAssociationsMixin<merge_proposals, merge_proposalsId>;
+  hasMerge_proposal!: Sequelize.HasManyHasAssociationMixin<merge_proposals, merge_proposalsId>;
+  hasMerge_proposals!: Sequelize.HasManyHasAssociationsMixin<merge_proposals, merge_proposalsId>;
+  countMerge_proposals!: Sequelize.HasManyCountAssociationsMixin;
   // networks hasMany network_tokens via networkId
   network_tokens!: network_tokens[];
   getNetwork_tokens!: Sequelize.HasManyGetAssociationsMixin<network_tokens>;
@@ -66,6 +80,18 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
   hasNetwork_token!: Sequelize.HasManyHasAssociationMixin<network_tokens, network_tokensId>;
   hasNetwork_tokens!: Sequelize.HasManyHasAssociationsMixin<network_tokens, network_tokensId>;
   countNetwork_tokens!: Sequelize.HasManyCountAssociationsMixin;
+  // networks hasMany pull_requests via network_id
+  pull_requests!: pull_requests[];
+  getPull_requests!: Sequelize.HasManyGetAssociationsMixin<pull_requests>;
+  setPull_requests!: Sequelize.HasManySetAssociationsMixin<pull_requests, pull_requestsId>;
+  addPull_request!: Sequelize.HasManyAddAssociationMixin<pull_requests, pull_requestsId>;
+  addPull_requests!: Sequelize.HasManyAddAssociationsMixin<pull_requests, pull_requestsId>;
+  createPull_request!: Sequelize.HasManyCreateAssociationMixin<pull_requests>;
+  removePull_request!: Sequelize.HasManyRemoveAssociationMixin<pull_requests, pull_requestsId>;
+  removePull_requests!: Sequelize.HasManyRemoveAssociationsMixin<pull_requests, pull_requestsId>;
+  hasPull_request!: Sequelize.HasManyHasAssociationMixin<pull_requests, pull_requestsId>;
+  hasPull_requests!: Sequelize.HasManyHasAssociationsMixin<pull_requests, pull_requestsId>;
+  countPull_requests!: Sequelize.HasManyCountAssociationsMixin;
   // networks hasMany repositories via network_id
   repositories!: repositories[];
   getRepositories!: Sequelize.HasManyGetAssociationsMixin<repositories>;
