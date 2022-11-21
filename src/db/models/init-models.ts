@@ -27,8 +27,6 @@ import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
-import { benefactors as _benefactors } from "./benefactor";
-import type { benefactorAttributes, benefactorCreationAttributes } from "./benefactor";
 import { curators as _curators } from "./curators";
 import type { curatorAttributes, curatorCreationAttributes } from "./curators";
 import { disputes as _disputes } from "./disputes";
@@ -49,7 +47,6 @@ export {
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
-  _benefactors as benefactors,
   _curators as curators,
   _disputes as disputes
 };
@@ -83,8 +80,6 @@ export type {
   usersCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
-  benefactorAttributes,
-  benefactorCreationAttributes,
   curatorAttributes,
   curatorCreationAttributes,
   disputeAttributes,
@@ -106,7 +101,6 @@ export function initModels(sequelize: Sequelize) {
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
-  const benefactors = _benefactors.initModel(sequelize);
   const curators = _curators.initModel(sequelize);
   const disputes = _disputes.initModel(sequelize);
 
@@ -157,7 +151,6 @@ export function initModels(sequelize: Sequelize) {
     tokens: tokens,
     users: users,
     users_payments: users_payments,
-    benefactors: benefactors,
     curators: curators,
     disputes: disputes
   };
