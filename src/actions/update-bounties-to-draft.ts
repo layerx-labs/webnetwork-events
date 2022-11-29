@@ -11,7 +11,7 @@ import GHService from "src/services/github";
 import { subMilliseconds, isAfter } from "date-fns";
 import { Op } from "sequelize";
 
-export const name = "UpdateBountiesToDraft";
+export const name = "updateBountiesToDraft";
 export const schedule = "0 2 * * *" // every 2 AM
 export const description = "when draft time has been change at contract, we must update opened bounties to draft again";
 export const author = "clarkjoao";
