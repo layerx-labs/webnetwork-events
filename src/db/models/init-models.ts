@@ -31,6 +31,8 @@ import { curators as _curators } from "./curators";
 import type { curatorAttributes, curatorCreationAttributes } from "./curators";
 import { disputes as _disputes } from "./disputes";
 import type { disputeAttributes, disputeCreationAttributes } from "./disputes";
+import { leaderboard as _leaderboard } from "./leaderboard";
+import type { leaderboardAttributes, leaderboardCreationAttributes } from "./leaderboard";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -48,7 +50,8 @@ export {
   _users as users,
   _users_payments as users_payments,
   _curators as curators,
-  _disputes as disputes
+  _disputes as disputes,
+  _leaderboard as leaderboard
 };
 
 export type {
@@ -83,7 +86,9 @@ export type {
   curatorAttributes,
   curatorCreationAttributes,
   disputeAttributes,
-  disputeCreationAttributes
+  disputeCreationAttributes,
+  leaderboardAttributes,
+  leaderboardCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -103,6 +108,8 @@ export function initModels(sequelize: Sequelize) {
   const users_payments = _users_payments.initModel(sequelize);
   const curators = _curators.initModel(sequelize);
   const disputes = _disputes.initModel(sequelize);
+  const leaderboard = _leaderboard.initModel(sequelize);
+
 
   benefactors.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
@@ -152,6 +159,7 @@ export function initModels(sequelize: Sequelize) {
     users: users,
     users_payments: users_payments,
     curators: curators,
-    disputes: disputes
+    disputes: disputes,
+    leaderboard: leaderboard
   };
 }
