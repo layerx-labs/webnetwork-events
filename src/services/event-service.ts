@@ -102,7 +102,6 @@ export class EventService<E = any> {
     }
 
     if (this.customActor) {
-      console.log('caiu aqui', this.customActor)
       this.#Actor = new this.customActor(this.web3Connection)
     } else {
       if (this.fromRegistry)
@@ -122,7 +121,7 @@ export class EventService<E = any> {
       loggerHandler.error(`event ${this.name} not found on actor ABI`, {fromRegistry: this.fromRegistry});
       return {};
     }
-    console.log('block Query', this.query?.blockQuery?.from, this.query?.blockQuery?.to, lastReadBlock!.lastBlock )
+
     const eth = this.web3Connection.eth;
     const startBlock = this.query?.blockQuery?.from || lastReadBlock!.lastBlock || 0;
     const endBlock = this.query?.blockQuery?.to || await eth.getBlockNumber();
@@ -144,7 +143,7 @@ export class EventService<E = any> {
 
       this.#lastFromBlock = toBlock;
     }
-    console.log('events', events)
+
     const mapEvent = ({address, data, topics, transactionHash}) =>
       ({address, transactionHash, returnValues: eth.abi.decodeLog(event.inputs || [], data, event.anonymous ? topics : topics.slice(1))})
 
@@ -169,7 +168,6 @@ export class EventService<E = any> {
     try {
 
       for (const [networkAddress, {info, returnValues}] of Object.entries(await this._getEventsOfNetworks())) {
-        console.log('values', returnValues)
         await this.loadActorWithAddress(networkAddress);
         await Promise.all(returnValues.map(event => blockProcessor(event, info)));
       }
