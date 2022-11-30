@@ -15,6 +15,7 @@ import { action as getPullRequestCanceled } from "src/actions/get-pullrequest-ca
 import { action as getPullRequestCreated } from "src/actions/get-pullrequest-created-event";
 import { action as getPullRequestReadyForReview } from "src/actions/get-pullrequest-ready-for-review";
 import { action as getOraclesTransferEvents } from "src/actions/get-oracles-transfer-events";
+import { action as getTransferEvents } from "src/actions/get-transfer-bounty-token-events";
 import {
   BountiesProcessed,
   EventsProcessed,
@@ -55,6 +56,9 @@ const events = {
     changed: getChangeAllowedTokens,
     registered: getNetworkCreatedEvents,
   },
+  bountyToken: {
+    transfer: getTransferEvents
+  }
 };
 
 eventsRouter.get("/:entity/:event", async (req, res) => {
@@ -72,14 +76,14 @@ eventsRouter.get("/:entity/:event", async (req, res) => {
      * Only create tweet if the networkName params existis;
      */
 
-    const netoworkName = req.eventQuery?.networkName;
+    const networkName = req.eventQuery?.networkName;
 
-    if (netoworkName && eventsProcessed[netoworkName]) {
+    if (networkName && eventsProcessed[networkName]) {
       await dispatchTweets(
-        eventsProcessed[netoworkName] as BountiesProcessed,
+        eventsProcessed[networkName] as BountiesProcessed,
         entity,
         event,
-        netoworkName
+        networkName
       ).catch((e) => {
         loggerHandler.error(`Error to do a twitter: ${e}`);
       });

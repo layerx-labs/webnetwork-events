@@ -21,7 +21,8 @@ export class EventService<E = any> {
               readonly query?: EventsQuery,
               readonly fromRegistry = false,
               readonly web3Connection = new Web3Connection({web3Host, privateKey}),
-              readonly onlyRegisteredNetworks = true) {}
+              readonly onlyRegisteredNetworks = true,
+              readonly customActor: any = null) {}
 
   async loadActorWithAddress(address: string) {
     try {
@@ -73,7 +74,6 @@ export class EventService<E = any> {
   }
 
   async _getEventsOfNetworks(): Promise<EventsPerNetwork> {
-
     this.web3Connection.start();
 
     const allNetworks = await this.getAllNetworks();
@@ -101,10 +101,15 @@ export class EventService<E = any> {
       loggerHandler.warn(`${this.name} had no entry on chain_events, created with blockNumber: ${lastBlock}`);
     }
 
-    if (this.fromRegistry)
-      this.#Actor = new NetworkRegistry(this.web3Connection);
-    else
-      this.#Actor = new Network_v2(this.web3Connection);
+    if (this.customActor) {
+      console.log('caiu aqui', this.customActor)
+      this.#Actor = new this.customActor(this.web3Connection)
+    } else {
+      if (this.fromRegistry)
+        this.#Actor = new NetworkRegistry(this.web3Connection);
+      else
+        this.#Actor = new Network_v2(this.web3Connection);
+    }
 
     const eventName = EventNameActionsMap[this.name];
     if (!eventName) {
@@ -117,7 +122,7 @@ export class EventService<E = any> {
       loggerHandler.error(`event ${this.name} not found on actor ABI`, {fromRegistry: this.fromRegistry});
       return {};
     }
-
+    console.log('block Query', this.query?.blockQuery?.from, this.query?.blockQuery?.to, lastReadBlock!.lastBlock )
     const eth = this.web3Connection.eth;
     const startBlock = this.query?.blockQuery?.from || lastReadBlock!.lastBlock || 0;
     const endBlock = this.query?.blockQuery?.to || await eth.getBlockNumber();
@@ -139,7 +144,7 @@ export class EventService<E = any> {
 
       this.#lastFromBlock = toBlock;
     }
-
+    console.log('events', events)
     const mapEvent = ({address, data, topics, transactionHash}) =>
       ({address, transactionHash, returnValues: eth.abi.decodeLog(event.inputs || [], data, event.anonymous ? topics : topics.slice(1))})
 
@@ -164,6 +169,7 @@ export class EventService<E = any> {
     try {
 
       for (const [networkAddress, {info, returnValues}] of Object.entries(await this._getEventsOfNetworks())) {
+        console.log('values', returnValues)
         await this.loadActorWithAddress(networkAddress);
         await Promise.all(returnValues.map(event => blockProcessor(event, info)));
       }

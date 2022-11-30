@@ -14,4 +14,5 @@ export const EventNameActionsMap = {
   getBountyPullRequestCanceledEvents: 'BountyPullRequestCanceled',
   getBountyPullRequestCreatedEvents: 'BountyPullRequestCreated',
   getBountyPullRequestReadyForReviewEvents: 'BountyPullRequestReadyForReview',
+  getTransferEvents: 'Transfer', 
 }
