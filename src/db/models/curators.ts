@@ -1,31 +1,36 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
-import { networks, networksId } from './networks';
+import type { networks, networksId } from './networks';
 
-export interface curatorAttributes {
+export interface curatorsAttributes {
   id: number;
   address: string;
-  tokensLocked?: string;
   acceptedProposals?: number;
   disputedProposals?: number;
+  tokensLocked?: string;
   networkId: number;
   isCurrentlyCurator: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export type curatorPk = "id";
-export type curatorId = curators[curatorPk];
-export type curatorOptionalAttributes = "id";
-export type curatorCreationAttributes = Optional<curatorAttributes, curatorOptionalAttributes>;
+export type curatorsPk = "id";
+export type curatorsId = curators[curatorsPk];
+export type curatorsOptionalAttributes = "id" | "acceptedProposals" | "disputedProposals" | "tokensLocked" | "createdAt" | "updatedAt";
+export type curatorsCreationAttributes = Optional<curatorsAttributes, curatorsOptionalAttributes>;
 
-export class curators extends Model<curatorAttributes, curatorCreationAttributes> implements curatorAttributes {
-  address!: string;
-  networkId!: number;
+export class curators extends Model<curatorsAttributes, curatorsCreationAttributes> implements curatorsAttributes {
   id!: number;
+  address!: string;
+  acceptedProposals?: number;
+  disputedProposals?: number;
+  tokensLocked?: string;
+  networkId!: number;
   isCurrentlyCurator!: boolean;
-  tokensLocked: string;
-  acceptedProposals: number;
-  disputedProposals: number;
+  createdAt!: Date;
+  updatedAt!: Date;
 
+  // curators belongsTo networks via networkId
   network!: networks;
   getNetwork!: Sequelize.BelongsToGetAssociationMixin<networks>;
   setNetwork!: Sequelize.BelongsToSetAssociationMixin<networks, networksId>;
@@ -40,32 +45,33 @@ export class curators extends Model<curatorAttributes, curatorCreationAttributes
       primaryKey: true
     },
     address: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: DataTypes.STRING(255),
+      allowNull: false
     },
     acceptedProposals: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: true
     },
     disputedProposals: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: true
     },
     tokensLocked: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    isCurrentlyCurator: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
+      type: DataTypes.STRING(255),
+      allowNull: true
     },
     networkId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "network",
-        key: "id"
+        model: 'networks',
+        key: 'id'
       }
+    },
+    isCurrentlyCurator: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     tableName: 'curators',

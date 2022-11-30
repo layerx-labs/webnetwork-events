@@ -1,5 +1,6 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { disputes, disputesId } from './disputes';
 import type { issues, issuesId } from './issues';
 import type { networks, networksId } from './networks';
 import type { pull_requests, pull_requestsId } from './pull_requests';
@@ -37,6 +38,18 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
   getIssue!: Sequelize.BelongsToGetAssociationMixin<issues>;
   setIssue!: Sequelize.BelongsToSetAssociationMixin<issues, issuesId>;
   createIssue!: Sequelize.BelongsToCreateAssociationMixin<issues>;
+  // merge_proposals hasMany disputes via proposalId
+  disputes!: disputes[];
+  getDisputes!: Sequelize.HasManyGetAssociationsMixin<disputes>;
+  setDisputes!: Sequelize.HasManySetAssociationsMixin<disputes, disputesId>;
+  addDispute!: Sequelize.HasManyAddAssociationMixin<disputes, disputesId>;
+  addDisputes!: Sequelize.HasManyAddAssociationsMixin<disputes, disputesId>;
+  createDispute!: Sequelize.HasManyCreateAssociationMixin<disputes>;
+  removeDispute!: Sequelize.HasManyRemoveAssociationMixin<disputes, disputesId>;
+  removeDisputes!: Sequelize.HasManyRemoveAssociationsMixin<disputes, disputesId>;
+  hasDispute!: Sequelize.HasManyHasAssociationMixin<disputes, disputesId>;
+  hasDisputes!: Sequelize.HasManyHasAssociationsMixin<disputes, disputesId>;
+  countDisputes!: Sequelize.HasManyCountAssociationsMixin;
   // merge_proposals belongsTo networks via network_id
   network!: networks;
   getNetwork!: Sequelize.BelongsToGetAssociationMixin<networks>;

@@ -7,7 +7,6 @@ import * as PullRequestQueries from "./graphql/pull-request";
 import * as RepositoryQueries from "./graphql/repository";
 
 const { GITHUB_TOKEN: token } = process.env;
-
 const githubAPI = new Octokit({ auth: token }).graphql;
 
 export async function repositoryDetails(repo: string, owner: string) {

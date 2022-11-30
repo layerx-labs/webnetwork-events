@@ -31,6 +31,7 @@ export async function handleCurators(
 }
 
 export async function updateCuratorProposalParams(curator: curators, param: "acceptedProposals" | "disputedProposals" ) {
+  // @ts-ignore
   curator[param] +=  1
   return curator.save()
 }

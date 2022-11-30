@@ -1,39 +1,42 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
-import { issues, issuesId } from './issues';
-import { merge_proposals, merge_proposalsId } from './merge_proposals';
+import type { issues, issuesId } from './issues';
+import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 
-export interface disputeAttributes {
+export interface disputesAttributes {
   id: number;
   issueId: number;
   address: string;
   proposalId: number;
   weight?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export type disputePk = "id";
-export type disputeId = disputes[disputePk];
-export type disputeOptionalAttributes = "id";
-export type disputeCreationAttributes = Optional<disputeAttributes, disputeOptionalAttributes>;
+export type disputesPk = "id";
+export type disputesId = disputes[disputesPk];
+export type disputesOptionalAttributes = "id" | "weight" | "createdAt" | "updatedAt";
+export type disputesCreationAttributes = Optional<disputesAttributes, disputesOptionalAttributes>;
 
-export class disputes extends Model<disputeAttributes, disputeCreationAttributes> implements disputeAttributes {
-  proposalId!: number;
-  address!: string;
-  issueId!: number;
-  weight: string;
+export class disputes extends Model<disputesAttributes, disputesCreationAttributes> implements disputesAttributes {
   id!: number;
+  issueId!: number;
+  address!: string;
+  proposalId!: number;
+  weight?: string;
+  createdAt!: Date;
+  updatedAt!: Date;
 
-  // disputes hasMany issue via issueId
+  // disputes belongsTo issues via issueId
   issue!: issues;
   getIssue!: Sequelize.BelongsToGetAssociationMixin<issues>;
   setIssue!: Sequelize.BelongsToSetAssociationMixin<issues, issuesId>;
   createIssue!: Sequelize.BelongsToCreateAssociationMixin<issues>;
-
-  // disputes hasMany merge_proposals via proposalId
-  merge_proposal!: merge_proposals;
-  getMerge_proposal!: Sequelize.BelongsToGetAssociationMixin<merge_proposals>;
-  setMerge_proposal!: Sequelize.BelongsToSetAssociationMixin<merge_proposals, merge_proposalsId>;
-  createMerge_proposal!: Sequelize.BelongsToCreateAssociationMixin<merge_proposals>;
+  // disputes belongsTo merge_proposals via proposalId
+  proposal!: merge_proposals;
+  getProposal!: Sequelize.BelongsToGetAssociationMixin<merge_proposals>;
+  setProposal!: Sequelize.BelongsToSetAssociationMixin<merge_proposals, merge_proposalsId>;
+  createProposal!: Sequelize.BelongsToCreateAssociationMixin<merge_proposals>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof disputes {
     return sequelize.define('disputes', {
@@ -47,26 +50,26 @@ export class disputes extends Model<disputeAttributes, disputeCreationAttributes
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "issue",
-        key: "id"
+        model: 'issues',
+        key: 'id'
       }
     },
     address: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false
-    },    
+    },
     proposalId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: "mergeProposal",
-          key: "id"
-        }
-    },    
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'merge_proposals',
+        key: 'id'
+      }
+    },
     weight: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
+      type: DataTypes.STRING(255),
+      allowNull: true
+    }
   }, {
     tableName: 'disputes',
     schema: 'public',

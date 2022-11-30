@@ -1,5 +1,6 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { curators, curatorsId } from './curators';
 import type { issues, issuesId } from './issues';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 import type { network_tokens, network_tokensId } from './network_tokens';
@@ -21,11 +22,12 @@ export interface networksAttributes {
   allowCustomTokens?: boolean;
   councilMembers?: string[];
   isRegistered?: boolean;
+  isDefault?: boolean;
 }
 
 export type networksPk = "id";
 export type networksId = networks[networksPk];
-export type networksOptionalAttributes = "id" | "colors" | "networkAddress" | "logoIcon" | "fullLogo" | "createdAt" | "updatedAt" | "isClosed" | "allowCustomTokens" | "councilMembers" | "isRegistered";
+export type networksOptionalAttributes = "id" | "colors" | "networkAddress" | "logoIcon" | "fullLogo" | "createdAt" | "updatedAt" | "isClosed" | "allowCustomTokens" | "councilMembers" | "isRegistered" | "isDefault";
 export type networksCreationAttributes = Optional<networksAttributes, networksOptionalAttributes>;
 
 export class networks extends Model<networksAttributes, networksCreationAttributes> implements networksAttributes {
@@ -43,7 +45,20 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
   allowCustomTokens?: boolean;
   councilMembers?: string[];
   isRegistered?: boolean;
+  isDefault?: boolean;
 
+  // networks hasMany curators via networkId
+  curators!: curators[];
+  getCurators!: Sequelize.HasManyGetAssociationsMixin<curators>;
+  setCurators!: Sequelize.HasManySetAssociationsMixin<curators, curatorsId>;
+  addCurator!: Sequelize.HasManyAddAssociationMixin<curators, curatorsId>;
+  addCurators!: Sequelize.HasManyAddAssociationsMixin<curators, curatorsId>;
+  createCurator!: Sequelize.HasManyCreateAssociationMixin<curators>;
+  removeCurator!: Sequelize.HasManyRemoveAssociationMixin<curators, curatorsId>;
+  removeCurators!: Sequelize.HasManyRemoveAssociationsMixin<curators, curatorsId>;
+  hasCurator!: Sequelize.HasManyHasAssociationMixin<curators, curatorsId>;
+  hasCurators!: Sequelize.HasManyHasAssociationsMixin<curators, curatorsId>;
+  countCurators!: Sequelize.HasManyCountAssociationsMixin;
   // networks hasMany issues via network_id
   issues!: issues[];
   getIssues!: Sequelize.HasManyGetAssociationsMixin<issues>;
@@ -157,6 +172,11 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
       allowNull: true
     },
     isRegistered: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    },
+    isDefault: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: false
