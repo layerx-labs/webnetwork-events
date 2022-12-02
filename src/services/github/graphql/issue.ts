@@ -54,3 +54,16 @@ mutation RemoveLabel($issueId: ID!, $labelId: [ID!]!) {
     }
   }
 }`;
+
+export const AddLabel = `
+mutation AddLabel($issueId: ID!, $labelId: [ID!]!) {
+  addLabelsToLabelable(input: {labelIds: $labelId, labelableId: $issueId}) {
+    labelable {
+      labels(first: 10) {
+        nodes {
+          id
+        }
+      }
+    }
+  }
+}`;

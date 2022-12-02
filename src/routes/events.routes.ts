@@ -16,6 +16,8 @@ import { action as getPullRequestCreated } from "src/actions/get-pullrequest-cre
 import { action as getPullRequestReadyForReview } from "src/actions/get-pullrequest-ready-for-review";
 import { action as getOraclesTransferEvents } from "src/actions/get-oracles-transfer-events";
 import { action as getTransferEvents } from "src/actions/get-transfer-bounty-token-events";
+import { action as UpdateBountiesToDraft } from 'src/actions/update-bounties-to-draft'
+
 import {
   BountiesProcessed,
   EventsProcessed,
@@ -37,6 +39,7 @@ const events = {
     updated: getBountyAmountUpdate,
     funded: getBountyFundedUpdate,
     "moved-to-open": getBountyMovedToOpen,
+    'update-draft-time': UpdateBountiesToDraft
   },
   oracles: {
     changed: getOraclesChangedEvents,
