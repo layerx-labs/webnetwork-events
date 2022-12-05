@@ -54,7 +54,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         const startBlock = query?.blockQuery?.from || lastReadBlock!.lastBlock || 0;;
         const endBlock = query?.blockQuery?.to || (await web3Connection.eth.getBlockNumber());;
         const perRequest = +(process.env.EVENTS_PER_REQUEST || 1500);
-        const requests = (startBlock - endBlock) / perRequest;
+        const requests = Math.ceil((startBlock - endBlock) / perRequest);
     
         let toBlock = 0;
     
