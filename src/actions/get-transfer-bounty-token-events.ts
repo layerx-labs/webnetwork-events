@@ -1,17 +1,11 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
-import {
-  BountyToken,
-  NetworkRegistry,
-  Network_v2,
-  Web3Connection,
-} from "@taikai/dappkit";
+import { BountyToken, NetworkRegistry, Web3Connection, XEvents } from "@taikai/dappkit";
 import {
   EventsProcessed,
   EventsQuery,
 } from "src/interfaces/block-chain-service";
 import { leaderboardAttributes } from "src/db/models/leaderboard";
-import loggerHandler from "src/utils/logger-handler";
 
 export const name = "getTransferEvents";
 export const schedule = "*/60 * * * *";
@@ -29,79 +23,94 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     raw: true,
   });
 
-  if(!settings) logger.warn(`${name} Failed missing settings`);
+  if (!settings) logger.warn(`${name} Failed missing settings`);
 
   const networkRegistry = settings.find(({ key }) => key === "networkRegistry");
 
   if (!networkRegistry) {
     logger.warn(`${name} Failed missing network registry`);
   } else {
-
     try {
       const web3Connection = new Web3Connection({ web3Host, privateKey });
       await web3Connection.start();
 
-      const registry = new NetworkRegistry(web3Connection, networkRegistry.value);
+      const registry = new NetworkRegistry(
+        web3Connection,
+        networkRegistry.value
+      );
       await registry.loadContract();
-  
+
       let lastReadBlock = await db.chain_events.findOne({
         where: { name: name },
       });
 
-      const network = await db.networks.findOne({
-        where: { isRegistered: true, name: query?.networkName },
-        raw: true,
-      });
-
-      if (!network) {
-        loggerHandler.warn(`${name} network not found`);
-        return eventsProcessed;
-      }
-      const _network = new Network_v2(web3Connection, network.networkAddress);
-      await _network.loadContract();
-
-      const _bountyToken = new BountyToken(web3Connection, registry.bountyToken.contractAddress);
+      const _bountyToken = new BountyToken(
+        web3Connection,
+        registry.bountyToken.contractAddress
+      );
       await _bountyToken.loadContract();
 
-      const fromBlock =
-        query?.blockQuery?.from || lastReadBlock!.lastBlock || 0;
-      const toBlock =
-        query?.blockQuery?.to || (await web3Connection.eth.getBlockNumber());
-
-      const TransferEvents = await _bountyToken.getTransferEvents({
-        fromBlock,
-        toBlock,
-      });
-
-      for (const transferEvent of TransferEvents) {
-        const { to, tokenId } = transferEvent.returnValues;
-
-        let result: leaderboardAttributes = {
-          address: "",
-          id: 0,
-          numberNfts: 0,
-        };
-
-        const userLeaderboard = await db.leaderboard.findOne({
-          where: { address: to },
-        });
-
-        const nftToken = await _bountyToken.getBountyToken(tokenId);
-        const balance = await _bountyToken.balanceOf(to);
-
-        if (userLeaderboard && nftToken && balance) {
-          userLeaderboard.numberNfts = balance;
-          result = await userLeaderboard.save();
-        } else if (!userLeaderboard && nftToken && balance) {
-          result = await db.leaderboard.create({
-            address: to,
-            numberNfts: balance,
-          });
+      const paginateRequest = async (pool, name: string) => {
+        const startBlock = query?.blockQuery?.from || lastReadBlock!.lastBlock || 0;;
+        const endBlock = query?.blockQuery?.to || (await web3Connection.eth.getBlockNumber());;
+        const perRequest = +(process.env.EVENTS_PER_REQUEST || 1500);
+        const requests = (startBlock - endBlock) / perRequest;
+    
+        let toBlock = 0;
+    
+        console.log(`Fetching ${name} total of ${requests}, from: ${startBlock} to ${endBlock}`);
+        for (let fromBlock = startBlock; fromBlock < endBlock; fromBlock += perRequest) {
+          toBlock = fromBlock + perRequest > endBlock ? endBlock : fromBlock + perRequest;
+    
+          console.log(`${name} fetch from ${fromBlock} to ${toBlock}`);
+          pool.push(await _bountyToken.getTransferEvents({fromBlock, toBlock}));
         }
+      }
+    
+      const AllTransferEvents: any = [];
+        
+      await paginateRequest(AllTransferEvents, `getTransferEvents`)
 
-        eventsProcessed[query?.networkName || "0"] = result
-          ? [result.address]
-          : [];
+      for (const TransferEvents of AllTransferEvents) {
+        for (const transferEvent of TransferEvents) {
+          const { to, tokenId } = transferEvent.returnValues;
+
+          let result: leaderboardAttributes = {
+            address: "",
+            id: 0,
+            numberNfts: 0,
+          };
+
+          const userLeaderboard = await db.leaderboard.findOne({
+            where: { address: to },
+          });
+
+          //TODO: values returned by this function are wrong in dappkit
+          const nftToken: any = await _bountyToken.getBountyToken(tokenId);
+
+          if (nftToken?.bountyId) {
+            const bountyDb = await db.issues.findOne({
+              where: { contractId: nftToken?.bountyId },
+              include: [{ association: "network" }],
+            });
+
+            const balance = await _bountyToken.balanceOf(to);
+
+            if (userLeaderboard && balance) {
+              userLeaderboard.numberNfts = balance;
+              result = await userLeaderboard.save();
+            } else if (!userLeaderboard && balance) {
+              result = await db.leaderboard.create({
+                address: to,
+                numberNfts: balance,
+              });
+            }
+
+            eventsProcessed[bountyDb?.network?.name || "0"] = result
+              ? [result.address]
+              : [];
+          }
+        }
       }
     } catch (err: any) {
       logger.error(`${name} Error`, err?.message || err.toString());
