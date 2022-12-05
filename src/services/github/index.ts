@@ -28,6 +28,13 @@ export async function issueDetails(
   });
 }
 
+export async function issueAddLabel(issueId: string, labelId: string) {
+  await githubAPI<GraphQlResponse>(IssueQueries.AddLabel, {
+    issueId,
+    labelId
+  });
+}
+
 export async function issueRemoveLabel(issueId: string, labelId: string) {
   await githubAPI<GraphQlResponse>(IssueQueries.RemoveLabel, {
     issueId,
@@ -119,6 +126,7 @@ export default {
   issueDetails,
   issueClose,
   issueRemoveLabel,
+  issueAddLabel,
   pullrequestDetails,
   pullrequestClose,
   mergeProposal,
