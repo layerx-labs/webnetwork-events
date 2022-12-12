@@ -15,6 +15,10 @@ export interface merge_proposalsAttributes {
   contractId?: number;
   creator?: string;
   network_id?: number;
+  oracles?: string;
+  refusedByBountyOwner?: boolean;
+  disputeWeight?: string;
+  contractCreationDate?: number;
 }
 
 export type merge_proposalsPk = "id";
@@ -32,6 +36,10 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
   contractId?: number;
   creator?: string;
   network_id?: number;
+  oracles?: string;
+  refusedByBountyOwner?: boolean;
+  disputeWeight?: string;
+  contractCreationDate?: number;
 
   // merge_proposals belongsTo issues via issueId
   issue!: issues;
@@ -104,7 +112,24 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
         model: 'networks',
         key: 'id'
       }
-    }
+    },
+    contractCreationDate: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    oracles: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    disputeWeight: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    refusedByBountyOwner: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
   }, {
     tableName: 'merge_proposals',
     schema: 'public',
