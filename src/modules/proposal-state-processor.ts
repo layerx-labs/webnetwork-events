@@ -5,6 +5,8 @@ import {NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import validateProposalState, {validateProposal} from "./proposal-validate-state";
 import {name} from "../actions/get-bounty-funded-updated-event";
 import {EventService} from "../services/event-service";
+import db from "src/db";
+import BigNumber from "bignumber.js";
 
 export async function proposalStateProcessor(block: BountyProposalDisputedEvent, network, _service, eventsProcessed, isProposalRequired = true) {
   const {bountyId, prId, proposalId,} = block.returnValues;
@@ -17,7 +19,16 @@ export async function proposalStateProcessor(block: BountyProposalDisputedEvent,
   if (!values?.dbBounty)
     return;
 
-  const {dbBounty,} = values;
+  const {dbBounty, proposal} = values;
+
+  const dbProposal = await db.merge_proposals.findOne({where: {contractId: proposal.id, issueId: dbBounty?.id, network_id: network?.id}});
+
+  if (!dbProposal) return logger.warn(`${name} Proposal ${proposal.id} not found on database`);
+
+  dbProposal.disputeWeight = new BigNumber(proposal.disputeWeight).toFixed()
+  dbProposal.refusedByBountyOwner = proposal.refusedByBountyOwner
+
+  await dbProposal.save()
 
   if (!["canceled", "closed"].includes(dbBounty.state!))
     dbBounty.state =
