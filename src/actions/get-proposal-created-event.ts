@@ -7,6 +7,7 @@ import {NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {validateProposal} from "../modules/proposal-validate-state";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
+import BigNumber from "bignumber.js";
 
 export const name = "getBountyProposalCreatedEvents";
 export const schedule = "*/13 * * * *";
@@ -37,10 +38,15 @@ export async function action(
       return logger.warn(`${name} Issue ${bounty.cid} not found`);
 
     const dbProposal = await db.merge_proposals.findOne({where: {contractId: proposal.id, issueId: dbIssue?.id, network_id: network?.id}});
+    
     if (dbProposal)
       return logger.warn(`${name} Proposal with id ${proposalId} was already parsed`);
 
-    await db.merge_proposals.create({
+   const createProposal = await db.merge_proposals.create({
+      refusedByBountyOwner: proposal.refusedByBountyOwner,
+      disputeWeight: new BigNumber(proposal.disputeWeight).toFixed(),
+      oracles: new BigNumber(proposal.oracles).toFixed(),
+      contractCreationDate: proposal.creationDate,
       issueId: dbBounty.id,
       pullRequestId: dbPullRequest.id,
       githubLogin: dbUser?.githubLogin,
@@ -48,6 +54,16 @@ export async function action(
       contractId: proposal.id,
       network_id: network?.id
     });
+
+    if (createProposal) {
+      await Promise.all(proposal.details.map(async (detail) =>
+        db.proposal_distributions.create({
+          address: detail.recipient,
+          percentage: detail.percentage,
+          proposalId: createProposal.id,
+        })
+      ))
+    }
 
     if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
       dbBounty.state = "proposal";
