@@ -151,7 +151,7 @@ export function initModels(sequelize: Sequelize) {
   tokens.hasMany(issues, { as: "issues", foreignKey: "tokenId"});
   network_tokens.belongsTo(tokens, { as: "token", foreignKey: "tokenId"});
   tokens.hasMany(network_tokens, { as: "network_tokens", foreignKey: "tokenId"});
-  proposal_distributions.hasMany(merge_proposals, { as: "proposal_distributions", foreignKey: "proposalId"});
+  merge_proposals.hasMany(proposal_distributions, { as: "proposal_distributions", foreignKey: "proposalId"});
 
   return {
     SequelizeMeta: SequelizeMeta,
