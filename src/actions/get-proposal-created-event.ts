@@ -45,8 +45,7 @@ export async function action(
    const createProposal = await db.merge_proposals.create({
       refusedByBountyOwner: proposal.refusedByBountyOwner,
       disputeWeight: new BigNumber(proposal.disputeWeight).toFixed(),
-      oracles: new BigNumber(proposal.oracles).toFixed(),
-      contractCreationDate: proposal.creationDate,
+      contractCreationDate: proposal.creationDate.toString(),
       issueId: dbBounty.id,
       pullRequestId: dbPullRequest.id,
       githubLogin: dbUser?.githubLogin,
