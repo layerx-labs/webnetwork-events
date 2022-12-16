@@ -25,6 +25,9 @@ export async function proposalStateProcessor(block: BountyProposalDisputedEvent,
 
   if (!dbProposal) return logger.warn(`${name} Proposal ${proposal.id} not found on database`);
 
+  const isDisputed = await ((_service as EventService).Actor as Network_v2).isProposalDisputed(bountyId, proposal.id); 
+  
+  dbProposal.isDisputed = isDisputed
   dbProposal.disputeWeight = new BigNumber(proposal.disputeWeight).toFixed()
   dbProposal.refusedByBountyOwner = proposal.refusedByBountyOwner
 

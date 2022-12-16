@@ -50,6 +50,7 @@ export async function action(
       pullRequestId: dbPullRequest.id,
       githubLogin: dbUser?.githubLogin,
       creator: proposal.creator,
+      isDisputed: false,
       contractId: proposal.id,
       network_id: network?.id
     });

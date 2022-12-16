@@ -18,6 +18,7 @@ export interface merge_proposalsAttributes {
   refusedByBountyOwner?: boolean;
   disputeWeight?: string;
   contractCreationDate?: string;
+  isDisputed?: boolean;
 }
 
 export type merge_proposalsPk = "id";
@@ -38,7 +39,8 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
   refusedByBountyOwner?: boolean;
   disputeWeight?: string;
   contractCreationDate?: string;
-
+  isDisputed?: boolean;
+  
   // merge_proposals belongsTo issues via issueId
   issue!: issues;
   getIssue!: Sequelize.BelongsToGetAssociationMixin<issues>;
@@ -124,6 +126,11 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
       allowNull: false,
       defaultValue: false
     },
+    isDisputed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    }
   }, {
     tableName: 'merge_proposals',
     schema: 'public',
