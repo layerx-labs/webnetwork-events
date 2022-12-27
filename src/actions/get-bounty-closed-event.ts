@@ -97,9 +97,14 @@ export async function action(
     if (!dbProposal)
       return logger.warn(`proposal ${proposalId} was not found in database for dbBounty ${dbBounty.id}`);
     else {
-      const mergedPR = await mergeProposal(dbBounty, dbProposal.pullRequestId, dbProposal.issueId, network?.id);
-      if (mergedPR)
-        await closePullRequests(dbBounty, mergedPR.githubId, network?.id);
+      try {
+        const mergedPR = await mergeProposal(dbBounty, dbProposal.pullRequestId, dbProposal.issueId, network?.id);
+        if (mergedPR)
+          await closePullRequests(dbBounty, mergedPR.githubId, network?.id);
+
+      } catch (error) {
+        logger.error(`proposal ${proposalId} was not is not mergeable: ${error}`);
+      }
     }
 
     dbBounty.merged = dbProposal?.contractId as any;
