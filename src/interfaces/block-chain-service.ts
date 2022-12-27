@@ -3,7 +3,7 @@ import { Bounty } from "./bounties";
 
 export type BlockQuery = {
   from?: number;
-  to: number;
+  to: number | undefined;
 };
 
 export interface EventsPerNetwork<T = any> {
