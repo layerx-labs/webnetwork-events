@@ -6,6 +6,7 @@ import {
   EventsQuery,
 } from "src/interfaces/block-chain-service";
 import { leaderboardAttributes } from "src/db/models/leaderboard";
+import { getRegistryAddressDb } from "src/modules/get-registry-database";
 
 export const name = "getTransferEvents";
 export const schedule = "*/60 * * * *";
@@ -18,14 +19,7 @@ const { PUBLIC_WEB3_CONNECTION: web3Host, WALLET_PRIVATE_KEY: privateKey } =
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  const settings = await db.settings.findAll({
-    where: { visibility: "public" },
-    raw: true,
-  });
-
-  if (!settings) logger.warn(`${name} Failed missing settings`);
-
-  const networkRegistry = settings.find(({ key }) => key === "networkRegistry");
+  const networkRegistry = await getRegistryAddressDb()
 
   if (!networkRegistry) {
     logger.warn(`${name} Failed missing network registry`);
@@ -36,7 +30,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
       const registry = new NetworkRegistry(
         web3Connection,
-        networkRegistry.value
+        networkRegistry
       );
       await registry.loadContract();
 
