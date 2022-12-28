@@ -18,11 +18,11 @@ export async function handleCurators(
     await curatorInDb.save();
 
     return curatorInDb
-  } else if (!curatorInDb && isCurator) {
+  } else if (!curatorInDb) {
    return await db.curators.create({
       address,
       networkId,
-      isCurrentlyCurator: true,
+      isCurrentlyCurator: isCurator,
       tokensLocked: totalVotes
     });
   }
