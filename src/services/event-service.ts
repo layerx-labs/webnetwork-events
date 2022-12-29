@@ -123,7 +123,7 @@ export class EventService<E = any> {
     }
 
     const eth = this.web3Connection.eth;
-    const startBlock = Number(this.query?.blockQuery?.from) || Number(lastReadBlock!.lastBlock) || 0;
+    const startBlock = Number(this.query?.blockQuery?.from || lastReadBlock!.lastBlock) || 0;
     const endBlock = Number(this.query?.blockQuery?.to) || await eth.getBlockNumber();
     const topics = [eth.abi.encodeEventSignature(event)];
     const events: Log[] = [];
