@@ -10,6 +10,7 @@ import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
 import { handleBenefactors } from "src/modules/handle-benefactors";
 import BigNumber from "bignumber.js";
+import { updateBountiesCanceledOrClosed } from "src/modules/leaderboard";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -24,7 +25,9 @@ export async function action(
   const service = new EventService(name, query);
 
   const processor: BlockProcessor<BountyCanceledEvent> = async (block, network) => {
-    const bounty = await (service.Actor as Network_v2).getBounty(block.returnValues.id);
+    const networkActor = service.Actor as Network_v2;
+
+    const bounty = await networkActor.getBounty(block.returnValues.id);
     if (!bounty)
       return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, block.returnValues.id, network.networkAddress));
 
@@ -51,6 +54,8 @@ export async function action(
     } 
     
     await dbBounty.save();
+
+    await updateBountiesCanceledOrClosed([bounty.creator], networkActor, "canceled");
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
   }

@@ -10,6 +10,7 @@ import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.c
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
 import { updateCuratorProposalParams } from "src/modules/handle-curators";
+import { updateBountiesCanceledOrClosed } from "src/modules/leaderboard";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
@@ -75,7 +76,9 @@ export async function action(
   const processor: BlockProcessor<BountyClosedEvent> = async (block, network) => {
     const {id, proposalId} = block.returnValues as any;
 
-    const bounty = await (service.Actor as Network_v2).getBounty(id);
+    const networkActor = service.Actor as Network_v2;
+
+    const bounty = await networkActor.getBounty(id);
     if (!bounty)
       return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, id, network.networkAddress));
 
@@ -110,6 +113,8 @@ export async function action(
     dbBounty.merged = dbProposal?.contractId as any;
     dbBounty.state = "closed";
     await dbBounty.save();
+
+    await updateBountiesCanceledOrClosed([bounty.creator], networkActor, "closed");
 
     await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
     
