@@ -1,8 +1,8 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
-import { merge_proposals, merge_proposalsId } from './merge_proposals';
+import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 
-export interface proposalDistributionsAttributes {
+export interface proposal_distributionsAttributes {
   id: number;
   address: string;
   percentage: number;
@@ -11,12 +11,12 @@ export interface proposalDistributionsAttributes {
   updatedAt: Date;
 }
 
-export type proposalDistributionsPk = "id";
-export type proposalDistributionsId = proposalDistributions[proposalDistributionsPk];
-export type proposalDistributionsOptionalAttributes = "id" | "createdAt" | "updatedAt";
-export type proposalDistributionsCreationAttributes = Optional<proposalDistributionsAttributes, proposalDistributionsOptionalAttributes>;
+export type proposal_distributionsPk = "id";
+export type proposal_distributionsId = proposal_distributions[proposal_distributionsPk];
+export type proposal_distributionsOptionalAttributes = "id" | "createdAt" | "updatedAt";
+export type proposal_distributionsCreationAttributes = Optional<proposal_distributionsAttributes, proposal_distributionsOptionalAttributes>;
 
-export class proposalDistributions extends Model<proposalDistributionsAttributes, proposalDistributionsCreationAttributes> implements proposalDistributionsAttributes {
+export class proposal_distributions extends Model<proposal_distributionsAttributes, proposal_distributionsCreationAttributes> implements proposal_distributionsAttributes {
   id!: number;
   address!: string;
   percentage!: number;
@@ -24,13 +24,13 @@ export class proposalDistributions extends Model<proposalDistributionsAttributes
   createdAt!: Date;
   updatedAt!: Date;
 
-  // proposal distributions belongsTo proposal via proposalId
+  // proposal_distributions belongsTo merge_proposals via proposalId
   proposal!: merge_proposals;
   getProposal!: Sequelize.BelongsToGetAssociationMixin<merge_proposals>;
   setProposal!: Sequelize.BelongsToSetAssociationMixin<merge_proposals, merge_proposalsId>;
   createProposal!: Sequelize.BelongsToCreateAssociationMixin<merge_proposals>;
 
-  static initModel(sequelize: Sequelize.Sequelize): typeof proposalDistributions {
+  static initModel(sequelize: Sequelize.Sequelize): typeof proposal_distributions {
     return sequelize.define('proposal_distributions', {
     id: {
       autoIncrement: true,
@@ -67,6 +67,6 @@ export class proposalDistributions extends Model<proposalDistributionsAttributes
         ]
       },
     ]
-  }) as typeof proposalDistributions;
+  }) as typeof proposal_distributions;
   }
 }

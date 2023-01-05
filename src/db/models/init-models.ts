@@ -13,12 +13,16 @@ import { disputes as _disputes } from "./disputes";
 import type { disputesAttributes, disputesCreationAttributes } from "./disputes";
 import { issues as _issues } from "./issues";
 import type { issuesAttributes, issuesCreationAttributes } from "./issues";
+import { leaderboard as _leaderboard } from "./leaderboard";
+import type { leaderboardAttributes, leaderboardCreationAttributes } from "./leaderboard";
 import { merge_proposals as _merge_proposals } from "./merge_proposals";
 import type { merge_proposalsAttributes, merge_proposalsCreationAttributes } from "./merge_proposals";
 import { network_tokens as _network_tokens } from "./network_tokens";
 import type { network_tokensAttributes, network_tokensCreationAttributes } from "./network_tokens";
 import { networks as _networks } from "./networks";
 import type { networksAttributes, networksCreationAttributes } from "./networks";
+import { proposal_distributions as _proposal_distributions } from "./proposal_distributions";
+import type { proposal_distributionsAttributes, proposal_distributionsCreationAttributes } from "./proposal_distributions";
 import { pull_requests as _pull_requests } from "./pull_requests";
 import type { pull_requestsAttributes, pull_requestsCreationAttributes } from "./pull_requests";
 import { repositories as _repositories } from "./repositories";
@@ -31,10 +35,6 @@ import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
-import { leaderboard as _leaderboard } from "./leaderboard";
-import type { leaderboardAttributes, leaderboardCreationAttributes } from "./leaderboard";
-import { proposalDistributions as _proposalDistributions } from "./proposal_distributions";
-import type { proposalDistributionsAttributes, proposalDistributionsCreationAttributes } from "./proposal_distributions";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -44,17 +44,17 @@ export {
   _developers as developers,
   _disputes as disputes,
   _issues as issues,
+  _leaderboard as leaderboard,
   _merge_proposals as merge_proposals,
   _network_tokens as network_tokens,
   _networks as networks,
+  _proposal_distributions as proposal_distributions,
   _pull_requests as pull_requests,
   _repositories as repositories,
   _settings as settings,
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
-  _leaderboard as leaderboard,
-  _proposalDistributions as proposalDistributions
 };
 
 export type {
@@ -72,12 +72,16 @@ export type {
   disputesCreationAttributes,
   issuesAttributes,
   issuesCreationAttributes,
+  leaderboardAttributes,
+  leaderboardCreationAttributes,
   merge_proposalsAttributes,
   merge_proposalsCreationAttributes,
   network_tokensAttributes,
   network_tokensCreationAttributes,
   networksAttributes,
   networksCreationAttributes,
+  proposal_distributionsAttributes,
+  proposal_distributionsCreationAttributes,
   pull_requestsAttributes,
   pull_requestsCreationAttributes,
   repositoriesAttributes,
@@ -90,10 +94,6 @@ export type {
   usersCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
-  leaderboardAttributes,
-  leaderboardCreationAttributes,
-  proposalDistributionsAttributes,
-  proposalDistributionsCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -104,18 +104,17 @@ export function initModels(sequelize: Sequelize) {
   const developers = _developers.initModel(sequelize);
   const disputes = _disputes.initModel(sequelize);
   const issues = _issues.initModel(sequelize);
+  const leaderboard = _leaderboard.initModel(sequelize);
   const merge_proposals = _merge_proposals.initModel(sequelize);
   const network_tokens = _network_tokens.initModel(sequelize);
   const networks = _networks.initModel(sequelize);
+  const proposal_distributions = _proposal_distributions.initModel(sequelize);
   const pull_requests = _pull_requests.initModel(sequelize);
   const repositories = _repositories.initModel(sequelize);
   const settings = _settings.initModel(sequelize);
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
-  const leaderboard = _leaderboard.initModel(sequelize);
-  const proposal_distributions = _proposalDistributions.initModel(sequelize);
-
 
   benefactors.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
@@ -131,6 +130,8 @@ export function initModels(sequelize: Sequelize) {
   issues.hasMany(users_payments, { as: "users_payments", foreignKey: "issueId"});
   disputes.belongsTo(merge_proposals, { as: "proposal", foreignKey: "proposalId"});
   merge_proposals.hasMany(disputes, { as: "disputes", foreignKey: "proposalId"});
+  proposal_distributions.belongsTo(merge_proposals, { as: "proposal", foreignKey: "proposalId"});
+  merge_proposals.hasMany(proposal_distributions, { as: "proposal_distributions", foreignKey: "proposalId"});
   curators.belongsTo(networks, { as: "network", foreignKey: "networkId"});
   networks.hasMany(curators, { as: "curators", foreignKey: "networkId"});
   issues.belongsTo(networks, { as: "network", foreignKey: "network_id"});
@@ -151,7 +152,6 @@ export function initModels(sequelize: Sequelize) {
   tokens.hasMany(issues, { as: "issues", foreignKey: "tokenId"});
   network_tokens.belongsTo(tokens, { as: "token", foreignKey: "tokenId"});
   tokens.hasMany(network_tokens, { as: "network_tokens", foreignKey: "tokenId"});
-  merge_proposals.hasMany(proposal_distributions, { as: "proposal_distributions", foreignKey: "proposalId"});
 
   return {
     SequelizeMeta: SequelizeMeta,
@@ -161,16 +161,16 @@ export function initModels(sequelize: Sequelize) {
     developers: developers,
     disputes: disputes,
     issues: issues,
+    leaderboard: leaderboard,
     merge_proposals: merge_proposals,
     network_tokens: network_tokens,
     networks: networks,
+    proposal_distributions: proposal_distributions,
     pull_requests: pull_requests,
     repositories: repositories,
     settings: settings,
     tokens: tokens,
     users: users,
     users_payments: users_payments,
-    leaderboard: leaderboard,
-    proposal_distributions: proposal_distributions
   };
 }
