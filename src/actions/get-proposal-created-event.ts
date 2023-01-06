@@ -8,6 +8,7 @@ import {validateProposal} from "../modules/proposal-validate-state";
 import {BlockProcessor} from "../interfaces/block-processor";
 import {Network_v2} from "@taikai/dappkit";
 import BigNumber from "bignumber.js";
+import { updateLeaderboardProposals } from "src/modules/leaderboard";
 
 export const name = "getBountyProposalCreatedEvents";
 export const schedule = "*/13 * * * *";
@@ -69,6 +70,8 @@ export async function action(
       dbBounty.state = "proposal";
       await dbBounty.save();
     }
+
+    await updateLeaderboardProposals();
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
 

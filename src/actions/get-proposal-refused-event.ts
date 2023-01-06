@@ -3,6 +3,7 @@ import logger from "src/utils/logger-handler";
 import {EventService} from "../services/event-service";
 import {BountyProposalRefusedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {proposalStateProcessor} from "../modules/proposal-state-processor";
+import { updateLeaderboardProposals } from "src/modules/leaderboard";
 
 export const name = "getBountyProposalRefusedEvents";
 export const schedule = "*/15 * * * *";
@@ -19,6 +20,7 @@ export async function action(
   await _service._processEvents(
     async (block, network) => {
       eventsProcessed = await proposalStateProcessor(block, network, _service, eventsProcessed);
+      await updateLeaderboardProposals("rejected");
     })
 
   return eventsProcessed;

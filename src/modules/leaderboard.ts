@@ -1,5 +1,4 @@
-import { Network_v2 } from "@taikai/dappkit";
-import { Sequelize } from "sequelize";
+import { Sequelize, Op } from "sequelize";
 
 import db from "src/db";
 import logger from "src/utils/logger-handler";
@@ -34,9 +33,10 @@ async function updateLeaderboardBounties(state?: "canceled" | "closed") {
           state
         }
       } : {}
-    })
+    });
 
-    if (!bountiesOfCreators.length) return logger.info(`Leaderboard: updateLeaderboardBounties ${state} no bounties found`);
+    if (!bountiesOfCreators.length) 
+      return logger.info(`Leaderboard: updateLeaderboardBounties ${state} no bounties found`);
 
     const leaderBoardColumnsByState = {
       opened: "ownedBountiesOpened",
@@ -56,14 +56,63 @@ async function updateLeaderboardBounties(state?: "canceled" | "closed") {
   }
 }
 
-async function updateProposalCreated(creators: string[], network: Network_v2) {
+/**
+ * Update leaderboard proposals quantity. If the parameter is not passed it will count all proposals.
+ */
+async function updateLeaderboardProposals(state?: "accepted" | "rejected") {
   try {
-    
+    let stateCondition = {};
+
+    if (state === "rejected")
+      stateCondition = {
+        where: {
+          [Op.or]: [{ isDisputed: true }, { refusedByBountyOwner: true }]
+        }
+      };
+    else if (state === "accepted")
+      stateCondition = {
+        attributes: ["creator", [Sequelize.fn("COUNT", "issue.id"), "id"]],
+        include: [
+          { 
+            association: "issue",
+            where: {
+              state: "closed"
+            },
+            attributes: []
+          }
+        ]
+      };
+
+    const proposalsOfCreators = await db.merge_proposals.findAll({
+      group: ["creator"],
+      attributes: ["creator", [Sequelize.fn("COUNT", "creator"), "id"]],
+      raw: true,
+      ...stateCondition
+    });
+
+    if (!proposalsOfCreators.length) 
+      return logger.info(`Leaderboard: updateLeaderboardProposalCreated ${state} no bounties found`);
+
+    const leaderBoardColumnsByState = {
+      created: "ownedProposalCreated",
+      accepted: "ownedProposalAccepted",
+      rejected: "ownedProposalRejected"
+    } 
+
+    for (const creatorProposal of proposalsOfCreators) {
+      const { creator, id: proposalsCount} = creatorProposal;
+
+      await updateLeaderboardRow(creator!, leaderBoardColumnsByState[state || "created"], proposalsCount);
+
+      logger.info(`Leaderboard: updateLeaderboardBounties ${state} of ${creator} to ${proposalsCount}`);
+    }
+
   } catch (error) {
-    logger.error(`Leaderboard: failed to updateBountiesCanceledOrClosed[] of ${creators}`, error);
+    logger.error(`Leaderboard: failed to updateLeaderboardProposalCreated ${state}`, error);
   }
 }
 
 export {
-  updateLeaderboardBounties
+  updateLeaderboardBounties,
+  updateLeaderboardProposals
 };

@@ -3,6 +3,7 @@ import {EventService} from "../services/event-service";
 import {BountyProposalDisputedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {proposalStateProcessor} from "../modules/proposal-state-processor";
 import { disputeProcessor } from "src/modules/dispute-processor";
+import { updateLeaderboardProposals } from "src/modules/leaderboard";
 
 export const name = "getBountyProposalDisputedEvents";
 export const schedule = "*/14 * * * *";
@@ -18,6 +19,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     async (block, network) => {
       await disputeProcessor(block, network, _service);
       eventsProcessed = await proposalStateProcessor(block, network, _service, eventsProcessed);
+      await updateLeaderboardProposals("rejected");
     });
 
   return eventsProcessed;
