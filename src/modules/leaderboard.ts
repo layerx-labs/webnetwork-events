@@ -1,4 +1,5 @@
 import { Network_v2 } from "@taikai/dappkit";
+import { Sequelize } from "sequelize";
 
 import db from "src/db";
 import logger from "src/utils/logger-handler";
@@ -19,41 +20,50 @@ async function updateLeaderboardRow(address: string, property: string, value: nu
     });
 }
 
-async function updateBountiesCreated(creators: string[], network: Network_v2) {
+/**
+ * Update leaderboard bounties quantity. If the parameter is not passed it will count all bounties.
+ */
+async function updateLeaderboardBounties(state?: "canceled" | "closed") {
   try {
-    for (const creator of creators) {
-      const bountiesIds = await network.getBountiesOfAddress(creator);
+    const bountiesOfCreators = await db.issues.findAll({
+      group: ["creatorAddress"],
+      attributes: ["creatorAddress", [Sequelize.fn("COUNT", "creatorAddress"), "id"]],
+      raw: true,
+      ... state ? {
+        where: {
+          state
+        }
+      } : {}
+    })
 
-      const bountiesOpened = bountiesIds.length;
+    if (!bountiesOfCreators.length) return logger.info(`Leaderboard: updateLeaderboardBounties ${state} no bounties found`);
 
-      await updateLeaderboardRow(creator, "ownedBountiesOpened", bountiesOpened);
+    const leaderBoardColumnsByState = {
+      opened: "ownedBountiesOpened",
+      canceled: "ownedBountiesCanceled",
+      closed: "ownedBountiesClosed",
+    } 
 
-      logger.info(`Leaderboard: updateBountiesCreated of ${creator} to ${bountiesOpened}`);
+    for (const creator of bountiesOfCreators) {
+      const { creatorAddress, id: bountiesCount} = creator;
+
+      await updateLeaderboardRow(creatorAddress!, leaderBoardColumnsByState[state || "opened"], bountiesCount);
+
+      logger.info(`Leaderboard: updateLeaderboardBounties ${state} of ${creatorAddress} to ${bountiesCount}`);
     }
   } catch (error) {
-    logger.error(`Leaderboard: failed to updateBountiesCreated of ${creators}`, error);
+    logger.error(`Leaderboard: failed to updateLeaderboardBounties ${state}`, error);
   }
 }
 
-async function updateBountiesCanceledOrClosed(creators: string[], network: Network_v2, type: "canceled" | "closed") {
+async function updateProposalCreated(creators: string[], network: Network_v2) {
   try {
-    for (const creator of creators) {
-      const bountiesIds = await network.getBountiesOfAddress(creator);
-
-      const bounties = await Promise.all(bountiesIds.map( id => network.getBounty(id)));
-
-      const bountiesFiltered = bounties.filter(bounty => bounty[type]).length;
-
-      await updateLeaderboardRow(creator, `ownedBounties${type.replace("c", "C")}`, bountiesFiltered);
-
-      logger.info(`Leaderboard: updateBountiesCanceledOrClosed[${type}] of ${creator} to ${bountiesFiltered}`);
-    }
+    
   } catch (error) {
-    logger.error(`Leaderboard: failed to updateBountiesCanceledOrClosed[${type}] of ${creators}`, error);
+    logger.error(`Leaderboard: failed to updateBountiesCanceledOrClosed[] of ${creators}`, error);
   }
 }
 
 export {
-  updateBountiesCreated,
-  updateBountiesCanceledOrClosed
+  updateLeaderboardBounties
 };
