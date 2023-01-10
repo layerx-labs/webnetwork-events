@@ -40,7 +40,9 @@ async function updateLeaderboardBounties(state: "opened" | "canceled" | "closed"
       raw: true,
       ... state !== "opened" ? {
         where: {
-          state
+          state: {
+            [Op.eq] : state
+          }
         }
       } : {}
     });
