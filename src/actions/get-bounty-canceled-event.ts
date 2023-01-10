@@ -25,9 +25,7 @@ export async function action(
   const service = new EventService(name, query);
 
   const processor: BlockProcessor<BountyCanceledEvent> = async (block, network) => {
-    const networkActor = service.Actor as Network_v2;
-
-    const bounty = await networkActor.getBounty(block.returnValues.id);
+    const bounty = await (service.Actor as Network_v2).getBounty(block.returnValues.id);
     if (!bounty)
       return logger.error(NETWORK_BOUNTY_NOT_FOUND(name, block.returnValues.id, network.networkAddress));
 
