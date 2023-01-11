@@ -69,7 +69,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         for (const transferEvent of TransferEvents) {
           const { to, tokenId } = transferEvent.returnValues;
 
-          let result: leaderboardAttributes | undefined;
+          let result: leaderboardAttributes | undefined = undefined;
 
           const userLeaderboard = await db.leaderboard.findOne({
             where: { address: to },
