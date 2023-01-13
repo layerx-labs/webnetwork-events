@@ -18,7 +18,7 @@ const useSSL = process.env.SSL_ENABLED === "true";
 const port = process.env.WEB_EVENTS_PORT ? process.env.WEB_EVENTS_PORT : useSSL ? 8443 : 80;
 
 const corsOptions: CorsOptions = {
-  origin: process.env.WEBAPP_URL || "http://localhost:3334",
+  origin: process.env.WEBAPP_URL || `http://localhost`,
   optionsSuccessStatus: 200,
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"]
 };
@@ -42,6 +42,7 @@ app.use(router);
 
 const listen = () => {
   loggerHandler.info(`API Listening on ${port} over HTTP${useSSL ? "S" : ""}`);
+  loggerHandler.info(`API corsOptions`, corsOptions);
   loggerHandler.info(`API corsOptions`, corsOptions);
 }
 

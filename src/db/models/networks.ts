@@ -23,11 +23,12 @@ export interface networksAttributes {
   councilMembers?: string[];
   isRegistered?: boolean;
   isDefault?: boolean;
+  chain_id?: number;
 }
 
 export type networksPk = "id";
 export type networksId = networks[networksPk];
-export type networksOptionalAttributes = "id" | "colors" | "networkAddress" | "logoIcon" | "fullLogo" | "createdAt" | "updatedAt" | "isClosed" | "allowCustomTokens" | "councilMembers" | "isRegistered" | "isDefault";
+export type networksOptionalAttributes = "id" | "colors" | "networkAddress" | "logoIcon" | "fullLogo" | "createdAt" | "updatedAt" | "isClosed" | "allowCustomTokens" | "councilMembers" | "isRegistered" | "isDefault" | "chain_id";
 export type networksCreationAttributes = Optional<networksAttributes, networksOptionalAttributes>;
 
 export class networks extends Model<networksAttributes, networksCreationAttributes> implements networksAttributes {
@@ -46,6 +47,7 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
   councilMembers?: string[];
   isRegistered?: boolean;
   isDefault?: boolean;
+  chain_id?: number;
 
   // networks hasMany curators via networkId
   curators!: curators[];
@@ -180,6 +182,10 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: false
+    },
+    chain_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
     tableName: 'networks',

@@ -5,7 +5,8 @@ import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service"
 import {EventService} from "../services/event-service";
 import {ChangeAllowedTokensEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-registry";
 import {BlockProcessor} from "../interfaces/block-processor";
-import {getRegistryAddressDb} from "src/modules/get-registry-database";
+import { getRegistryAddressDb } from "src/modules/get-registry-database";
+import {Op} from "sequelize";
 
 export const name = "getChangeAllowedTokensEvents";
 export const schedule = "*/60 * * * *";
@@ -22,7 +23,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const processor: BlockProcessor<ChangeAllowedTokensEvent> = async (block, network) => {
     const {tokens, operation, kind} = block.returnValues as any;
 
-    const networkRegistry = await getRegistryAddressDb()
+    const networkRegistry = (await db.chains.findOne({where: {chainId: {[Op.eq]: network.chainId}}, raw: true}))?.registryAddress
 
     if (!networkRegistry)
       logger.warn(`${name} Failed missing network registry on database`);
