@@ -54,16 +54,19 @@ export class EventService<E = any> {
   }
 
   async saveLastFromBlock() {
-    let dbEvent = await db.chain_events.findOne({where: {name: this.name, chain_id: chainId}});
+    const [dbEvent, created] =
+      await db.chain_events.findOrCreate({
+        where: {name: this.name, chain_id: chainId},
+        defaults: {name: this.name, chain_id: +chainId!, lastBlock: 0}
+      });
+
     if (!this.#lastFromBlock) {
       loggerHandler.log(`${this.name} had no #lastFromBlock`);
       return false;
     }
 
-    if (!dbEvent) {
-      loggerHandler.warn(`${this.name} not found on db`);
-      dbEvent = await db.chain_events.create({name: this.name, lastBlock: 0, chain_id: +chainId!});
-    }
+    if (created)
+      loggerHandler.warn(`Created ${this.name} entry with id ${chainId}`);
 
     dbEvent.lastBlock = this.#lastFromBlock;
     await dbEvent.save();
