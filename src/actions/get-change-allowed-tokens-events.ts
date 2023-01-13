@@ -5,6 +5,7 @@ import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service"
 import {EventService} from "../services/event-service";
 import {ChangeAllowedTokensEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-registry";
 import {BlockProcessor} from "../interfaces/block-processor";
+import { getRegistryAddressDb } from "src/modules/get-registry-database";
 import {Op} from "sequelize";
 
 export const name = "getChangeAllowedTokensEvents";
