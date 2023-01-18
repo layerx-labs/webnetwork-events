@@ -100,6 +100,9 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
     },
     isAllowed: {
       type: DataTypes.BOOLEAN,
+    },
+    chain_id: {
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     chain_id: {
