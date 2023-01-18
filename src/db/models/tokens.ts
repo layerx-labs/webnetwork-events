@@ -10,12 +10,13 @@ export interface tokensAttributes {
   address: string;
   isTransactional: boolean;
   isAllowed?: boolean;
+  chain_id?: number;
   isReward: boolean;
 }
 
 export type tokensPk = "id";
 export type tokensId = tokens[tokensPk];
-export type tokensOptionalAttributes = "id" | "isAllowed";
+export type tokensOptionalAttributes = "id" | "isAllowed" | "chain_id";
 export type tokensCreationAttributes = Optional<tokensAttributes, tokensOptionalAttributes>;
 
 export class tokens extends Model<tokensAttributes, tokensCreationAttributes> implements tokensAttributes {
@@ -25,6 +26,8 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   address!: string;
   isTransactional!: boolean;
   isAllowed?: boolean;
+  chain_id?: number;
+
   isReward!: boolean;
 
   // tokens hasMany issues via tokenId
@@ -79,6 +82,9 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
     },
     isAllowed: {
       type: DataTypes.BOOLEAN,
+    },
+    chain_id: {
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     isReward: {

@@ -11,6 +11,8 @@ export interface chainsAttributes {
   chainCurrencySymbol: string;
   chainCurrencyDecimals: number;
   registryAddress?: string;
+  eventsApi?: string;
+  blockScanner?: string;
   isDefault?: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -18,7 +20,7 @@ export interface chainsAttributes {
 
 export type chainsPk = "id";
 export type chainsId = chains[chainsPk];
-export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "isDefault" | "createdAt" | "updatedAt";
+export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "createdAt" | "updatedAt";
 export type chainsCreationAttributes = Optional<chainsAttributes, chainsOptionalAttributes>;
 
 export class chains extends Model<chainsAttributes, chainsCreationAttributes> implements chainsAttributes {
@@ -31,6 +33,8 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
   chainCurrencySymbol!: string;
   chainCurrencyDecimals!: number;
   registryAddress?: string;
+  eventsApi?: string;
+  blockScanner?: string;
   isDefault?: boolean;
   createdAt!: Date;
   updatedAt!: Date;
@@ -75,6 +79,14 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
       allowNull: false
     },
     registryAddress: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    eventsApi: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    blockScanner: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
