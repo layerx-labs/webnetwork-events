@@ -61,7 +61,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
                 const [token, created] = await db.tokens.findOrCreate({
                   where: {
                     address: tokenAddress,
-                    chain_id: network.chainId
+                    chain_id: network.chain_id
                   },
                   defaults: {
                     name: await erc20.name(),
