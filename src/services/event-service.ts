@@ -8,7 +8,7 @@ import {Log} from "web3-core";
 import {networksAttributes} from "../db/models/networks";
 import {EventNameActionsMap} from "../utils/event-name-actions-map";
 
-const {PUBLIC_WEB3_CONNECTION: web3Host, WALLET_PRIVATE_KEY: privateKey, EVENTS_CHAIN_ID: chainId} = process.env;
+const {PUBLIC_WEB3_CONNECTION: web3Host, WALLET_PRIVATE_KEY: privateKey, EVENTS_CHAIN_ID: chainId } = process.env;
 
 type EventsPerNetwork<T = any> = {[networkAddress: string]: {info: networksAttributes, returnValues: T[]}}
 
@@ -93,12 +93,16 @@ export class EventService<E = any> {
       }
     }
 
-    let lastReadBlock = await db.chain_events.findOne({where: {name: this.name}});
+    let lastReadBlock = await db.chain_events.findOne({where: {name: this.name, chain_id: chainId}});
     if (!lastReadBlock) {
 
       const lastBlock = +(process.env.BULK_CHAIN_START_BLOCK || await this.web3Connection.eth.getBlockNumber());
-      await db.chain_events.create({name: this.name, lastBlock: +(process.env.BULK_CHAIN_START_BLOCK || await this.web3Connection.eth.getBlockNumber())});
-      lastReadBlock = await db.chain_events.findOne({where: {name: this.name}});
+      await db.chain_events.create({
+        name: this.name, 
+        lastBlock: +(process.env.BULK_CHAIN_START_BLOCK || await this.web3Connection.eth.getBlockNumber()),
+        chain_id: +chainId!
+      });
+      lastReadBlock = await db.chain_events.findOne({where: {name: this.name, chain_id: chainId}});
       loggerHandler.warn(`${this.name} had no entry on chain_events, created with blockNumber: ${lastBlock}`);
     }
 
@@ -156,6 +160,8 @@ export class EventService<E = any> {
 
       return ({...previous, [address]: {...previous[address], returnValues: [...previous[address].returnValues, rest]}})
     }
+
+    console.log("events", events);
 
     const eventsToParse = events.filter(({address}) => this.fromRegistry ? address.toLowerCase() === registryAddress?.toLowerCase() : networkMap[address?.toLowerCase()]);
 

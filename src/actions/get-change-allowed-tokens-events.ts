@@ -23,7 +23,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const processor: BlockProcessor<ChangeAllowedTokensEvent> = async (block, network) => {
     const {tokens, operation, kind} = block.returnValues as any;
 
-    const networkRegistry = (await db.chains.findOne({where: {chainId: {[Op.eq]: network.chainId}}, raw: true}))?.registryAddress
+    const networkRegistry = (await db.chains.findOne({where: {chainId: {[Op.eq]: network.chain_id}}, raw: true}))?.registryAddress
 
     if (!networkRegistry)
       logger.warn(`${name} Failed missing network registry on database`);
@@ -60,7 +60,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
                 const [token, created] = await db.tokens.findOrCreate({
                   where: {
-                    address: tokenAddress
+                    address: tokenAddress,
+                    chain_id: network.chain_id
                   },
                   defaults: {
                     name: await erc20.name(),
