@@ -42,10 +42,16 @@ export async function disputeProcessor(block: Block & BountyProposalDisputedEven
   
         const isDisputed = await Actor.isProposalDisputed(bounty.id, proposalId)
   
-        if(isDisputed) {
-          const curator = await db.curators.findOne({ where: { address: bounty.proposals[proposalId].creator }})
-          if(curator) updateCuratorProposalParams(curator, "disputedProposals")
-        } 
+        if (isDisputed) {
+          const curator = await db.curators.findOne({
+            where: {
+              address: bounty.proposals[proposalId].creator,
+              networkId: dbProposal.network_id,
+            },
+          });
+          if (curator)
+            updateCuratorProposalParams(curator, "disputedProposals", "add");
+        }
       }
     }
   }

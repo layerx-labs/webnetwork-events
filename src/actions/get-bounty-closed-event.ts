@@ -62,9 +62,9 @@ async function updateUserPayments(proposal, transactionHash, issueId, tokenAmoun
         issueId, transactionHash,})));
 }
 
-async function updateCuratorProposal(address: string) {
-  const curator = await db.curators.findOne({ where: { address }})
-  if(curator) return await updateCuratorProposalParams(curator, "acceptedProposals")
+async function updateCuratorProposal(address: string, networkId: number) {
+  const curator = await db.curators.findOne({ where: { address, networkId }})
+  if(curator) return await updateCuratorProposalParams(curator, "acceptedProposals", "add")
 }
 
 export async function action(
@@ -116,7 +116,7 @@ export async function action(
 
     await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
 
-    await updateCuratorProposal(bounty.proposals[+proposalId].creator)
+    await updateCuratorProposal(bounty.proposals[+proposalId].creator, network?.id)
 
     await updateLeaderboardBounties("closed");
     await updateLeaderboardProposals("accepted");
