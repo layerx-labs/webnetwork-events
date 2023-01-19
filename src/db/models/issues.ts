@@ -270,6 +270,10 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
     tags: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true
+    },
+    tags: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true
     }
   }, {
     tableName: 'issues',
