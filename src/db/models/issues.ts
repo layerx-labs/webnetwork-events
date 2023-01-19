@@ -34,11 +34,12 @@ export interface issuesAttributes {
   fundedAmount?: string;
   fundedAt?: Date;
   chain_id?: number;
+  tags?: string[];
 }
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "tokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "chain_id";
+export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "tokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "chain_id" | "tags";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
@@ -65,6 +66,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   fundedAmount?: string;
   fundedAt?: Date;
   chain_id?: number;
+  tags?: string[];
 
   // issues hasMany benefactors via issueId
   benefactors!: benefactors[];
@@ -253,6 +255,10 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
     },
     chain_id: {
       type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    tags: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true
     }
   }, {
