@@ -60,14 +60,16 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
                 const [token, created] = await db.tokens.findOrCreate({
                   where: {
                     address: tokenAddress,
-                    isTransactional
+                    isTransactional,
+                    isReward: !isTransactional
                   },
                   defaults: {
                     name: await erc20.name(),
                     symbol: await erc20.symbol(),
                     isAllowed: true,
                     address: tokenAddress,
-                    isTransactional
+                    isTransactional,
+                    isReward: !isTransactional
                   }
                 });
 
