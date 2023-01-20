@@ -10,6 +10,7 @@ export interface tokensAttributes {
   address: string;
   isTransactional: boolean;
   isAllowed?: boolean;
+  isReward?: boolean;
 }
 
 export type tokensPk = "id";
@@ -24,7 +25,8 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   address!: string;
   isTransactional!: boolean;
   isAllowed?: boolean;
-
+  isReward?: boolean;
+  
   // tokens hasMany issues via tokenId
   issues!: issues[];
   getIssues!: Sequelize.HasManyGetAssociationsMixin<issues>;
@@ -78,7 +80,12 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
     isAllowed: {
       type: DataTypes.BOOLEAN,
       allowNull: true
-    }
+    },
+    isReward: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
   }, {
     tableName: 'tokens',
     schema: 'public',
