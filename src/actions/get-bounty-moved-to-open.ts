@@ -7,28 +7,38 @@ import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service"
 import {slashSplit} from "src/utils/string";
 import {Network_v2, Web3Connection} from "@taikai/dappkit";
 
-
 export const name = "get-bounty-moved-to-open";
 export const schedule = "*/1 * * * *";
 export const description =
   "move to 'OPEN' all 'DRAFT' bounties that have Draft Time finished as set at the block chain";
 export const author = "clarkjoao";
 
-const {NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey,} = process.env;
+const {NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey, EVENTS_CHAIN_ID: chainId} = process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   try {
-
     logger.info(`${name} start`);
+
+    if (!chainId) {
+      logger.error(`${name}: Missing EVENTS_CHAIN_ID`);
+
+      return eventsProcessed;
+    }
 
     const web3Connection = new Web3Connection({web3Host, privateKey});
     await web3Connection.start();
 
     const timeOnChain = await web3Connection.Web3.eth.getBlock(`latest`).then(({ timestamp }) => +timestamp * 1000);
 
-    const networks = await db.networks.findAll({where: {isRegistered: true}, raw: true});
+    const networks = await db.networks.findAll({
+      where: {
+        isRegistered: true,
+        chain_id: +chainId
+      }, 
+      raw: true
+    });
     if (!networks || !networks.length) {
       logger.warn(`${name} found no networks`);
       return eventsProcessed;
