@@ -10,7 +10,7 @@ export interface tokensAttributes {
   address: string;
   isTransactional: boolean;
   isAllowed?: boolean;
-  isReward?: boolean;
+  isReward: boolean;
 }
 
 export type tokensPk = "id";
@@ -25,7 +25,7 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   address!: string;
   isTransactional!: boolean;
   isAllowed?: boolean;
-  isReward?: boolean;
+  isReward!: boolean;
   
   // tokens hasMany issues via tokenId
   issues!: issues[];
