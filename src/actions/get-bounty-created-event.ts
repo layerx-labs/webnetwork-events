@@ -24,7 +24,9 @@ async function validateToken(connection: Web3Connection, address, isTransactiona
     token = await db.tokens.create({
       name: await erc20.name(),
       symbol: await erc20.symbol(),
-      address, isTransactional
+      address, 
+      isTransactional,
+      isReward: !isTransactional
     });
   }
 
