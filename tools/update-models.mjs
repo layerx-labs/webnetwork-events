@@ -2,12 +2,12 @@ import { execSync } from "child_process";
 import "dotenv/config";
 
 const {
-  DB_DATABASE: d,
-  DB_HOST: h,
-  DB_PASSWORD: x,
-  DB_PORT: p,
-  DB_USERNAME: u,
-  DB_DIALECT: dialect,
+  NEXT_DB_DATABASE: d,
+  NEXT_DB_HOST: h,
+  NEXT_DB_PASSWORD: x,
+  NEXT_DB_PORT: p,
+  NEXT_DB_USERNAME: u,
+  NEXT_DB_DIALECT: dialect,
 } = process.env;
 
 if ([d, h, x, p, u].some((v) => !v))

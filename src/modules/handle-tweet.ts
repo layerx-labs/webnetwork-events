@@ -78,8 +78,8 @@ const events = {
 };
 
 export const mainNetworks = ["bepro", "taikai"];
-process.env.NETWORK_NAME &&
-  mainNetworks.push(process.env.NETWORK_NAME.toLowerCase());
+process.env.NEXT_PUBLIC_DEFAULT_NETWORK_NAME &&
+  mainNetworks.push(process.env.NEXT_PUBLIC_DEFAULT_NETWORK_NAME.toLowerCase());
 
 export async function dispatchTweets(bounties: BountiesProcessed, entity: string, event: string, networkName: string) {
   if (!bounties || !mainNetworks.includes(networkName.toLocaleLowerCase()) || !events?.[entity]?.[event])

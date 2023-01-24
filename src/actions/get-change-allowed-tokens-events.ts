@@ -12,7 +12,7 @@ export const schedule = "*/60 * * * *";
 export const description = "retrieving bounty created events";
 export const author = "MarcusviniciusLsantos";
 
-const { PUBLIC_WEB3_CONNECTION: web3Host, WALLET_PRIVATE_KEY: privateKey } =
+const { NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey } =
   process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
