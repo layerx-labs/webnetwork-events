@@ -7,6 +7,8 @@ export interface network_tokensAttributes {
   id: number;
   networkId: number;
   tokenId: number;
+  isTransactional: boolean;
+  isReward: boolean;
 }
 
 export type network_tokensPk = "id";
@@ -18,6 +20,8 @@ export class network_tokens extends Model<network_tokensAttributes, network_toke
   id!: number;
   networkId!: number;
   tokenId!: number;
+  isTransactional!: boolean;
+  isReward!: boolean;
 
   // network_tokens belongsTo networks via networkId
   network!: networks;
@@ -53,6 +57,16 @@ export class network_tokens extends Model<network_tokensAttributes, network_toke
         model: 'tokens',
         key: 'id'
       }
+    },
+    isTransactional: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    isReward: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     tableName: 'network_tokens',
