@@ -90,15 +90,24 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
             .filter(onDatabase)
             .map(address => dbTokens.find(t => t.address === address))
             .map(async (token) => {
-              if(isTransactional) token.isTransactional = false;
-              if(!isTransactional) token.isReward = false
-              if(!token.isReward && !token.isTransactional) token.isAllowed = false;
+              let removed = 0
+              if(isTransactional) {
+                token.isTransactional = false;
+                await db.network_tokens.update({ isTransactional: false }, { where: { tokenId: token.id }})
+              }
+              if(!isTransactional) {
+                token.isReward = false
+                await db.network_tokens.update({ isReward: false }, { where: { tokenId: token.id }})
+              }
+              if(!token.isReward && !token.isTransactional){
+                token.isAllowed = false;
+                removed = await db.network_tokens.destroy({where: {tokenId: token.id}});
+
+                if (!removed)
+                  logger.warn(`${name} Failed to remove ${token.id}`);
+              } 
+              
               await token.save();
-
-              const removed = await db.network_tokens.destroy({where: {tokenId: token.id}});
-
-              if (!removed)
-                logger.warn(`${name} Failed to remove ${token.id}`);
 
               return removed > 0;
             })
