@@ -17,8 +17,8 @@ export const description = "when draft time has been change at contract, we must
 export const author = "clarkjoao";
 
 const {
-  PUBLIC_WEB3_CONNECTION: web3Host,
-  WALLET_PRIVATE_KEY: privateKey,
+  NEXT_PUBLIC_WEB3_CONNECTION: web3Host,
+  NEXT_WALLET_PRIVATE_KEY: privateKey,
 } = process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {

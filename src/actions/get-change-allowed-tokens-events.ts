@@ -12,7 +12,7 @@ export const schedule = "*/60 * * * *";
 export const description = "retrieving bounty created events";
 export const author = "MarcusviniciusLsantos";
 
-const { PUBLIC_WEB3_CONNECTION: web3Host, WALLET_PRIVATE_KEY: privateKey } =
+const { NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey } =
   process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
@@ -52,17 +52,29 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         result = await Promise.all(
           tokens
             .filter(onRegistry)
-            .filter(notOnDatabase)
             .map(async (tokenAddress) => {
               try {
                 const erc20 = new ERC20(service.web3Connection, tokenAddress)
                 await erc20.loadContract();
-                await db.tokens.create({
-                  name: await erc20.name(),
-                  symbol: await erc20.symbol(),
-                  address: tokenAddress,
-                  isTransactional
+
+                const [token, created] = await db.tokens.findOrCreate({
+                  where: {
+                    address: tokenAddress,
+                    isTransactional
+                  },
+                  defaults: {
+                    name: await erc20.name(),
+                    symbol: await erc20.symbol(),
+                    isAllowed: true,
+                    address: tokenAddress,
+                    isTransactional
+                  }
                 });
+
+                if (!created) {
+                  token.isAllowed = true;
+                  await token.save();
+                }
 
                 return tokenAddress;
               } catch (e: any) {
@@ -75,11 +87,16 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           tokens
             .filter(notOnRegistry)
             .filter(onDatabase)
-            .map(address => dbTokens.find(t => t.address === address))
+            .map(address => dbTokens.find(t => t.address === address && t.isTransactional === isTransactional))
             .map(async (token) => {
+              token.isAllowed = false;
+              await token.save();
+
               const removed = await db.network_tokens.destroy({where: {tokenId: token.id}});
+
               if (!removed)
                 logger.warn(`${name} Failed to remove ${token.id}`);
+
               return removed > 0;
             })
         )

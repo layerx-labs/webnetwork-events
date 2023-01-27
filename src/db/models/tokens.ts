@@ -9,11 +9,12 @@ export interface tokensAttributes {
   symbol: string;
   address: string;
   isTransactional: boolean;
+  isAllowed?: boolean;
 }
 
 export type tokensPk = "id";
 export type tokensId = tokens[tokensPk];
-export type tokensOptionalAttributes = "id";
+export type tokensOptionalAttributes = "id" | "isAllowed";
 export type tokensCreationAttributes = Optional<tokensAttributes, tokensOptionalAttributes>;
 
 export class tokens extends Model<tokensAttributes, tokensCreationAttributes> implements tokensAttributes {
@@ -22,6 +23,7 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   symbol!: string;
   address!: string;
   isTransactional!: boolean;
+  isAllowed?: boolean;
 
   // tokens hasMany issues via tokenId
   issues!: issues[];
@@ -72,6 +74,10 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
+    },
+    isAllowed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
     }
   }, {
     tableName: 'tokens',
