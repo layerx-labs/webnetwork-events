@@ -30,8 +30,11 @@ export async function handleCurators(
   return null;
 }
 
-export async function updateCuratorProposalParams(curator: curators, param: "acceptedProposals" | "disputedProposals" ) {
+export async function updateCuratorProposalParams(curator: curators, param: "acceptedProposals" | "disputedProposals", type: "add" | "remove") {
   // @ts-ignore
-  curator[param] +=  1
+  if(type === 'add') curator[param] +=  1
+  // @ts-ignore
+  if(type === 'remove') curator[param] -=  1
+  
   return curator.save()
 }
