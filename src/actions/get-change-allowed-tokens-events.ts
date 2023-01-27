@@ -72,7 +72,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
                 if (!created) {
                   if(isTransactional) token.isTransactional = true
-                  if(!isTransactional) token.isReward = true
+                  else if(!isTransactional) token.isReward = true
                   token.isAllowed = true;
                   await token.save();
                 }
