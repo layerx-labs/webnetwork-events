@@ -48,7 +48,6 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     await handleCurators(actor, actorTotalVotes, councilAmount, dbNetwork.id);
 
     await handleIsDisputed(name, (service.Actor as Network_v2), dbNetwork.id)
-
     if (actorExistsInDb && actorsNewTotal.lt(councilAmount))
       dbNetwork.councilMembers = networkCouncilMembers.filter(address => address !== actor);
     else if (!actorExistsInDb && actorsNewTotal.gte(councilAmount))
