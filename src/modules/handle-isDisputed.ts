@@ -33,7 +33,6 @@ export async function handleIsDisputed(
     });
 
     return Promise.all(proposals
-      .filter((p) => (!p.issue.merged))
       .map(async (proposal) => {
         try {
           if(proposal.issue.contractId && proposal.contractId){
