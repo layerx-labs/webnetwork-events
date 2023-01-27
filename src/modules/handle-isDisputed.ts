@@ -40,15 +40,15 @@ export async function handleIsDisputed(
             const isDisputed = await networkV2.isProposalDisputed(proposal.issue.contractId, proposal.contractId)
 
             if(proposal.isDisputed && !isDisputed && proposal.creator && proposal.network_id){
-              updateCuratorProposal(proposal.creator, proposal.network_id, 'remove')
+             await updateCuratorProposal(proposal.creator, proposal.network_id, 'remove')
             }
 
             if(!proposal.isDisputed && isDisputed && proposal.creator && proposal.network_id){
-              updateCuratorProposal(proposal.creator, proposal.network_id, 'add')
+             await updateCuratorProposal(proposal.creator, proposal.network_id, 'add')
             }
 
             proposal.isDisputed = isDisputed
-            proposal.save()
+            await proposal.save()
             return proposal.id
           }
         } catch (e) {
