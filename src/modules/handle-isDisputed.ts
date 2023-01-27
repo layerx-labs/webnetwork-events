@@ -17,6 +17,7 @@ export async function handleIsDisputed(
     const proposals = await db.merge_proposals.findAll({
       where: {
         network_id,
+        refusedByBountyOwner: false
       },
       include: [
         {
