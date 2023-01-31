@@ -1,6 +1,7 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { benefactors, benefactorsId } from './benefactors';
+import type { chains, chainsId } from './chains';
 import type { developers, developersId } from './developers';
 import type { disputes, disputesId } from './disputes';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
@@ -68,6 +69,11 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   chain_id?: number;
   tags?: string[];
 
+  // issues belongsTo chains via chain_id
+  chain!: chains;
+  getChain!: Sequelize.BelongsToGetAssociationMixin<chains>;
+  setChain!: Sequelize.BelongsToSetAssociationMixin<chains, chainsId>;
+  createChain!: Sequelize.BelongsToCreateAssociationMixin<chains>;
   // issues hasMany benefactors via issueId
   benefactors!: benefactors[];
   getBenefactors!: Sequelize.HasManyGetAssociationsMixin<benefactors>;
@@ -255,7 +261,11 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
     },
     chain_id: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
+      references: {
+        model: 'chains',
+        key: 'chainId'
+      }
     },
     tags: {
       type: DataTypes.ARRAY(DataTypes.STRING),

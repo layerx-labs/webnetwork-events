@@ -86,8 +86,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         dbBounty.state = "open";
         await dbBounty.save();
 
-        eventsProcessed[networkName] = {
-          ...eventsProcessed[networkName],
+        eventsProcessed[networkName!] = {
+          ...eventsProcessed[networkName!],
           [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: null}
         };
 

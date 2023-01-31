@@ -1,7 +1,9 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { chains, chainsId } from './chains';
 import type { issues, issuesId } from './issues';
 import type { network_tokens, network_tokensId } from './network_tokens';
+import type { networks, networksId } from './networks';
 
 export interface tokensAttributes {
   id: number;
@@ -9,7 +11,6 @@ export interface tokensAttributes {
   symbol: string;
   address: string;
   isTransactional: boolean;
-  chain_id?: number;
   isAllowed?: boolean;
   chain_id?: number;
   isReward: boolean;
@@ -17,7 +18,7 @@ export interface tokensAttributes {
 
 export type tokensPk = "id";
 export type tokensId = tokens[tokensPk];
-export type tokensOptionalAttributes = "id" | "chain_id" | "isAllowed";
+export type tokensOptionalAttributes = "id" | "isAllowed" | "chain_id";
 export type tokensCreationAttributes = Optional<tokensAttributes, tokensOptionalAttributes>;
 
 export class tokens extends Model<tokensAttributes, tokensCreationAttributes> implements tokensAttributes {
@@ -26,11 +27,15 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   symbol!: string;
   address!: string;
   isTransactional!: boolean;
-  chain_id?: number;
   isAllowed?: boolean;
-
+  chain_id?: number;
   isReward!: boolean;
 
+  // tokens belongsTo chains via chain_id
+  chain!: chains;
+  getChain!: Sequelize.BelongsToGetAssociationMixin<chains>;
+  setChain!: Sequelize.BelongsToSetAssociationMixin<chains, chainsId>;
+  createChain!: Sequelize.BelongsToCreateAssociationMixin<chains>;
   // tokens hasMany issues via tokenId
   issues!: issues[];
   getIssues!: Sequelize.HasManyGetAssociationsMixin<issues>;
@@ -55,6 +60,18 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   hasNetwork_token!: Sequelize.HasManyHasAssociationMixin<network_tokens, network_tokensId>;
   hasNetwork_tokens!: Sequelize.HasManyHasAssociationsMixin<network_tokens, network_tokensId>;
   countNetwork_tokens!: Sequelize.HasManyCountAssociationsMixin;
+  // tokens hasMany networks via network_token_id
+  networks!: networks[];
+  getNetworks!: Sequelize.HasManyGetAssociationsMixin<networks>;
+  setNetworks!: Sequelize.HasManySetAssociationsMixin<networks, networksId>;
+  addNetwork!: Sequelize.HasManyAddAssociationMixin<networks, networksId>;
+  addNetworks!: Sequelize.HasManyAddAssociationsMixin<networks, networksId>;
+  createNetwork!: Sequelize.HasManyCreateAssociationMixin<networks>;
+  removeNetwork!: Sequelize.HasManyRemoveAssociationMixin<networks, networksId>;
+  removeNetworks!: Sequelize.HasManyRemoveAssociationsMixin<networks, networksId>;
+  hasNetwork!: Sequelize.HasManyHasAssociationMixin<networks, networksId>;
+  hasNetworks!: Sequelize.HasManyHasAssociationsMixin<networks, networksId>;
+  countNetworks!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof tokens {
     return sequelize.define('tokens', {
@@ -81,19 +98,22 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
       allowNull: false,
       defaultValue: false
     },
+    isAllowed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
     chain_id: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
+      references: {
+        model: 'chains',
+        key: 'chainId'
+      }
     },
     isReward: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
-    },
-    },
-    isAllowed: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true
     }
   }, {
     tableName: 'tokens',

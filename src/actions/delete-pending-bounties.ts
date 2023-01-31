@@ -61,23 +61,22 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           const isBountyOnNetwork = await _network.cidBountyId(dbBounty.issueId)
 
           if (isBountyOnNetwork.toString() === '0' && dbBounty?.githubId) {
-
             logger.info(`${name} Removing pending bounty ${dbBounty.issueId}`);
-
+  
             const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
-
+  
             await GHService.issueClose(repo, owner, dbBounty?.githubId)
-
+  
             await dbBounty.destroy();
-
-            eventsProcessed[networkName] = {
-              ...eventsProcessed[networkName],
+  
+            eventsProcessed[networkName!] = {
+              ...eventsProcessed[networkName!],
               [dbBounty.issueId!.toString()]: {
                 bounty: dbBounty,
                 eventBlock: null,
               },
             };
-
+  
             logger.info(`${name} Removed pending bounty ${dbBounty.issueId}`);
           }
         }

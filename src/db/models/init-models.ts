@@ -128,6 +128,12 @@ export function initModels(sequelize: Sequelize) {
   const users_payments = _users_payments.initModel(sequelize);
   const header_information = _header_information.initModel(sequelize);
 
+  issues.belongsTo(chains, { as: "chain", foreignKey: "chain_id"});
+  chains.hasMany(issues, { as: "issues", foreignKey: "chain_id"});
+  networks.belongsTo(chains, { as: "chain", foreignKey: "chain_id"});
+  chains.hasMany(networks, { as: "networks", foreignKey: "chain_id"});
+  tokens.belongsTo(chains, { as: "chain", foreignKey: "chain_id"});
+  chains.hasMany(tokens, { as: "tokens", foreignKey: "chain_id"});
   benefactors.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
   developers.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
@@ -164,6 +170,8 @@ export function initModels(sequelize: Sequelize) {
   tokens.hasMany(issues, { as: "issues", foreignKey: "tokenId"});
   network_tokens.belongsTo(tokens, { as: "token", foreignKey: "tokenId"});
   tokens.hasMany(network_tokens, { as: "network_tokens", foreignKey: "tokenId"});
+  networks.belongsTo(tokens, { as: "network_token_token", foreignKey: "network_token_id"});
+  tokens.hasMany(networks, { as: "networks", foreignKey: "network_token_id"});
 
   return {
     SequelizeMeta: SequelizeMeta,

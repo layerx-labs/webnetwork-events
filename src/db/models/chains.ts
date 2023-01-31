@@ -1,5 +1,8 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { issues, issuesId } from './issues';
+import type { networks, networksId } from './networks';
+import type { tokens, tokensId } from './tokens';
 
 export interface chainsAttributes {
   id: number;
@@ -16,11 +19,12 @@ export interface chainsAttributes {
   isDefault?: boolean;
   createdAt: Date;
   updatedAt: Date;
+  color?: string;
 }
 
 export type chainsPk = "id";
 export type chainsId = chains[chainsPk];
-export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "createdAt" | "updatedAt";
+export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "createdAt" | "updatedAt" | "color";
 export type chainsCreationAttributes = Optional<chainsAttributes, chainsOptionalAttributes>;
 
 export class chains extends Model<chainsAttributes, chainsCreationAttributes> implements chainsAttributes {
@@ -38,7 +42,44 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
   isDefault?: boolean;
   createdAt!: Date;
   updatedAt!: Date;
+  color?: string;
 
+  // chains hasMany issues via chain_id
+  issues!: issues[];
+  getIssues!: Sequelize.HasManyGetAssociationsMixin<issues>;
+  setIssues!: Sequelize.HasManySetAssociationsMixin<issues, issuesId>;
+  addIssue!: Sequelize.HasManyAddAssociationMixin<issues, issuesId>;
+  addIssues!: Sequelize.HasManyAddAssociationsMixin<issues, issuesId>;
+  createIssue!: Sequelize.HasManyCreateAssociationMixin<issues>;
+  removeIssue!: Sequelize.HasManyRemoveAssociationMixin<issues, issuesId>;
+  removeIssues!: Sequelize.HasManyRemoveAssociationsMixin<issues, issuesId>;
+  hasIssue!: Sequelize.HasManyHasAssociationMixin<issues, issuesId>;
+  hasIssues!: Sequelize.HasManyHasAssociationsMixin<issues, issuesId>;
+  countIssues!: Sequelize.HasManyCountAssociationsMixin;
+  // chains hasMany networks via chain_id
+  networks!: networks[];
+  getNetworks!: Sequelize.HasManyGetAssociationsMixin<networks>;
+  setNetworks!: Sequelize.HasManySetAssociationsMixin<networks, networksId>;
+  addNetwork!: Sequelize.HasManyAddAssociationMixin<networks, networksId>;
+  addNetworks!: Sequelize.HasManyAddAssociationsMixin<networks, networksId>;
+  createNetwork!: Sequelize.HasManyCreateAssociationMixin<networks>;
+  removeNetwork!: Sequelize.HasManyRemoveAssociationMixin<networks, networksId>;
+  removeNetworks!: Sequelize.HasManyRemoveAssociationsMixin<networks, networksId>;
+  hasNetwork!: Sequelize.HasManyHasAssociationMixin<networks, networksId>;
+  hasNetworks!: Sequelize.HasManyHasAssociationsMixin<networks, networksId>;
+  countNetworks!: Sequelize.HasManyCountAssociationsMixin;
+  // chains hasMany tokens via chain_id
+  tokens!: tokens[];
+  getTokens!: Sequelize.HasManyGetAssociationsMixin<tokens>;
+  setTokens!: Sequelize.HasManySetAssociationsMixin<tokens, tokensId>;
+  addToken!: Sequelize.HasManyAddAssociationMixin<tokens, tokensId>;
+  addTokens!: Sequelize.HasManyAddAssociationsMixin<tokens, tokensId>;
+  createToken!: Sequelize.HasManyCreateAssociationMixin<tokens>;
+  removeToken!: Sequelize.HasManyRemoveAssociationMixin<tokens, tokensId>;
+  removeTokens!: Sequelize.HasManyRemoveAssociationsMixin<tokens, tokensId>;
+  hasToken!: Sequelize.HasManyHasAssociationMixin<tokens, tokensId>;
+  hasTokens!: Sequelize.HasManyHasAssociationsMixin<tokens, tokensId>;
+  countTokens!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof chains {
     return sequelize.define('chains', {
@@ -92,6 +133,10 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
     },
     isDefault: {
       type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    color: {
+      type: DataTypes.STRING(255),
       allowNull: true
     }
   }, {
