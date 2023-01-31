@@ -243,15 +243,15 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
       allowNull: true
     },
     oracleExchangeRate: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DOUBLE,
       allowNull: true
     },
     mergeCreatorFeeShare: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DOUBLE,
       allowNull: true
     },
     percentageNeededForDispute: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DOUBLE,
       allowNull: true
     },
     cancelableTime: {
@@ -259,7 +259,7 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
       allowNull: true
     },
     proposerFeeShare: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DOUBLE,
       allowNull: true
     }
   }, {
