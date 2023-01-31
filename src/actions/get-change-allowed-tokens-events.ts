@@ -13,7 +13,7 @@ export const schedule = "*/60 * * * *";
 export const description = "retrieving bounty created events";
 export const author = "MarcusviniciusLsantos";
 
-const { NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey } =
+const { NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey, EVENTS_CHAIN_ID: chainId } =
   process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
@@ -23,7 +23,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const processor: BlockProcessor<ChangeAllowedTokensEvent> = async (block, network) => {
     const {tokens, operation, kind} = block.returnValues as any;
 
-    const networkRegistry = (await db.chains.findOne({where: {chainId: {[Op.eq]: network.chain_id}}, raw: true}))?.registryAddress
+    const networkRegistry = (await db.chains.findOne({where: {chainId: {[Op.eq]: chainId }}, raw: true}))?.registryAddress
 
     const networkRegistry = (await db.chains.findOne({where: {chainId: {[Op.eq]: network.chainId }}, raw: true}))?.registryAddress
 
@@ -63,7 +63,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
                 const [token, created] = await db.tokens.findOrCreate({
                   where: {
                     address: tokenAddress,
-                    chain_id: network.chain_id
+                    chain_id: chainId
                   },
                   defaults: {
                     name: await erc20.name(),
