@@ -161,8 +161,6 @@ export class EventService<E = any> {
       return ({...previous, [address]: {...previous[address], returnValues: [...previous[address].returnValues, rest]}})
     }
 
-    console.log("events", events);
-
     const eventsToParse = events.filter(({address}) => this.fromRegistry ? address.toLowerCase() === registryAddress?.toLowerCase() : networkMap[address?.toLowerCase()]);
 
     loggerHandler.log(`${this.name} Got ${eventsToParse.length} events with matching topics`);
