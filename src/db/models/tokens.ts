@@ -11,7 +11,6 @@ export interface tokensAttributes {
   symbol: string;
   address: string;
   isTransactional: boolean;
-  chain_id?: number;
   isAllowed?: boolean;
   chain_id?: number;
   isReward: boolean;
@@ -19,7 +18,7 @@ export interface tokensAttributes {
 
 export type tokensPk = "id";
 export type tokensId = tokens[tokensPk];
-export type tokensOptionalAttributes = "id" | "chain_id" | "isAllowed";
+export type tokensOptionalAttributes = "id" | "isAllowed" | "chain_id";
 export type tokensCreationAttributes = Optional<tokensAttributes, tokensOptionalAttributes>;
 
 export class tokens extends Model<tokensAttributes, tokensCreationAttributes> implements tokensAttributes {
@@ -28,7 +27,6 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   symbol!: string;
   address!: string;
   isTransactional!: boolean;
-  chain_id?: number;
   isAllowed?: boolean;
   chain_id?: number;
   isAllowed?: boolean;
@@ -114,8 +112,8 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
       allowNull: false,
       defaultValue: false
     },
-    chain_id: {
-      type: DataTypes.INTEGER,
+    isAllowed: {
+      type: DataTypes.BOOLEAN,
       allowNull: true
     },
     chain_id: {
