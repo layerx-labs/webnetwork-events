@@ -12,17 +12,24 @@ async function getCoinPrice(search: string, fiat = currency) {
       return 0;
   
     const coins = await COINGECKO_API.get(`/coins/list?include_platform=false`).then(value => value.data);
-    const coinEntry = coins.find(({symbol}) => symbol === search.toLowerCase());
+    const symbols = search.toLowerCase().split(',')
+    const coinsData = coins.filter(({symbol}) => symbols.includes(symbol))
 
-    if (!coinEntry)
+    if (coinsData.length < 1)
       return 0;
   
-    const price = await COINGECKO_API.get(`/simple/price?ids=${coinEntry.id}&vs_currencies=${fiat || 'eur'}`);
+    const ids = coinsData.map(({id}) => id).join()
 
-    if (!price?.data?.[coinEntry.id][fiat || 'eur'])
+    const price = await COINGECKO_API.get(`/simple/price?ids=${ids}&vs_currencies=${fiat || 'eur'}`);
+
+    if (!price?.data)
       return 0;
-  
-    return price?.data?.[coinEntry.id][fiat || 'eur'];
+
+    const result: any = {}
+
+    coinsData.map(({symbol, id}) => result[symbol] = {[fiat || 'eur']: price?.data?.[id]?.[fiat || 'eur']})
+
+    return result
   }
 
 export {
