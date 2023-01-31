@@ -235,11 +235,11 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
       allowNull: true
     },
     disputableTime: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       allowNull: true
     },
     draftTime: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       allowNull: true
     },
     oracleExchangeRate: {
@@ -255,7 +255,7 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
       allowNull: true
     },
     cancelableTime: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       allowNull: true
     },
     proposerFeeShare: {
