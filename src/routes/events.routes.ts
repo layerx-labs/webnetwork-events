@@ -17,6 +17,7 @@ import { action as getPullRequestReadyForReview } from "src/actions/get-pullrequ
 import { action as getOraclesTransferEvents } from "src/actions/get-oracles-transfer-events";
 import { action as getTransferEvents } from "src/actions/get-transfer-bounty-token-events";
 import { action as UpdateBountiesToDraft } from 'src/actions/update-bounties-to-draft'
+import { action as updateNetworkParameters } from "src/actions/update-network-parameters";
 
 import {
   BountiesProcessed,
@@ -61,6 +62,9 @@ const events = {
   },
   bountyToken: {
     transfer: getTransferEvents
+  },
+  network: {
+    "parameters": updateNetworkParameters
   }
 };
 
