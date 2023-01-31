@@ -13,6 +13,8 @@ export const schedule = "*/10 * * * *";
 export const description = "retrieving network registered on registry events";
 export const author = "vhcsilva";
 
+const { EVENTS_CHAIN_ID: chainId } = process.env;
+
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
