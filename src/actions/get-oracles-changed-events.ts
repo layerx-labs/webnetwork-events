@@ -8,6 +8,7 @@ import {BlockProcessor} from "../interfaces/block-processor";
 import BigNumber from "bignumber.js";
 import { handleCurators } from "src/modules/handle-curators";
 import { updatePriceHeader } from "src/modules/handle-header-information";
+import { handleIsDisputed } from "src/modules/handle-isDisputed";
 
 export const name = "getOraclesChangedEvents";
 export const schedule = "*/30 * * * *";
@@ -39,6 +40,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     const actorTotalVotes = await (service.Actor as Network_v2).getOraclesOf(actor)
 
     await handleCurators(actor, actorTotalVotes, councilAmount, dbNetwork.id)
+
+    await handleIsDisputed(name, (service.Actor as Network_v2), dbNetwork.id)
     
     if (actorExistsInDb && actorsNewTotal.lt(councilAmount))
       dbNetwork.councilMembers = networkCouncilMembers.filter(address => address !== actor);
