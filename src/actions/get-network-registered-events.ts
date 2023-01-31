@@ -11,13 +11,15 @@ export const schedule = "*/10 * * * *";
 export const description = "retrieving network registered on registry events";
 export const author = "vhcsilva";
 
+const { EVENTS_CHAIN_ID: chainId } = process.env;
+
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
   const processor: BlockProcessor<NetworkCreatedEvent> = async (block, _network) => {
     const {network: createdNetworkAddress} = block.returnValues;
 
-    const network = await db.networks.findOne({where: {networkAddress: createdNetworkAddress}});
+    const network = await db.networks.findOne({ where: { networkAddress: createdNetworkAddress, chain_id: chainId } });
 
     if (!network)
       return logger.warn(`${name} network with address ${createdNetworkAddress} not found on db`);
