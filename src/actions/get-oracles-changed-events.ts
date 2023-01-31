@@ -7,6 +7,7 @@ import {EventService} from "../services/event-service";
 import {BlockProcessor} from "../interfaces/block-processor";
 import BigNumber from "bignumber.js";
 import { handleCurators } from "src/modules/handle-curators";
+import { updatePriceHeader } from "src/modules/handle-header-information";
 
 export const name = "getOraclesChangedEvents";
 export const schedule = "*/30 * * * *";
@@ -45,6 +46,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       dbNetwork.councilMembers = [...networkCouncilMembers, actor];
 
     await dbNetwork.save();
+
+    await updatePriceHeader()
 
     eventsProcessed[network.name] = dbNetwork.councilMembers || [];
   }
