@@ -101,3 +101,26 @@ export async function updateBountiesHeader() {
     );
   }
 }
+
+export async function updateNumberOfNetworkHeader() {
+  try {
+    const headerInformation = await headerInformationData();
+
+    if (headerInformation) {
+      const numberNetworks = await db.networks.count({
+        where: {
+          isRegistered: true
+        },
+      });
+
+      headerInformation.number_of_network = numberNetworks;
+      await headerInformation?.save();
+      logger.info(`HeaderInformation: Updated number of network`);
+    }
+  } catch (err: any) {
+    logger.error(
+      `HeaderInformation: Update number of network Header Error`,
+      err?.message || err.toString()
+    );
+  }
+}
