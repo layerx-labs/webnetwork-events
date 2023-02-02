@@ -7,6 +7,7 @@ import {BountyCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/net
 import {DB_BOUNTY_NOT_FOUND, NETWORK_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {BlockProcessor} from "../interfaces/block-processor";
 import { updateLeaderboardBounties } from "src/modules/leaderboard";
+import { updateBountiesHeader } from "src/modules/handle-header-information";
 
 export const name = "getBountyCreatedEvents";
 export const schedule = "*/10 * * * *";
@@ -70,6 +71,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     await dbBounty.save();
 
     await updateLeaderboardBounties();
+    await updateBountiesHeader()
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
 

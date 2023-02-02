@@ -35,6 +35,8 @@ import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
+import { header_information as _header_information } from "./header_information";
+import type { header_informationAttributes, header_informationCreationAttributes } from "./header_information";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -55,6 +57,7 @@ export {
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
+  _header_information as header_information
 };
 
 export type {
@@ -94,6 +97,8 @@ export type {
   usersCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
+  header_informationAttributes,
+  header_informationCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -115,6 +120,7 @@ export function initModels(sequelize: Sequelize) {
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
+  const header_information = _header_information.initModel(sequelize);
 
   benefactors.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
@@ -172,5 +178,6 @@ export function initModels(sequelize: Sequelize) {
     tokens: tokens,
     users: users,
     users_payments: users_payments,
+    header_information: header_information
   };
 }
