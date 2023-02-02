@@ -161,8 +161,6 @@ export class EventService<E = any> {
       return ({...previous, [address]: {...previous[address], returnValues: [...previous[address].returnValues, rest]}})
     }
 
-    console.log("events", events);
-
     const eventsToParse = events.filter(({address}) => this.fromRegistry ? address.toLowerCase() === registryAddress?.toLowerCase() : networkMap[address?.toLowerCase()]);
 
     loggerHandler.log(`${this.name} Got ${eventsToParse.length} events with matching topics`);
@@ -175,9 +173,13 @@ export class EventService<E = any> {
 
     try {
       const entries = await this._getEventsOfNetworks();
+      
       for (const [networkAddress, {info, returnValues}] of Object.entries(entries)) {
         await this.loadActorWithAddress(networkAddress);
-        await Promise.all(returnValues.map(event => blockProcessor(event, info)));
+
+        for (const event of returnValues) {
+          await blockProcessor(event, info);
+        }
       }
 
       if (!this.query || !this.query?.networkName || !this.query?.blockQuery)

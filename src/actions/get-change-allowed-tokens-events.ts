@@ -37,14 +37,14 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       );
       await registry.loadContract();
 
-      const registryTokens = await registry.getAllowedTokens()
+      const registryTokens = await registry.getAllowedTokens();
 
-      const dbTokens = await db.tokens.findAll();
+      const dbTokens = await db.tokens.findAll({ where: { chain_id: chainId } });
 
       const isTransactional = kind === "transactional";
 
-      const onRegistry = (address: string) => registryTokens[isTransactional ? "transactional" : "reward"].includes(address)
-      const notOnRegistry = (token) => !registryTokens[isTransactional ? "transactional" : "reward"].some(a => a === token)
+      const onRegistry = (address: string) => registryTokens[kind].includes(address);
+      const notOnRegistry = (address: string) => !onRegistry(address);
       const onDatabase = (address: string) => tokens.includes(address);
 
       let result: number[]|string[] = [];
