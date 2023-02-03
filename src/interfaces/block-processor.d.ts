@@ -5,4 +5,4 @@ interface Block {
   returnValues: {[p: string]: string, __length__: number}
 }
 
-export type BlockProcessor<T = any,> = (block: Block & T, network: Partial<NetworkProps>) => void
+export type BlockProcessor<T = any,> = (block: Block & T, network: Partial<NetworkProps>, chainId: string) => void
