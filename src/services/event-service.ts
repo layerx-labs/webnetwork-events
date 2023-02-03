@@ -178,7 +178,7 @@ export class EventService<E = any> {
         await this.loadActorWithAddress(networkAddress);
 
         for (const event of returnValues) {
-          await blockProcessor(event, info);
+          await blockProcessor(event, info, chainId!);
         }
       }
 

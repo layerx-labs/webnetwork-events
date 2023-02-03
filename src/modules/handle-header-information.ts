@@ -123,7 +123,8 @@ export async function updateNumberOfNetworkHeader() {
     if (headerInformation) {
       const numberNetworks = await db.networks.count({
         where: {
-          isRegistered: true
+          isRegistered: true,
+          chain_id: chainId
         },
       });
 
