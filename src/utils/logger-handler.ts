@@ -30,7 +30,6 @@ const output = (level, message, rest) => { // eslint-disable-line
     client?.index({
         index: "web-network-events",
         document: {level, timestamp: new Date(), message, rest: _rest, webAppUrl: process.env.WEBAPP_URL}})
-      .catch(e => console.log(e))
   }
 }
 
