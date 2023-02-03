@@ -93,9 +93,9 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           } 
           await headerInformation.save();
         }
-
-        eventsProcessed['header-information'] = networks ? networks.map(n => n.name) : []
-        logger.debug(`${name} updated Header values`)
+  
+        eventsProcessed['header-information'] = networks ? networks.map(n => n.name!) : [];
+        logger.info(`${name} updated Header values`)
       } else {
         logger.warn(`${name} error get coingecko values`)
       }
