@@ -5,7 +5,6 @@ import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service"
 import {EventService} from "../services/event-service";
 import {ChangeAllowedTokensEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-registry";
 import {BlockProcessor} from "../interfaces/block-processor";
-import { getRegistryAddressDb } from "src/modules/get-registry-database";
 import {Op} from "sequelize";
 
 export const name = "getChangeAllowedTokensEvents";
@@ -13,14 +12,14 @@ export const schedule = "*/60 * * * *";
 export const description = "retrieving bounty created events";
 export const author = "MarcusviniciusLsantos";
 
-const { NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey, EVENTS_CHAIN_ID: chainId } =
+const { NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey } =
   process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
   const service = new EventService(name, query, true);
 
-  const processor: BlockProcessor<ChangeAllowedTokensEvent> = async (block, network) => {
+  const processor: BlockProcessor<ChangeAllowedTokensEvent> = async (block, network, chainId) => {
     const {tokens, operation, kind} = block.returnValues as any;
 
     const networkRegistry = (await db.chains.findOne({where: {chainId: {[Op.eq]: chainId }}, raw: true}))?.registryAddress

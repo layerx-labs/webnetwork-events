@@ -11,13 +11,13 @@ export const schedule = "*/60 * * * *";
 export const description = "retrieving bounty token transfer events";
 export const author = "MarcusviniciusLsantos";
 
-const {NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey} =
+const { NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey, EVENTS_CHAIN_ID: chainId } =
   process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  const networkRegistry = await getRegistryAddressDb()
+  const networkRegistry = await getRegistryAddressDb(chainId!);
 
   if (!networkRegistry) {
     logger.warn(`${name} Failed missing network registry`);
@@ -33,13 +33,17 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       await registry.loadContract();
 
       let lastReadBlock = await db.chain_events.findOne({
-        where: { name: name },
+        where: { 
+          name: name,
+          chain_id: chainId
+        },
       });
 
       const _bountyToken = new BountyToken(
         web3Connection,
         registry.bountyToken.contractAddress
       );
+
       await _bountyToken.loadContract();
 
       const paginateRequest = async (pool, name: string) => {
@@ -60,7 +64,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       }
     
       const AllTransferEvents: any = [];
-        
+
       await paginateRequest(AllTransferEvents, `getTransferEvents`)
 
       for (const TransferEvents of AllTransferEvents) {

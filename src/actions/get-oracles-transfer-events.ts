@@ -29,10 +29,16 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
   let councilAmount: string
 
-  const processor: BlockProcessor<OraclesChangedEvent> = async (block, network) => {
+  const processor: BlockProcessor<OraclesChangedEvent> = async (block, network, chainId) => {
     const {from: fromAddress, to: toAddress, amount} = block.returnValues;
 
-    const dbNetwork = await db.networks.findOne({where: {networkAddress: network.networkAddress}});
+    const dbNetwork = await db.networks.findOne({
+      where: {
+        networkAddress: network.networkAddress,
+        chain_id: chainId
+      }
+      });
+      
     if (!dbNetwork)
       return logger.warn(`${name} Could not find network ${network.networkAddress}`);
 

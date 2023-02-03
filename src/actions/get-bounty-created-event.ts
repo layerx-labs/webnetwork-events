@@ -14,8 +14,13 @@ export const schedule = "*/10 * * * *";
 export const description = "sync bounty data and move to 'DRAFT;";
 export const author = "clarkjoao";
 
-async function validateToken(connection: Web3Connection, address, isTransactional): Promise<number> {
-  let token = await db.tokens.findOne({where: {address},});
+async function validateToken(connection: Web3Connection, address, isTransactional, chainId): Promise<number> {
+  let token = await db.tokens.findOne({
+    where: {
+      address,
+      chain_id: chainId
+    }
+  });
 
   if (!token?.id) {
     const erc20 = new ERC20(connection, address);
@@ -38,7 +43,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
   const service = new EventService(name, query);
 
-  const processor: BlockProcessor<BountyCreatedEvent> = async (block, network) => {
+  const processor: BlockProcessor<BountyCreatedEvent> = async (block, network, chainId) => {
     const {id, cid: issueId} = block.returnValues;
 
     const networkActor = service.Actor as Network_v2;
@@ -63,7 +68,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     dbBounty.title = bounty.title;
     dbBounty.contractId = +id;
 
-    const tokenId = await validateToken(service.web3Connection, bounty.transactional, true);
+    const tokenId = await validateToken(service.web3Connection, bounty.transactional, true, chainId);
     if (!tokenId)
       logger.warn(`Failed to validate token ${bounty.transactional}`)
     else dbBounty.tokenId = tokenId;

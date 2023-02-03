@@ -16,6 +16,7 @@ export const author = "Vitor Hugo";
 const {
   NEXT_PUBLIC_WEB3_CONNECTION: web3Host,
   NEXT_WALLET_PRIVATE_KEY: privateKey,
+  EVENTS_CHAIN_ID: chainId
 } = process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
@@ -24,15 +25,14 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   logger.info(`${name} start`);
 
   try {
-    let where: WhereOptions = {};
+    let where: WhereOptions = {
+      chain_id: chainId
+    };
 
     if (query?.networkName)
       where.name = {
         [Op.iLike]: query.networkName
       };
-    
-    if (query?.chainId)
-      where.chain_id = query.chainId;
 
     const networks = await db.networks.findAll({ where });
 

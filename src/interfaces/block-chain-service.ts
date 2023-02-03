@@ -15,7 +15,6 @@ export interface EventsPerNetwork<T = any> {
 export interface EventsQuery {
   networkName: string;
   blockQuery: BlockQuery;
-  chainId?: string;
 }
 
 export type BountiesProcessed = {

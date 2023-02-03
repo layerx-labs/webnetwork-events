@@ -22,10 +22,16 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   let councilAmount
   let decimals;
 
-  const processor: BlockProcessor<OraclesChangedEvent> = async (block, network) => {
+  const processor: BlockProcessor<OraclesChangedEvent> = async (block, network, chainId) => {
     const {newLockedTotal, actor} = block.returnValues;
 
-    const dbNetwork = await db.networks.findOne({where: {networkAddress: network.networkAddress}});
+    const dbNetwork = await db.networks.findOne({
+      where: {
+        networkAddress: network.networkAddress,
+        chain_id: chainId
+      }
+    });
+
     if (!dbNetwork)
       return logger.warn(`${name} Could not find network ${network.networkAddress}`);
 
@@ -39,7 +45,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     const actorExistsInDb = networkCouncilMembers.some(address => actor === address);
     const actorTotalVotes = await (service.Actor as Network_v2).getOraclesOf(actor)
 
-    await handleCurators(actor, actorTotalVotes, councilAmount, dbNetwork.id)
+    await handleCurators(actor, actorTotalVotes, councilAmount, dbNetwork.id);
 
     await handleIsDisputed(name, (service.Actor as Network_v2), dbNetwork.id)
 

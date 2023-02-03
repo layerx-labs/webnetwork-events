@@ -39,7 +39,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         
     dbBounty.fundedAt = new Date()
     
-    await handleBenefactors(bounty.funding, dbBounty, "both" , name)
+    await handleBenefactors(bounty.funding, dbBounty, "both" , name);
 
     await dbBounty.save();
 

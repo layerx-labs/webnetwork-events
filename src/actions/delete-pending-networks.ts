@@ -9,6 +9,10 @@ export const author = "vhcsilva";
 
 const DAY = 1000 * 60 * 60 * 24;
 
+const {
+  EVENTS_CHAIN_ID: chainId
+} = process.env;
+
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
@@ -16,7 +20,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
   try {
     const pendingNetworks =
-      await db.networks.findAll({where: {isRegistered: false, isClosed: false}});
+      await db.networks.findAll({
+        where: {
+          isRegistered: false,
+          isClosed: false,
+          chain_id: chainId
+        }
+      });
 
     for (const network of pendingNetworks) {
       const createdAt = new Date(network.createdAt!).getTime();
