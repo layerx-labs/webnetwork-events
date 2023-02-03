@@ -28,7 +28,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
   let councilAmount: string
 
-  const processor: BlockProcessor<OraclesChangedEvent> = async (block, network) => {
+  const processor: BlockProcessor<OraclesChangedEvent> = async (block, network, chainId) => {
     const {from: fromAddress, to: toAddress, amount} = block.returnValues;
 
     const dbNetwork = await db.networks.findOne({
