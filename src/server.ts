@@ -43,7 +43,6 @@ app.use(router);
 const listen = () => {
   loggerHandler.info(`API Listening on ${port} over HTTP${useSSL ? "S" : ""}`);
   loggerHandler.info(`API corsOptions`, corsOptions);
-  loggerHandler.info(`API corsOptions`, corsOptions);
 }
 
 if (useSSL) {
