@@ -70,7 +70,7 @@ export async function action(issueId?: string) {
 
         logger.info(`${name} Bounty card for ${bounty.issueId} has been updated`);
       } catch (error: any) {
-        logger.error(`${name} Error generating card for ${bounty.issueId}:`, error.toString());
+        logger.error(`${name} Error generating card for ${bounty.issueId}:`, error?.toString() || 'no error message');
         continue;
       }
     }
