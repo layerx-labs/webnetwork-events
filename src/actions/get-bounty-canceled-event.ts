@@ -31,7 +31,7 @@ export async function action(
 
     const dbBounty = await db.issues.findOne({
         where: { contractId: block.returnValues.id, issueId: bounty.cid, network_id: network.id, },
-        include: [{ association: "token" }, { association: "repository" }, { association: "benefactors" }] ,});
+        include: [{ association: "repository" }, { association: "benefactors" }] ,});
 
     if (!dbBounty)
       return logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));

@@ -58,7 +58,7 @@ export async function action(issueId?: string) {
       { association: "pull_requests" },
       { association: "network" },
       { association: "repository" },
-      { association: "token" },
+      { association: "transactionalToken" },
     ];
 
     const bounties = await db.issues.findAll({where, include});

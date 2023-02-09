@@ -95,7 +95,6 @@ export async function action(
     const dbBounty = await db.issues.findOne({
       where: {contractId: id, issueId: bounty.cid, network_id: network?.id,},
       include: [
-        {association: "token",},
         {association: "repository",},
         {association: "merge_proposals",},
         {association: "pull_requests",},

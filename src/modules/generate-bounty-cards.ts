@@ -53,7 +53,7 @@ export default async function generateBountyCards(issue) {
     working: issue?.working?.length || 0,
     proposals: issue?.merge_proposals?.length || 0,
     pullRequests: issue?.pull_requests?.length || 0,
-    currency: issue?.token?.symbol,
+    currency: issue?.transactionalToken?.symbol,
     background,
     logo,
     font,
