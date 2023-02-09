@@ -11,6 +11,6 @@ export interface PullRequest extends pull_requestsAttributes {}
 export interface Bounty extends issuesAttributes {
   repository?: Repository;
   pull_requests?: PullRequest[];
-  token: tokensAttributes;
+  transactionalToken: tokensAttributes;
   network?: networksAttributes;
 }

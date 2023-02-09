@@ -30,17 +30,19 @@ export interface issuesAttributes {
   branch?: string;
   network_id?: number;
   contractId?: number;
-  tokenId?: number;
+  transactionalTokenId?: number;
   fundingAmount?: string;
   fundedAmount?: string;
   fundedAt?: Date;
   chain_id?: number;
   tags?: string[];
+  rewardAmount?: string;
+  rewardTokenId?: number;
 }
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "tokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "chain_id" | "tags";
+export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
@@ -62,12 +64,14 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   branch?: string;
   network_id?: number;
   contractId?: number;
-  tokenId?: number;
+  transactionalTokenId?: number;
   fundingAmount?: string;
   fundedAmount?: string;
   fundedAt?: Date;
   chain_id?: number;
   tags?: string[];
+  rewardAmount?: string;
+  rewardTokenId?: number;
 
   // issues belongsTo chains via chain_id
   chain!: chains;
@@ -156,11 +160,16 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   getRepository!: Sequelize.BelongsToGetAssociationMixin<repositories>;
   setRepository!: Sequelize.BelongsToSetAssociationMixin<repositories, repositoriesId>;
   createRepository!: Sequelize.BelongsToCreateAssociationMixin<repositories>;
-  // issues belongsTo tokens via tokenId
-  token!: tokens;
-  getToken!: Sequelize.BelongsToGetAssociationMixin<tokens>;
-  setToken!: Sequelize.BelongsToSetAssociationMixin<tokens, tokensId>;
-  createToken!: Sequelize.BelongsToCreateAssociationMixin<tokens>;
+  // issues belongsTo tokens via rewardTokenId
+  rewardToken!: tokens;
+  getRewardToken!: Sequelize.BelongsToGetAssociationMixin<tokens>;
+  setRewardToken!: Sequelize.BelongsToSetAssociationMixin<tokens, tokensId>;
+  createRewardToken!: Sequelize.BelongsToCreateAssociationMixin<tokens>;
+  // issues belongsTo tokens via transactionalTokenId
+  transactionalToken!: tokens;
+  getTransactionalToken!: Sequelize.BelongsToGetAssociationMixin<tokens>;
+  setTransactionalToken!: Sequelize.BelongsToSetAssociationMixin<tokens, tokensId>;
+  createTransactionalToken!: Sequelize.BelongsToCreateAssociationMixin<tokens>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof issues {
     return sequelize.define('issues', {
@@ -239,7 +248,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    tokenId: {
+    transactionalTokenId: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
@@ -270,6 +279,18 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
     tags: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true
+    },
+    rewardAmount: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    rewardTokenId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'tokens',
+        key: 'id'
+      }
     }
   }, {
     tableName: 'issues',

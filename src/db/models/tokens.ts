@@ -36,7 +36,7 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   getChain!: Sequelize.BelongsToGetAssociationMixin<chains>;
   setChain!: Sequelize.BelongsToSetAssociationMixin<chains, chainsId>;
   createChain!: Sequelize.BelongsToCreateAssociationMixin<chains>;
-  // tokens hasMany issues via tokenId
+  // tokens hasMany issues via rewardTokenId
   issues!: issues[];
   getIssues!: Sequelize.HasManyGetAssociationsMixin<issues>;
   setIssues!: Sequelize.HasManySetAssociationsMixin<issues, issuesId>;
@@ -48,6 +48,18 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   hasIssue!: Sequelize.HasManyHasAssociationMixin<issues, issuesId>;
   hasIssues!: Sequelize.HasManyHasAssociationsMixin<issues, issuesId>;
   countIssues!: Sequelize.HasManyCountAssociationsMixin;
+  // tokens hasMany issues via transactionalTokenId
+  transactionalToken_issues!: issues[];
+  getTransactionalToken_issues!: Sequelize.HasManyGetAssociationsMixin<issues>;
+  setTransactionalToken_issues!: Sequelize.HasManySetAssociationsMixin<issues, issuesId>;
+  addTransactionalToken_issue!: Sequelize.HasManyAddAssociationMixin<issues, issuesId>;
+  addTransactionalToken_issues!: Sequelize.HasManyAddAssociationsMixin<issues, issuesId>;
+  createTransactionalToken_issue!: Sequelize.HasManyCreateAssociationMixin<issues>;
+  removeTransactionalToken_issue!: Sequelize.HasManyRemoveAssociationMixin<issues, issuesId>;
+  removeTransactionalToken_issues!: Sequelize.HasManyRemoveAssociationsMixin<issues, issuesId>;
+  hasTransactionalToken_issue!: Sequelize.HasManyHasAssociationMixin<issues, issuesId>;
+  hasTransactionalToken_issues!: Sequelize.HasManyHasAssociationsMixin<issues, issuesId>;
+  countTransactionalToken_issues!: Sequelize.HasManyCountAssociationsMixin;
   // tokens hasMany network_tokens via tokenId
   network_tokens!: network_tokens[];
   getNetwork_tokens!: Sequelize.HasManyGetAssociationsMixin<network_tokens>;
