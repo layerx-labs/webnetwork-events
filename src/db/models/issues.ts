@@ -258,11 +258,13 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
     },
     fundingAmount: {
       type: DataTypes.STRING(255),
-      allowNull: true
+      allowNull: true,
+      defaultValue: "0"
     },
     fundedAmount: {
       type: DataTypes.STRING(255),
-      allowNull: true
+      allowNull: true,
+      defaultValue: "0"
     },
     fundedAt: {
       type: DataTypes.DATE,
@@ -282,7 +284,8 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
     },
     rewardAmount: {
       type: DataTypes.STRING(255),
-      allowNull: true
+      allowNull: true,
+      defaultValue: "0"
     },
     rewardTokenId: {
       type: DataTypes.INTEGER,
