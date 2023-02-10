@@ -14,6 +14,13 @@ const { NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateK
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
+  const validAmont = {
+    [Op.and]: [
+      { [Op.ne]: null },
+      { [Op.ne]: "0" }
+    ]
+  };
+
   try {
     logger.info(`${name} start`);
 
@@ -43,12 +50,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           where: {
             state: "closed",
             ... bountyQuery?.issueId ? { issueId: bountyQuery.issueId } : {},
-            fundingAmount: {
-              [Op.and]: [
-                { [Op.ne]: null },
-                { [Op.ne]: "0" }
-              ]
-            }
+            fundingAmount: validAmont,
+            rewardAmount: validAmont
           },
           include: [
             { 
