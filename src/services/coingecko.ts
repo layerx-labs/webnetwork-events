@@ -33,7 +33,7 @@ async function getCoinPrice(search: string, fiat = currency) {
     const price = await COINGECKO_API.get(`/simple/price?ids=${ids}&vs_currencies=${fiat || 'eur'}`);
 
     if (!price?.data){
-      Logger.error(price.statusText, "Error to get prices coingecko")
+      Logger.log(price.statusText, "Error to get prices coingecko")
       return 0;
     }
       
