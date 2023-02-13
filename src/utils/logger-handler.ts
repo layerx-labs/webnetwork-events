@@ -76,3 +76,5 @@ export class Logger {
     trace(...this._args(...[`Code: ${(e as any).code || `NO_OPCODE`}\n`, e.stack || `NO_STACK_TRACE`, ..._args]));
   }
 }
+
+export default {error, info, warn, log, debug, trace}

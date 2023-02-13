@@ -2,7 +2,7 @@ import { Op } from "sequelize";
 import db from "src/db";
 import generateCard from "src/modules/generate-bounty-cards";
 import ipfsService from "src/services/ipfs-service";
-import logger from "src/utils/logger-handler";
+import logger, {Logger} from "src/utils/logger-handler";
 
 export const name = "seo-generate-cards";
 export const schedule = "*/10 * * * *";
@@ -70,7 +70,8 @@ export async function action(issueId?: string) {
 
         logger.info(`${name} Bounty card for ${bounty.issueId} has been updated`);
       } catch (error: any) {
-        logger.error(`${name} Error generating card for ${bounty.issueId}:`, error?.toString() || 'no error message');
+        logger.error(`${name} Error generating card for ${bounty.issueId}`);
+        Logger.trace(error);
         continue;
       }
     }

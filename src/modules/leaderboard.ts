@@ -1,7 +1,7 @@
 import { Sequelize, Op } from "sequelize";
 
 import db from "src/db";
-import logger from "src/utils/logger-handler";
+import logger, {Logger} from "src/utils/logger-handler";
 
 async function updateLeaderboardRow(address: string, property: string, value: number) {
   const tableColumns = await db.leaderboard.describe();
@@ -65,7 +65,8 @@ async function updateLeaderboardBounties(state: "opened" | "canceled" | "closed"
         logger.info(`Leaderboard: updateLeaderboardBounties ${state} of ${creatorAddress} to ${count}`);
     }
   } catch (error) {
-    logger.error(`Leaderboard: failed to updateLeaderboardBounties ${state}`, error?.toString());
+    logger.error(`Leaderboard: failed to updateLeaderboardBounties ${state}`);
+    Logger.trace(error);
   }
 }
 
