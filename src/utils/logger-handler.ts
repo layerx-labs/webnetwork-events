@@ -71,7 +71,7 @@ export class Logger {
   static warn(..._args) { warn(...this._args(..._args)) }
   static debug(..._args) { debug(...this._args(..._args)) }
   static trace(..._args) { trace(...this._args(..._args)) }
-  static error(e: Error | string, ..._args) {
+  static error(e: Error, ..._args) {
     error(...this._args(...[e?.toString(), ..._args]))
     trace(...this._args(...[`Code: ${(e as any).code || `NO_OPCODE`}\n`, e.stack || `NO_STACK_TRACE`, ..._args]));
   }
