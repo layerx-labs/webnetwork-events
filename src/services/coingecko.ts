@@ -18,13 +18,13 @@ async function getCoinPrice(search: string, fiat = currency) {
     const coins = await COINGECKO_API.get(`/coins/list?include_platform=false`).then(value => value.data);
 
     if(!Array.isArray(coins))
-        Logger.error(coins, "Error to get list coingecko")
+        Logger.warn(coins, "Error to get list coingecko")
 
     const symbols = search.toLowerCase().split(',')
     const coinsData = coins.filter(({symbol}) => symbols.includes(symbol))
 
     if (coinsData.length < 1){
-      Logger.error(coinsData, "Error to filter symbol coingecko")
+      Logger.warn(coinsData, "Error to filter symbol coingecko")
       return 0;
     }
       
