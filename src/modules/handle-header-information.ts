@@ -11,14 +11,22 @@ const {
 } = process.env;
 
 async function headerInformationData() {
-  const headerInformation = await db.header_information.findAll({});
+  const [headerInformation,] = await db.header_information.findOrCreate({
+    where: {},
+    defaults: {
+      bounties: 0,
+      TVL: "0",
+      number_of_network: 0,
+      last_price_used: {},
+    },
+  });
 
   if (!headerInformation) {
     logger.error("Update Price Header failed - Header information not found");
     return;
   }
 
-  return headerInformation[0];
+  return headerInformation;
 }
 
 export async function updatePriceHeader() {
@@ -115,8 +123,7 @@ export async function updateNumberOfNetworkHeader() {
     if (headerInformation) {
       const numberNetworks = await db.networks.count({
         where: {
-          isRegistered: true,
-          chain_id: chainId
+          isRegistered: true
         },
       });
 

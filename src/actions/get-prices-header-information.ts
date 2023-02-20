@@ -76,9 +76,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         });
 
         const [headerInformation, created] = await db.header_information.findOrCreate({
-          where: {
-            id: 1,
-          },
+          where: {},
           defaults: {
             bounties: numberIssues,
             TVL: totalFiat,
