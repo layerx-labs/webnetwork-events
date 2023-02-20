@@ -62,7 +62,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
         eventsProcessed[network.name!] = ["updated"];
 
-        logger.error(`${name} parameters saved ${network.name} ${network.networkAddress}`);
+        logger.info(`${name} parameters saved ${network.name} ${network.networkAddress}`);
       } catch (error: any) {
         logger.error(`${name} Failed to save parameters of ${network.name} ${network.networkAddress}`, error?.message || error.toString());
       }
