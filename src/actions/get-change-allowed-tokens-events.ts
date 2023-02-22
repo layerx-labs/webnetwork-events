@@ -19,10 +19,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
   const service = new EventService(name, query, true);
 
-  const processor: BlockProcessor<ChangeAllowedTokensEvent> = async (block, network, chainId) => {
+  const processor: BlockProcessor<ChangeAllowedTokensEvent> = async (block, network) => {
     const {tokens, operation, kind} = block.returnValues as any;
 
-    const networkRegistry = (await db.chains.findOne({where: {chainId: {[Op.eq]: chainId }}, raw: true}))?.registryAddress
+    console.log("###", network)
+
+    const networkRegistry = (await db.chains.findOne({where: {chainId: {[Op.eq]: network.chainId }}, raw: true}))?.registryAddress
 
     const networkRegistry = (await db.chains.findOne({where: {chainId: {[Op.eq]: network.chainId }}, raw: true}))?.registryAddress
 
@@ -62,7 +64,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
                 const [token, created] = await db.tokens.findOrCreate({
                   where: {
                     address: tokenAddress,
-                    chain_id: chainId
+                    chain_id: network.chainId
                   },
                   defaults: {
                     name: await erc20.name(),
