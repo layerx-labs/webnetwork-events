@@ -45,7 +45,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
   const service = new EventService(name, query);
 
-  const processor: BlockProcessor<BountyCreatedEvent> = async (block, network, chainId) => {
+  const processor: BlockProcessor<BountyCreatedEvent> = async (block, network) => {
     const {id, cid: issueId} = block.returnValues;
 
     const networkActor = service.Actor as Network_v2;

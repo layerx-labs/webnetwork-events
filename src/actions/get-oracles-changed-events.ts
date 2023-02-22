@@ -22,7 +22,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   let councilAmount
   let decimals;
 
-  const processor: BlockProcessor<OraclesChangedEvent> = async (block, network, chainId) => {
+  const processor: BlockProcessor<OraclesChangedEvent> = async (block, network) => {
     const {newLockedTotal, actor} = block.returnValues;
 
     const dbNetwork = await db.networks.findOne({
