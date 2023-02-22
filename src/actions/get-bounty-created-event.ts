@@ -45,7 +45,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
   const service = new EventService(name, query);
 
-  const processor: BlockProcessor<BountyCreatedEvent> = async (block, network, chainId) => {
+  const processor: BlockProcessor<BountyCreatedEvent> = async (block, network) => {
     const {id, cid: issueId} = block.returnValues;
 
     const networkActor = service.Actor as Network_v2;
@@ -71,12 +71,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     dbBounty.title = bounty.title;
     dbBounty.contractId = +id;
 
-    await validateToken(service.web3Connection, bounty.transactional, true, chainId)
+    await validateToken(service.web3Connection, bounty.transactional, true, network.chainId)
       .then(id => dbBounty.transactionalTokenId = id)
       .catch(error => logger.warn(`Failed to validate token ${bounty.transactional}`, error.toString()));
 
     if (isAddress(bounty.rewardToken) && !isZeroAddress(bounty.rewardToken))
-      await validateToken(service.web3Connection, bounty.rewardToken, false, chainId)
+      await validateToken(service.web3Connection, bounty.rewardToken, false, network.chainId)
         .then(id => dbBounty.rewardTokenId = id)
         .catch(error => logger.warn(`Failed to validate token ${bounty.rewardToken}`, error.toString()));
 
@@ -86,11 +86,9 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     await updateBountiesHeader()
 
     eventsProcessed[network.name] = {...eventsProcessed[network.name], [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}};
-
   }
 
   await service._processEvents(processor);
-
 
   return eventsProcessed;
 }

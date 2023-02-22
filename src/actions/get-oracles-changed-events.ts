@@ -22,13 +22,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   let councilAmount
   let decimals;
 
-  const processor: BlockProcessor<OraclesChangedEvent> = async (block, network, chainId) => {
+  const processor: BlockProcessor<OraclesChangedEvent> = async (block, network) => {
     const {newLockedTotal, actor} = block.returnValues;
 
     const dbNetwork = await db.networks.findOne({
       where: {
         networkAddress: network.networkAddress,
-        chain_id: chainId
+        chain_id: network.chainId
       }
     });
 
@@ -56,7 +56,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     await dbNetwork.save();
 
-    await updatePriceHeader()
+    await updatePriceHeader();
 
     eventsProcessed[network.name] = dbNetwork.councilMembers || [];
   }

@@ -16,10 +16,10 @@ export const author = "vhcsilva";
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  const processor: BlockProcessor<NetworkCreatedEvent> = async (block, _network, chainId) => {
+  const processor: BlockProcessor<NetworkCreatedEvent> = async (block, _network) => {
     const {network: createdNetworkAddress} = block.returnValues;
 
-    const network = await db.networks.findOne({ where: { networkAddress: createdNetworkAddress, chain_id: chainId } });
+    const network = await db.networks.findOne({ where: { networkAddress: createdNetworkAddress, chain_id: _network.chainId } });
 
     if (!network)
       return logger.warn(`${name} network with address ${createdNetworkAddress} not found on db`);
