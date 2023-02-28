@@ -43,12 +43,12 @@ const events = {
     created: {
       title: () => "Alert",
       body: (bounty: Bounty) =>
-        `${bounty.title} and earn up to ${bounty.amount} ${bounty?.token?.symbol}`,
+        `${bounty.title} and earn up to ${bounty.amount} ${bounty?.transactionalToken?.symbol}`,
     },
     closed: {
       title: () => "Fully Distributed",
       body: (bounty: Bounty) =>
-        `${bounty.title} was closed and fully distributed with ${bounty.amount} ${bounty?.token?.symbol}.`,
+        `${bounty.title} was closed and fully distributed with ${bounty.amount} ${bounty?.transactionalToken?.symbol}.`,
     },
     updated: {
       title: () => "Status Update",
@@ -108,7 +108,7 @@ export default async function twitterTweet({entity, event, bountyId, networkName
 
   const bounty = await db.issues.findOne({
     where: { issueId: bountyId },
-    include: [{ association: "token" }],
+    include: [{ association: "transactionalToken" }],
   });
 
   if (!bounty) return;

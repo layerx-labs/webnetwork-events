@@ -16,6 +16,7 @@ export const author = "MarcusviniciusLsantos";
 const {
   NEXT_PUBLIC_WEB3_CONNECTION: web3Host,
   NEXT_WALLET_PRIVATE_KEY: privateKey,
+  EVENTS_CHAIN_ID: chainId
 } = process.env;
 
 
@@ -30,9 +31,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     await web3Connection.start();
 
     const networks = await db.networks.findAll({
-      where: {isRegistered: true},
+      where: { 
+        isRegistered: true,
+        chain_id: chainId
+      },
       raw: true,
     });
+
     if (!networks || !networks.length) {
       logger.warn(`${name} found no networks`);
       return eventsProcessed;
@@ -61,23 +66,22 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           const isBountyOnNetwork = await _network.cidBountyId(dbBounty.issueId)
 
           if (isBountyOnNetwork.toString() === '0' && dbBounty?.githubId) {
-
             logger.info(`${name} Removing pending bounty ${dbBounty.issueId}`);
-
+  
             const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
-
+  
             await GHService.issueClose(repo, owner, dbBounty?.githubId)
-
+  
             await dbBounty.destroy();
-
-            eventsProcessed[networkName] = {
-              ...eventsProcessed[networkName],
+  
+            eventsProcessed[networkName!] = {
+              ...eventsProcessed[networkName!],
               [dbBounty.issueId!.toString()]: {
                 bounty: dbBounty,
                 eventBlock: null,
               },
             };
-
+  
             logger.info(`${name} Removed pending bounty ${dbBounty.issueId}`);
           }
         }

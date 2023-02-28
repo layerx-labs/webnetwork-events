@@ -3,6 +3,8 @@ import {Op, Sequelize} from "sequelize";
 import db from "src/db";
 import logger from "src/utils/logger-handler";
 
+const { EVENTS_CHAIN_ID: chainId } = process.env;
+
 async function updateLeaderboardRow(address: string, property: string, value: number) {
   const tableColumns = await db.leaderboard.describe();
 
@@ -44,8 +46,9 @@ async function updateLeaderboardBounties(state: "opened" | "canceled" | "closed"
       ...state !== "opened" ? {
         where: {
           state: {
-            [Op.eq]: state
-          }
+            [Op.eq] : state
+          },
+          chain_id: chainId
         }
       } : {}
     });
@@ -84,8 +87,17 @@ async function updateLeaderboardProposals(state: "created" | "accepted" | "rejec
     if (state === "rejected")
       stateCondition = {
         where: {
-          [Op.or]: [{isDisputed: true}, {refusedByBountyOwner: true}]
-        }
+          [Op.or]: [{ isDisputed: true }, { refusedByBountyOwner: true }]
+        },
+        include: [
+          { 
+            association: "issue",
+            where: {
+              chain_id: chainId
+            },
+            attributes: []
+          }
+        ]
       };
     else if (state === "accepted")
       stateCondition = {
@@ -94,6 +106,7 @@ async function updateLeaderboardProposals(state: "created" | "accepted" | "rejec
           { 
             association: "issue",
             where: {
+              chain_id: chainId,
               state: "closed",
               merged: {
                 [Op.eq]: Sequelize.cast(Sequelize.col("merge_proposals.contractId"), "varchar")

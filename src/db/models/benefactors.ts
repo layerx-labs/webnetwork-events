@@ -10,11 +10,12 @@ export interface benefactorsAttributes {
   issueId: number;
   createdAt: Date;
   updatedAt: Date;
+  withdrawn?: boolean;
 }
 
 export type benefactorsPk = "id";
 export type benefactorsId = benefactors[benefactorsPk];
-export type benefactorsOptionalAttributes = "id" | "createdAt" | "updatedAt";
+export type benefactorsOptionalAttributes = "id" | "createdAt" | "updatedAt" | "withdrawn";
 export type benefactorsCreationAttributes = Optional<benefactorsAttributes, benefactorsOptionalAttributes>;
 
 export class benefactors extends Model<benefactorsAttributes, benefactorsCreationAttributes> implements benefactorsAttributes {
@@ -25,6 +26,7 @@ export class benefactors extends Model<benefactorsAttributes, benefactorsCreatio
   issueId!: number;
   createdAt!: Date;
   updatedAt!: Date;
+  withdrawn?: boolean;
 
   // benefactors belongsTo issues via issueId
   issue!: issues;
@@ -59,6 +61,11 @@ export class benefactors extends Model<benefactorsAttributes, benefactorsCreatio
         model: 'issues',
         key: 'id'
       }
+    },
+    withdrawn: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
     }
   }, {
     tableName: 'benefactors',

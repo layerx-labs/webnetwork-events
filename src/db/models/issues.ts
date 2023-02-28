@@ -1,6 +1,7 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { benefactors, benefactorsId } from './benefactors';
+import type { chains, chainsId } from './chains';
 import type { developers, developersId } from './developers';
 import type { disputes, disputesId } from './disputes';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
@@ -29,15 +30,19 @@ export interface issuesAttributes {
   branch?: string;
   network_id?: number;
   contractId?: number;
-  tokenId?: number;
+  transactionalTokenId?: number;
   fundingAmount?: string;
   fundedAmount?: string;
   fundedAt?: Date;
+  chain_id?: number;
+  tags?: string[];
+  rewardAmount?: string;
+  rewardTokenId?: number;
 }
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "tokenId" | "fundingAmount" | "fundedAmount" | "fundedAt";
+export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
@@ -59,11 +64,20 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   branch?: string;
   network_id?: number;
   contractId?: number;
-  tokenId?: number;
+  transactionalTokenId?: number;
   fundingAmount?: string;
   fundedAmount?: string;
   fundedAt?: Date;
+  chain_id?: number;
+  tags?: string[];
+  rewardAmount?: string;
+  rewardTokenId?: number;
 
+  // issues belongsTo chains via chain_id
+  chain!: chains;
+  getChain!: Sequelize.BelongsToGetAssociationMixin<chains>;
+  setChain!: Sequelize.BelongsToSetAssociationMixin<chains, chainsId>;
+  createChain!: Sequelize.BelongsToCreateAssociationMixin<chains>;
   // issues hasMany benefactors via issueId
   benefactors!: benefactors[];
   getBenefactors!: Sequelize.HasManyGetAssociationsMixin<benefactors>;
@@ -146,11 +160,16 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   getRepository!: Sequelize.BelongsToGetAssociationMixin<repositories>;
   setRepository!: Sequelize.BelongsToSetAssociationMixin<repositories, repositoriesId>;
   createRepository!: Sequelize.BelongsToCreateAssociationMixin<repositories>;
-  // issues belongsTo tokens via tokenId
-  token!: tokens;
-  getToken!: Sequelize.BelongsToGetAssociationMixin<tokens>;
-  setToken!: Sequelize.BelongsToSetAssociationMixin<tokens, tokensId>;
-  createToken!: Sequelize.BelongsToCreateAssociationMixin<tokens>;
+  // issues belongsTo tokens via rewardTokenId
+  rewardToken!: tokens;
+  getRewardToken!: Sequelize.BelongsToGetAssociationMixin<tokens>;
+  setRewardToken!: Sequelize.BelongsToSetAssociationMixin<tokens, tokensId>;
+  createRewardToken!: Sequelize.BelongsToCreateAssociationMixin<tokens>;
+  // issues belongsTo tokens via transactionalTokenId
+  transactionalToken!: tokens;
+  getTransactionalToken!: Sequelize.BelongsToGetAssociationMixin<tokens>;
+  setTransactionalToken!: Sequelize.BelongsToSetAssociationMixin<tokens, tokensId>;
+  createTransactionalToken!: Sequelize.BelongsToCreateAssociationMixin<tokens>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof issues {
     return sequelize.define('issues', {
@@ -229,7 +248,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    tokenId: {
+    transactionalTokenId: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
@@ -239,15 +258,42 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
     },
     fundingAmount: {
       type: DataTypes.STRING(255),
-      allowNull: true
+      allowNull: true,
+      defaultValue: "0"
     },
     fundedAmount: {
       type: DataTypes.STRING(255),
-      allowNull: true
+      allowNull: true,
+      defaultValue: "0"
     },
     fundedAt: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    chain_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'chains',
+        key: 'chainId'
+      }
+    },
+    tags: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true
+    },
+    rewardAmount: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      defaultValue: "0"
+    },
+    rewardTokenId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'tokens',
+        key: 'id'
+      }
     }
   }, {
     tableName: 'issues',

@@ -5,7 +5,7 @@ import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service"
 import {EventService} from "../services/event-service";
 import {ChangeAllowedTokensEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-registry";
 import {BlockProcessor} from "../interfaces/block-processor";
-import {getRegistryAddressDb} from "src/modules/get-registry-database";
+import {Op} from "sequelize";
 
 export const name = "getChangeAllowedTokensEvents";
 export const schedule = "*/60 * * * *";
@@ -22,7 +22,9 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const processor: BlockProcessor<ChangeAllowedTokensEvent> = async (block, network) => {
     const {tokens, operation, kind} = block.returnValues as any;
 
-    const networkRegistry = await getRegistryAddressDb()
+    console.log("###", network)
+
+    const networkRegistry = (await db.chains.findOne({where: {chainId: {[Op.eq]: network.chainId }}, raw: true}))?.registryAddress
 
     if (!networkRegistry)
       logger.warn(`${name} Failed missing network registry on database`);
@@ -36,14 +38,14 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       );
       await registry.loadContract();
 
-      const registryTokens = await registry.getAllowedTokens()
+      const registryTokens = await registry.getAllowedTokens();
 
-      const dbTokens = await db.tokens.findAll();
+      const dbTokens = await db.tokens.findAll({ where: { chain_id: network.chainId } });
 
       const isTransactional = kind === "transactional";
 
-      const onRegistry = (address: string) => registryTokens[isTransactional ? "transactional" : "reward"].includes(address)
-      const notOnRegistry = (token) => !registryTokens[isTransactional ? "transactional" : "reward"].some(a => a === token)
+      const onRegistry = (address: string) => registryTokens[kind].includes(address);
+      const notOnRegistry = (address: string) => !onRegistry(address);
       const onDatabase = (address: string) => tokens.includes(address);
 
       let result: number[]|string[] = [];
@@ -59,7 +61,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
                 const [token, created] = await db.tokens.findOrCreate({
                   where: {
-                    address: tokenAddress
+                    address: tokenAddress,
+                    chain_id: network.chainId
                   },
                   defaults: {
                     name: await erc20.name(),
