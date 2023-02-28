@@ -14,7 +14,8 @@ export const author = "MarcusviniciusLsantos";
 const {
   NEXT_PUBLIC_WEB3_CONNECTION: web3Host,
   NEXT_WALLET_PRIVATE_KEY: privateKey,
-  NEXT_PUBLIC_CURRENCY_MAIN: currency
+  NEXT_PUBLIC_CURRENCY_MAIN: currency,
+  EVENTS_CHAIN_ID: chainId
 } = process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
@@ -24,7 +25,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   try {
     const web3Connection = new Web3Connection({ web3Host, privateKey });
     await web3Connection.start();
-    const networks = await db.networks.findAll({ where: { isClosed: false } });
+
+    const networks = await db.networks.findAll({ 
+      where: { 
+        isClosed: false,
+        chain_id: chainId
+      }
+    });
 
     const tokens: {
       TVL: BigNumber;
@@ -69,9 +76,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         });
 
         const [headerInformation, created] = await db.header_information.findOrCreate({
-          where: {
-            id: 1,
-          },
+          where: {},
           defaults: {
             bounties: numberIssues,
             TVL: totalFiat,
@@ -93,9 +98,9 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           } 
           await headerInformation.save();
         }
-
-        eventsProcessed['header-information'] = networks ? networks.map(n => n.name) : []
-        logger.debug(`${name} updated Header values`)
+  
+        eventsProcessed['header-information'] = networks ? networks.map(n => n.name!) : [];
+        logger.info(`${name} updated Header values`)
       } else {
         logger.warn(`${name} error get coingecko values`)
       }

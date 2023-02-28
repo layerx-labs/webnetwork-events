@@ -6,9 +6,9 @@ import {Network_v2, Web3Connection} from "@taikai/dappkit";
 import {slashSplit} from "src/utils/string";
 import GHService from "src/services/github";
 import {isAfter, subMilliseconds} from "date-fns";
-import {Op} from "sequelize";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
+import { Op, WhereOptions } from "sequelize";
 
 export const name = "updateBountiesToDraft";
 export const schedule = "0 2 * * *" // every 2 AM
@@ -18,6 +18,7 @@ export const author = "clarkjoao";
 const {
   NEXT_PUBLIC_WEB3_CONNECTION: web3Host,
   NEXT_WALLET_PRIVATE_KEY: privateKey,
+  EVENTS_CHAIN_ID: chainId
 } = process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
@@ -29,12 +30,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     const web3Connection = new Web3Connection({ web3Host, privateKey });
     await web3Connection.start();
 
-    const where = {
-      isRegistered: true
-    } as { isRegistered: boolean, name?: {} }
+    const where: WhereOptions = {
+      isRegistered: true,
+      chain_id : chainId
+    };
 
     if (query?.networkName)
-      where.name = { [Op.iLike]: String(query?.networkName).replaceAll(" ", "-") }
+      where.name = { [Op.iLike]: String(query?.networkName).replaceAll(" ", "-") };
 
     const networks = await db.networks.findAll({ where, raw: true });
 
@@ -42,6 +44,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       loggerHandler.warn(`${name} found no networks`);
       return eventsProcessed;
     }
+
     for (const { networkAddress, id: network_id, name: networkName } of networks) {
       const _network = new Network_v2(web3Connection, networkAddress);
       await _network.loadContract();
@@ -58,9 +61,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         ],
       });
 
-      loggerHandler.info(
-        `${name} found ${bounties?.length} opened bounties at ${networkName}`
-      );
+      loggerHandler.info(`${name} found ${bounties?.length} opened bounties at ${networkName}`);
 
       const repositoriesDetails = {};
 
@@ -70,12 +71,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       for (const dbBounty of bounties) {
 
         if (dbBounty.pull_requests.length)
-          continue
+          continue;
 
-        const networkBounty = await _network.cidBountyId(`${dbBounty?.issueId}`).then(id => _network.getBounty(+id))
+        const networkBounty = await _network.cidBountyId(`${dbBounty?.issueId}`).then(id => _network.getBounty(+id));
 
         if (isAfter(subMilliseconds(timeOnChain, draftTime), networkBounty.creationDate))
-          continue
+          continue;
 
         const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
         const detailKey = `${owner}/${repo}`;
@@ -101,7 +102,6 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         };
 
         logger.info(`${name} Parsed bounty ${dbBounty.issueId}`);
-
       }
     }
 

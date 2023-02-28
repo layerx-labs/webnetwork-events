@@ -4,7 +4,7 @@ import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 
 export interface proposal_distributionsAttributes {
   id: number;
-  address: string;
+  recipient: string;
   percentage: number;
   proposalId: number;
   createdAt: Date;
@@ -18,7 +18,7 @@ export type proposal_distributionsCreationAttributes = Optional<proposal_distrib
 
 export class proposal_distributions extends Model<proposal_distributionsAttributes, proposal_distributionsCreationAttributes> implements proposal_distributionsAttributes {
   id!: number;
-  address!: string;
+  recipient!: string;
   percentage!: number;
   proposalId!: number;
   createdAt!: Date;
@@ -38,7 +38,7 @@ export class proposal_distributions extends Model<proposal_distributionsAttribut
       allowNull: false,
       primaryKey: true
     },
-    address: {
+    recipient: {
       type: DataTypes.STRING(255),
       allowNull: false
     },

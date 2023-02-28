@@ -5,12 +5,16 @@ import { benefactors as _benefactors } from "./benefactors";
 import type { benefactorsAttributes, benefactorsCreationAttributes } from "./benefactors";
 import { chain_events as _chain_events } from "./chain_events";
 import type { chain_eventsAttributes, chain_eventsCreationAttributes } from "./chain_events";
+import { chains as _chains } from "./chains";
+import type { chainsAttributes, chainsCreationAttributes } from "./chains";
 import { curators as _curators } from "./curators";
 import type { curatorsAttributes, curatorsCreationAttributes } from "./curators";
 import { developers as _developers } from "./developers";
 import type { developersAttributes, developersCreationAttributes } from "./developers";
 import { disputes as _disputes } from "./disputes";
 import type { disputesAttributes, disputesCreationAttributes } from "./disputes";
+import { header_information as _header_information } from "./header_information";
+import type { header_informationAttributes, header_informationCreationAttributes } from "./header_information";
 import { issues as _issues } from "./issues";
 import type { issuesAttributes, issuesCreationAttributes } from "./issues";
 import { leaderboard as _leaderboard } from "./leaderboard";
@@ -35,16 +39,16 @@ import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
-import { header_information as _header_information } from "./header_information";
-import type { header_informationAttributes, header_informationCreationAttributes } from "./header_information";
 
 export {
   _SequelizeMeta as SequelizeMeta,
   _benefactors as benefactors,
   _chain_events as chain_events,
+  _chains as chains,
   _curators as curators,
   _developers as developers,
   _disputes as disputes,
+  _header_information as header_information,
   _issues as issues,
   _leaderboard as leaderboard,
   _merge_proposals as merge_proposals,
@@ -57,7 +61,6 @@ export {
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
-  _header_information as header_information
 };
 
 export type {
@@ -67,12 +70,16 @@ export type {
   benefactorsCreationAttributes,
   chain_eventsAttributes,
   chain_eventsCreationAttributes,
+  chainsAttributes,
+  chainsCreationAttributes,
   curatorsAttributes,
   curatorsCreationAttributes,
   developersAttributes,
   developersCreationAttributes,
   disputesAttributes,
   disputesCreationAttributes,
+  header_informationAttributes,
+  header_informationCreationAttributes,
   issuesAttributes,
   issuesCreationAttributes,
   leaderboardAttributes,
@@ -97,17 +104,17 @@ export type {
   usersCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
-  header_informationAttributes,
-  header_informationCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
   const SequelizeMeta = _SequelizeMeta.initModel(sequelize);
   const benefactors = _benefactors.initModel(sequelize);
   const chain_events = _chain_events.initModel(sequelize);
+  const chains = _chains.initModel(sequelize);
   const curators = _curators.initModel(sequelize);
   const developers = _developers.initModel(sequelize);
   const disputes = _disputes.initModel(sequelize);
+  const header_information = _header_information.initModel(sequelize);
   const issues = _issues.initModel(sequelize);
   const leaderboard = _leaderboard.initModel(sequelize);
   const merge_proposals = _merge_proposals.initModel(sequelize);
@@ -120,8 +127,13 @@ export function initModels(sequelize: Sequelize) {
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
-  const header_information = _header_information.initModel(sequelize);
 
+  issues.belongsTo(chains, { as: "chain", foreignKey: "chain_id"});
+  chains.hasMany(issues, { as: "issues", foreignKey: "chain_id"});
+  networks.belongsTo(chains, { as: "chain", foreignKey: "chain_id"});
+  chains.hasMany(networks, { as: "networks", foreignKey: "chain_id"});
+  tokens.belongsTo(chains, { as: "chain", foreignKey: "chain_id"});
+  chains.hasMany(tokens, { as: "tokens", foreignKey: "chain_id"});
   benefactors.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
   developers.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
@@ -154,18 +166,24 @@ export function initModels(sequelize: Sequelize) {
   pull_requests.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "pullRequestId"});
   issues.belongsTo(repositories, { as: "repository", foreignKey: "repository_id"});
   repositories.hasMany(issues, { as: "issues", foreignKey: "repository_id"});
-  issues.belongsTo(tokens, { as: "token", foreignKey: "tokenId"});
-  tokens.hasMany(issues, { as: "issues", foreignKey: "tokenId"});
+  issues.belongsTo(tokens, { as: "rewardToken", foreignKey: "rewardTokenId"});
+  tokens.hasMany(issues, { as: "issues", foreignKey: "rewardTokenId"});
+  issues.belongsTo(tokens, { as: "transactionalToken", foreignKey: "transactionalTokenId"});
+  tokens.hasMany(issues, { as: "transactionalToken_issues", foreignKey: "transactionalTokenId"});
   network_tokens.belongsTo(tokens, { as: "token", foreignKey: "tokenId"});
   tokens.hasMany(network_tokens, { as: "network_tokens", foreignKey: "tokenId"});
+  networks.belongsTo(tokens, { as: "network_token_token", foreignKey: "network_token_id"});
+  tokens.hasMany(networks, { as: "networks", foreignKey: "network_token_id"});
 
   return {
     SequelizeMeta: SequelizeMeta,
     benefactors: benefactors,
     chain_events: chain_events,
+    chains: chains,
     curators: curators,
     developers: developers,
     disputes: disputes,
+    header_information: header_information,
     issues: issues,
     leaderboard: leaderboard,
     merge_proposals: merge_proposals,
@@ -178,6 +196,5 @@ export function initModels(sequelize: Sequelize) {
     tokens: tokens,
     users: users,
     users_payments: users_payments,
-    header_information: header_information
   };
 }

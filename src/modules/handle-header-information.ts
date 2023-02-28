@@ -7,17 +7,26 @@ import logger from "src/utils/logger-handler";
 const {
   NEXT_PUBLIC_WEB3_CONNECTION: web3Host,
   NEXT_PUBLIC_CURRENCY_MAIN: currency,
+  EVENTS_CHAIN_ID: chainId
 } = process.env;
 
 async function headerInformationData() {
-  const headerInformation = await db.header_information.findAll({});
+  const [headerInformation,] = await db.header_information.findOrCreate({
+    where: {},
+    defaults: {
+      bounties: 0,
+      TVL: "0",
+      number_of_network: 0,
+      last_price_used: {},
+    },
+  });
 
   if (!headerInformation) {
     logger.error("Update Price Header failed - Header information not found");
     return;
   }
 
-  return headerInformation[0];
+  return headerInformation;
 }
 
 export async function updatePriceHeader() {
@@ -27,8 +36,12 @@ export async function updatePriceHeader() {
     if (headerInformation) {
       const web3Connection = new Web3Connection({ web3Host });
       await web3Connection.start();
+
       const networks = await db.networks.findAll({
-        where: { isClosed: false },
+        where: { 
+          isClosed: false,
+          chain_id: chainId
+        },
       });
 
       const tokens: {
@@ -39,6 +52,7 @@ export async function updatePriceHeader() {
       for (const { networkAddress, id: network_id } of networks) {
         const _network = new Network_v2(web3Connection, networkAddress);
         await _network.loadContract();
+
         const symbol = await _network.networkToken.symbol();
 
         const tokenslocked = await db.curators

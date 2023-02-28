@@ -7,11 +7,13 @@ export interface header_informationAttributes {
   TVL?: string;
   number_of_network: number;
   last_price_used?: object;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type header_informationPk = "id";
 export type header_informationId = header_information[header_informationPk];
-export type header_informationOptionalAttributes = "id" | "TVL" | "last_price_used"
+export type header_informationOptionalAttributes = "id" | "bounties" | "TVL" | "number_of_network" | "last_price_used" | "createdAt" | "updatedAt";
 export type header_informationCreationAttributes = Optional<header_informationAttributes, header_informationOptionalAttributes>;
 
 export class header_information extends Model<header_informationAttributes, header_informationCreationAttributes> implements header_informationAttributes {
@@ -23,6 +25,7 @@ export class header_information extends Model<header_informationAttributes, head
   createdAt!: Date;
   updatedAt!: Date;
 
+
   static initModel(sequelize: Sequelize.Sequelize): typeof header_information {
     return sequelize.define('header_information', {
     id: {
@@ -32,22 +35,23 @@ export class header_information extends Model<header_informationAttributes, head
       primaryKey: true
     },
     bounties: {
-      type: Sequelize.INTEGER,
+      type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0
     },
     TVL: {
-      type: Sequelize.STRING
+      type: DataTypes.STRING(255),
+      allowNull: true
     },
     number_of_network: {
-      type: Sequelize.INTEGER,
+      type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0
     },
     last_price_used: {
-      type: Sequelize.JSON,
+      type: DataTypes.JSON,
       allowNull: true
-    },
+    }
   }, {
     tableName: 'header_information',
     schema: 'public',

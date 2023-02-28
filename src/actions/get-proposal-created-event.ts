@@ -63,7 +63,7 @@ export async function action(
     if (createProposal) {
       await Promise.all(proposal.details.map(async (detail) =>
         db.proposal_distributions.create({
-          address: detail.recipient,
+          recipient: detail.recipient,
           percentage: detail.percentage,
           proposalId: createProposal.id,
         })

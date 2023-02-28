@@ -12,7 +12,6 @@ export const schedule = "*/30 * * * *";
 export const description = "Sync transfer oracles data and update council's count";
 export const author = "marcusviniciusLsantos";
 
-
 async function handleTransfers(addresses: string[], councilAmount: string, networkId: number, service) {
   return Promise.all(
     addresses.map((address) =>
@@ -32,7 +31,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const processor: BlockProcessor<OraclesChangedEvent> = async (block, network) => {
     const {from: fromAddress, to: toAddress, amount} = block.returnValues;
 
-    const dbNetwork = await db.networks.findOne({where: {networkAddress: network.networkAddress}});
+    const dbNetwork = await db.networks.findOne({
+      where: {
+        networkAddress: network.networkAddress,
+        chain_id: network.chainId
+      }
+      });
+      
     if (!dbNetwork)
       return logger.warn(`${name} Could not find network ${network.networkAddress}`);
 

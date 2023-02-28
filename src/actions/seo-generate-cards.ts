@@ -9,7 +9,12 @@ export const schedule = "*/10 * * * *";
 export const description = "Try generate SeoCards for all updated or new bounties";
 export const author = "clarkjoao";
 
-const {NEXT_IPFS_PROJECT_ID, NEXT_IPFS_PROJECT_SECRET, NEXT_IPFS_UPLOAD_ENDPOINT} = process.env;
+const {
+  NEXT_IPFS_PROJECT_ID, 
+  NEXT_IPFS_PROJECT_SECRET,
+  NEXT_IPFS_UPLOAD_ENDPOINT,
+  EVENTS_CHAIN_ID: chainId
+} = process.env;
 
 export async function action(issueId?: string) {
   const bountiesProcessed: any[] = [];
@@ -22,13 +27,23 @@ export async function action(issueId?: string) {
   try {
     logger.info(`${name} start`);
 
-    const dbEvent = await db.chain_events.findOne({where: {name}});
+    const dbEvent = await db.chain_events.findOne({
+      where: {
+        name,
+        chain_id: chainId
+      }
+    });
+
     if (!dbEvent){
       logger.warn(`${name} not found on database`);
-      await db.chain_events.create({name});
+      await db.chain_events.create({
+        name,
+        chain_id: +chainId!
+      });
     }
       
     const where = {
+      chain_id: chainId,
       ...(issueId
         ? {issueId}
         : {[Op.or]: [
@@ -43,10 +58,10 @@ export async function action(issueId?: string) {
       { association: "pull_requests" },
       { association: "network" },
       { association: "repository" },
-      { association: "token" },
+      { association: "transactionalToken" },
     ];
 
-    const bounties = await db.issues.findAll({where, include,});
+    const bounties = await db.issues.findAll({where, include});
 
     if (!bounties.length) {
       logger.info(`${name} No bounties to be updated`);

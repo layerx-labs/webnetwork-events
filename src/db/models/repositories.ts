@@ -48,7 +48,7 @@ export class repositories extends Model<repositoriesAttributes, repositoriesCrea
     githubPath: {
       type: DataTypes.STRING(255),
       allowNull: false,
-      unique: "repositories_githubPath_key"
+      unique: "repositories_networks_unique"
     },
     network_id: {
       type: DataTypes.INTEGER,
@@ -56,7 +56,8 @@ export class repositories extends Model<repositoriesAttributes, repositoriesCrea
       references: {
         model: 'networks',
         key: 'id'
-      }
+      },
+      unique: "repositories_networks_unique"
     }
   }, {
     tableName: 'repositories',
@@ -64,10 +65,11 @@ export class repositories extends Model<repositoriesAttributes, repositoriesCrea
     timestamps: false,
     indexes: [
       {
-        name: "repositories_githubPath_key",
+        name: "repositories_networks_unique",
         unique: true,
         fields: [
           { name: "githubPath" },
+          { name: "network_id" },
         ]
       },
       {
