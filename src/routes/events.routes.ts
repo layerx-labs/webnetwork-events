@@ -15,7 +15,6 @@ import { action as getPullRequestCanceled } from "src/actions/get-pullrequest-ca
 import { action as getPullRequestCreated } from "src/actions/get-pullrequest-created-event";
 import { action as getPullRequestReadyForReview } from "src/actions/get-pullrequest-ready-for-review";
 import { action as getOraclesTransferEvents } from "src/actions/get-oracles-transfer-events";
-import { action as getTransferEvents } from "src/actions/get-transfer-bounty-token-events";
 import { action as UpdateBountiesToDraft } from 'src/actions/update-bounties-to-draft'
 import { action as updateNetworkParameters } from "src/actions/update-network-parameters";
 import { action as getBountyRewardWithdraw } from "src/actions/get-bounty-reward-withdraw";
@@ -61,9 +60,6 @@ const events = {
   registry: {
     changed: getChangeAllowedTokens,
     registered: getNetworkCreatedEvents,
-  },
-  bountyToken: {
-    transfer: getTransferEvents
   },
   network: {
     "parameters": updateNetworkParameters
