@@ -31,6 +31,51 @@ async function updateLeaderboardRow(address: string, property: string, value: nu
   return true;
 }
 
+async function updateLeaderboardNfts() {
+  const name = `updateLeaderboardNfts`;
+  logger.info(name);
+
+  try {
+    const proposals = await db.merge_proposals.findAll({
+      include: [
+        {
+          association: "issue",
+          required: true,
+          where: {
+            state: "closed",
+          },
+        },
+      ],
+    }).then(v => v.filter(({ contractId, issue: { merged }}) => contractId?.toString() === merged))
+
+    if (proposals.length === 0) {
+      logger.warn(name, `no merged proposals found`);
+      return;
+    }
+
+    const nftAddress: {
+      [index:string]: number
+    } = {}
+
+    for(const proposal of proposals){
+      const distributions = await db.proposal_distributions.findAll({
+        where: { id: proposal.id }
+      })
+      distributions.map(({ recipient }) => {
+          nftAddress[recipient] = isNaN(nftAddress[recipient]) ? 1 : nftAddress[recipient] + 1
+      })
+    }
+
+    for (const [key, value] of Object.entries(nftAddress)) {
+      if (await updateLeaderboardRow(key, 'numberNfts', value))
+        logger.info(name, `updated ${key} to numberNfts: ${value}`);     
+    }
+
+  } catch (error) {
+    logger.error(name, `failed`, error);
+  }
+}
+
 /**
  * Update leaderboard bounties quantity. If the parameter is not passed it will count all bounties.
  */
@@ -149,5 +194,6 @@ async function updateLeaderboardProposals(state: "created" | "accepted" | "rejec
 
 export {
   updateLeaderboardBounties,
-  updateLeaderboardProposals
+  updateLeaderboardProposals,
+  updateLeaderboardNfts
 };
