@@ -22,13 +22,11 @@ import {action as PullRequestCanceled} from "src/actions/get-pullrequest-cancele
 import {action as PullRequestCreated} from "src/actions/get-pullrequest-created-event";
 import {action as PullRequestReadyForReview} from "src/actions/get-pullrequest-ready-for-review";
 import {action as OraclesTransfer} from "src/actions/get-oracles-transfer-events";
-import {action as Transfer} from "src/actions/get-transfer-bounty-token-events";
 import {action as UpdateBountiesToDraft} from 'src/actions/update-bounties-to-draft'
 
 const REGISTRY_EVENTS = {
   NetworkRegistered,
-  ChangeAllowedTokens,
-  Transfer
+  ChangeAllowedTokens
 }
 
 const NETWORK_EVENTS = {
