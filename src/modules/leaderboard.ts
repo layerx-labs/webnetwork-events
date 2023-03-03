@@ -43,10 +43,16 @@ async function updateLeaderboardNfts() {
           required: true,
           where: {
             state: "closed",
+            merged: {
+              [Op.eq]: Sequelize.cast(Sequelize.col("merge_proposals.contractId"), "varchar")
+            }
           },
         },
+        {
+          association: "proposal_distributions"
+        }
       ],
-    }).then(v => v.filter(({ contractId, issue: { merged }}) => contractId?.toString() === merged))
+    })
 
     if (proposals.length === 0) {
       logger.warn(name, `no merged proposals found`);
@@ -58,10 +64,7 @@ async function updateLeaderboardNfts() {
     } = {}
 
     for(const proposal of proposals){
-      const distributions = await db.proposal_distributions.findAll({
-        where: { id: proposal.id }
-      })
-      distributions.map(({ recipient }) => {
+      proposal.proposal_distributions.map(({ recipient }) => {
           nftAddress[recipient] = isNaN(nftAddress[recipient]) ? 1 : nftAddress[recipient] + 1
       })
     }
