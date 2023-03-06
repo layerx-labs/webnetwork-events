@@ -29,8 +29,6 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   isTransactional!: boolean;
   isAllowed?: boolean;
   chain_id?: number;
-  isAllowed?: boolean;
-  chain_id?: number;
   isReward!: boolean;
 
   // tokens belongsTo chains via chain_id
@@ -115,14 +113,6 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
     isAllowed: {
       type: DataTypes.BOOLEAN,
       allowNull: true
-    },
-    chain_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'chains',
-        key: 'chainId'
-      }
     },
     chain_id: {
       type: DataTypes.INTEGER,
