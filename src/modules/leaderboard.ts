@@ -36,42 +36,40 @@ async function updateLeaderboardNfts() {
   logger.info(name);
 
   try {
-    const proposals = await db.merge_proposals.findAll({
+    const distributions = await db.proposal_distributions.findAll({
+      group: ["recipient"],
+      attributes: ["recipient", [Sequelize.fn("COUNT", "proposal.id"), "id"]],
       include: [
         {
-          association: "issue",
+          association: "proposal",
+          attributes: [],
           required: true,
-          where: {
-            state: "closed",
-            merged: {
-              [Op.eq]: Sequelize.cast(Sequelize.col("merge_proposals.contractId"), "varchar")
+          include: [
+            {
+              association: "issue",
+              attributes: [],
+              required: true,
+              where: {
+                state: "closed",
+                merged: {
+                  [Op.eq]: Sequelize.cast(Sequelize.col("proposal.contractId"), "varchar")
+                }
+              }
             }
-          },
-        },
-        {
-          association: "proposal_distributions"
+          ]
         }
-      ],
+      ]
     })
 
-    if (proposals.length === 0) {
-      logger.warn(name, `no merged proposals found`);
+    if (distributions.length === 0) {
+      logger.warn(name, `no proposal distributions found`);
       return;
     }
 
-    const nftAddress: {
-      [index:string]: number
-    } = {}
-
-    for(const proposal of proposals){
-      proposal.proposal_distributions.map(({ recipient }) => {
-          nftAddress[recipient] = isNaN(nftAddress[recipient]) ? 1 : nftAddress[recipient] + 1
-      })
-    }
-
-    for (const [key, value] of Object.entries(nftAddress)) {
-      if (await updateLeaderboardRow(key, 'numberNfts', value))
-        logger.info(name, `updated ${key} to numberNfts: ${value}`);     
+    for(const distribution of distributions){
+      const { recipient, id: nfts } = distribution
+      if (await updateLeaderboardRow(recipient, 'numberNfts', nfts))
+        logger.info(name, `updated ${recipient} to numberNfts: ${nfts}`);     
     }
 
   } catch (error) {
