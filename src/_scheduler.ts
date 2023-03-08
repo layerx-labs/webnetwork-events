@@ -26,9 +26,15 @@ function startChainListeners() {
 
   getChainsRegistryAndNetworks()
     .then((array) => array.reduce(entriesChainRegistryNetworksReducer, {}))
-    .then(mappedRpcActions =>
-      Object.entries(mappedRpcActions)
-        .map(([rpc, mappedActions]) => new BlockSniffer(rpc, mappedActions)))
+    .then(mappedRpcActions => {
+
+      const sniffers = Object.entries(mappedRpcActions)
+        .map(([rpc, mappedActions]) => new BlockSniffer(rpc, mappedActions))
+
+      loggerHandler.info(`_scheduler started ${sniffers.length} sniffers`);
+      loggerHandler.debug(`_scheduler with ${Object.keys(REGISTRY_EVENTS).concat(...Object.keys(NETWORK_EVENTS)).length} actions each`);
+
+    })
     .catch(e => {
       loggerHandler.error(`_scheduler chainListener error`, e);
     })
@@ -60,6 +66,7 @@ function startTimedEvents() {
   }
 
   const startIntervalForMinuteAction = (key, callback) => {
+    loggerHandler.info(`_scheduler calling ${key} in about a minute`);
 
     timers[key] = setInterval(() => {
       try {
