@@ -37,11 +37,13 @@ export async function getChainsRegistryAndNetworks() {
     ({...p, [chainRpc]: {registryAddress, chainId}})
 
   const where = {
-    registryAddress: {[Op.not]: undefined},
-    ...EVENTS_CHAIN_ID ? {chainId: {[Op.iLike]: EVENTS_CHAIN_ID}} : {},
+    registryAddress: {[Op.not]: null},
+    ...EVENTS_CHAIN_ID ? {chainId: {[Op.eq]: +EVENTS_CHAIN_ID}} : {},
   }
 
   const chains = await db.chains.findAll({where, raw: true});
+
+  console.log(`Chains`, chains);
 
   return Promise.all(
     Object.entries(chains.reduce(chainsReducer, {}))
