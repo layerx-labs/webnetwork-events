@@ -7,6 +7,8 @@ import {nativeZeroAddress} from "@taikai/dappkit/dist/src/utils/constants";
 import {chainsAttributes} from "../db/models/chains";
 import {Op} from "sequelize";
 
+const {EVENTS_CHAIN_ID} = process.env;
+
 export async function getBountyFromChain(connection: Web3Connection, address, id, name) {
   const actor = new Network_v2(connection, address)
   const bounty = await actor.getBounty(+id);
@@ -34,7 +36,12 @@ export async function getChainsRegistryAndNetworks() {
   }: chainsAttributes): { [chainRpc: string]: { registryAddress: string, chainId: number } } =>
     ({...p, [chainRpc]: {registryAddress, chainId}})
 
-  const chains = await db.chains.findAll({where: {registryAddress: {[Op.not]: undefined}}, raw: true});
+  const where = {
+    registryAddress: {[Op.not]: undefined},
+    ...EVENTS_CHAIN_ID ? {chainId: {[Op.iLike]: EVENTS_CHAIN_ID}} : {},
+  }
+
+  const chains = await db.chains.findAll({where, raw: true});
 
   return Promise.all(
     Object.entries(chains.reduce(chainsReducer, {}))
