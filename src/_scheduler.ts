@@ -5,12 +5,13 @@ import {chainsAttributes} from "./db/models/chains";
 import NetworkRegistry from "@taikai/dappkit/dist/build/contracts/NetworkRegistry.json";
 import NetworkV2 from "@taikai/dappkit/dist/build/contracts/NetworkV2.json";
 
-import {BlockSniffer, MappedEventActions} from "./services/block-sniffer";
+import {BlockSniffer} from "./services/block-sniffer";
 import {MIDNIGHT_ACTIONS, MINUTE_ACTIONS, NETWORK_EVENTS, REGISTRY_EVENTS} from "./modules/chain-events";
 import {findOnABI} from "./utils/find-on-abi";
 import loggerHandler from "./utils/logger-handler";
 import {differenceInMilliseconds, formatDistance} from "date-fns";
 import {clearInterval, clearTimeout} from "timers";
+import {MappedEventActions} from "./interfaces/block-sniffer";
 
 
 async function getChainsRegistryAndNetworks() {

@@ -4,21 +4,7 @@ import {Log} from "web3-core";
 import {clearInterval} from "timers";
 import db from "../db";
 import {EventsQuery} from "../interfaces/block-chain-service";
-
-type DecodedLog = (Log & { eventName: string; returnValues: any });
-
-export interface MappedEventActions {
-  [contractAddress: string]: { //
-    abi: { type: any; name: string; inputs: any[] }[]; // ContractABI
-    events: {
-      [eventName: string]: (log: DecodedLog, query: EventsQuery | null) => void;
-    }
-  };
-}
-
-interface AddressEventDecodedLog {
-  [address: string]: { [eventName: string]: DecodedLog[] }
-}
+import {AddressEventDecodedLog, MappedEventActions} from "../interfaces/block-sniffer";
 
 export class BlockSniffer {
   #currentBlock = 0;
@@ -56,6 +42,64 @@ export class BlockSniffer {
 
   get currentBlock() {
     return this.#currentBlock;
+  }
+
+
+  /**
+   * Loop decoded logs and search for a matching address and event, if found: try-catch the callback with the
+   * decoded log entry
+   */
+  actOnMappedActions(decodedLogs: AddressEventDecodedLog) {
+    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) executing decoded logs`, decodedLogs);
+    for (const [a, entry] of Object.entries(decodedLogs))
+      for (const [e, logs] of this.mappedEventActions[a] ? Object.entries(entry) : [])
+        for (const log of this.mappedEventActions[a].events[e] ? logs : [])
+          try {
+            const logWithContext = {...log, connection: this.#connection, chainId: this.#actingChainId};
+            loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) acting on ${a} ${e}`);
+            loggerHandler.debug(`Payload`, log);
+            this.mappedEventActions[a].events[e](logWithContext, this.query);
+          } catch (e: any) {
+            loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed to act ${e} with payload`, log, e?.toString());
+          }
+  }
+
+  /**
+   * Will start an interval and query the current Web3Host for logs from #currentBlock to #connection.getLastBlock();
+   * on receipt, if any logs contain a known address inside mappedEventsActions and if any topics match an event name inside
+   * the mappedEventActions[contractAddress].events it will call its action function
+   */
+  async start(immediately = false) {
+    loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) ${this.#interval ? 're' : ''}starting`);
+    loggerHandler.debug(`polling every ${this.interval / 1000}s (immediately: ${immediately.toString()}`);
+
+    const callback = () =>
+      this.getAndDecodeLogs()
+        .then(this.actOnMappedActions)
+        .catch(e => {
+          loggerHandler.error(`BlockSniffer`, e);
+        });
+
+    this.clearInterval();
+
+
+    this.#actingChainId = await this.#connection.eth.getChainId();
+    await this.prepareCurrentBlock();
+
+    if (immediately)
+      callback();
+
+    if (this.interval)
+      this.#interval = setInterval(() => callback(), this.interval);
+  }
+
+  /**
+   * Stops interval started by start();
+   * Will not stop the already executing callback.
+   * */
+  stop() {
+    this.clearInterval();
+    loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) stopped: ${!this.#interval?.hasRef()}`);
   }
 
   /**
@@ -124,67 +168,14 @@ export class BlockSniffer {
       });
   }
 
-  actOnMappedActions(decodedLogs: AddressEventDecodedLog) {
-    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) executing decoded logs`, decodedLogs);
-    for (const [a, entry] of Object.entries(decodedLogs))
-      for (const [e, logs] of this.mappedEventActions[a] ? Object.entries(entry) : [])
-        for (const log of this.mappedEventActions[a].events[e] ? logs : [])
-          try {
-            loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) acting on ${a} ${e} with payload`, log);
-            this.mappedEventActions[a].events[e](log, this.query);
-          } catch (e: any) {
-            loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed to act ${e} with payload`, log, e?.toString());
-            loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) removed ${a} ${e} from rotation`);
-            delete this.mappedEventActions[a].events[e];
-          }
-  }
-
-  /**
-   * Will start an interval and query the current Web3Host for logs from #currentBlock to #connection.getLastBlock();
-   * on receipt, if any logs contain a known address inside mappedEventsActions and if any topics match an event name inside
-   * the mappedEventActions[contractAddress].events it will call its action function
-   */
-  async start(immediately = false) {
-    loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) ${this.#interval ? 're' : ''}starting; polling every ${this.interval / 1000}s (immediately: ${immediately.toString()})`);
-
-    const callback = () =>
-      this.getAndDecodeLogs()
-        .then(this.actOnMappedActions)
-        .catch(e => {
-          loggerHandler.error(`BlockSniffer`, e);
-        });
-
-    this.clearInterval();
-
-
-    this.#actingChainId = await this.#connection.eth.getChainId();
-    await this.prepareCurrentBlock();
-
-    if (immediately)
-      callback();
-
-    if (this.interval)
-      this.#interval = setInterval(() => callback(), this.interval);
-  }
-
-  /**
-   * Stops interval started by start();
-   * Will not stop the already executing callback.
-   * */
-  stop() {
-    if (this.#interval) {
-      clearInterval(this.#interval);
-    }
-
-    loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) stopped: ${!this.#interval?.hasRef()}`);
-  }
-
   private clearInterval() {
     if (!this.#interval)
       return;
 
     clearInterval(this.#interval!);
     this.#interval = null;
+
+    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) cleared interval`);
   }
 
   private async saveCurrentBlock(currentBlock = 0) {
@@ -208,4 +199,5 @@ export class BlockSniffer {
       +(process.env?.BULK_CHAIN_START_BLOCK || 0);
     loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) currentBlock prepared as ${this.#currentBlock}`);
   }
+
 }
