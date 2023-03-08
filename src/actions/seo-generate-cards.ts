@@ -3,6 +3,8 @@ import db from "src/db";
 import generateCard from "src/modules/generate-bounty-cards";
 import ipfsService from "src/services/ipfs-service";
 import logger from "src/utils/logger-handler";
+import {getChainsRegistryAndNetworks} from "../utils/block-process";
+import {subMinutes} from "date-fns";
 
 export const name = "seo-generate-cards";
 export const schedule = "*/10 * * * *";
@@ -10,7 +12,7 @@ export const description = "Try generate SeoCards for all updated or new bountie
 export const author = "clarkjoao";
 
 const {
-  NEXT_IPFS_PROJECT_ID, 
+  NEXT_IPFS_PROJECT_ID,
   NEXT_IPFS_PROJECT_SECRET,
   NEXT_IPFS_UPLOAD_ENDPOINT,
   EVENTS_CHAIN_ID: chainId
@@ -24,81 +26,77 @@ export async function action(issueId?: string) {
     return bountiesProcessed;
   }
 
-  try {
-    logger.info(`${name} start`);
+  const entries = await getChainsRegistryAndNetworks();
+  for (const [, {chainId: chain_id,}] of entries) {
+    try {
+      logger.info(`${name} start`);
 
-    const dbEvent = await db.chain_events.findOne({
-      where: {
-        name,
-        chain_id: chainId
+      const dbEvent =
+        await db.chain_events
+          .findOrCreate({where: {name, chain_id}, defaults: {name, chain_id}})
+          .then(([event,]) => event);
+
+      const where = {
+        chain_id,
+        ...issueId
+          ? {issueId: {[Op.iLike]: issueId}}
+          : {
+            [Op.or]: [
+              {seoImage: null},
+              {updatedAt: {[Op.gt]: subMinutes(dbEvent.updatedAt || new Date(), 1)}}
+            ]
+          }
       }
-    });
 
-    if (!dbEvent){
-      logger.warn(`${name} not found on database`);
-      await db.chain_events.create({
-        name,
-        chain_id: +chainId!
-      });
-    }
-      
-    const where = {
-      chain_id: chainId,
-      ...(issueId
-        ? {issueId}
-        : {[Op.or]: [
-            {seoImage: null},
-            {updatedAt: {[Op.gt]: dbEvent?.updatedAt || dbEvent?.createdAt || new Date()}}
-          ]})
-    };
+      const include = [
+        {association: "developers"},
+        {association: "merge_proposals"},
+        {association: "pull_requests"},
+        {association: "network"},
+        {association: "repository"},
+        {association: "transactionalToken"},
+      ];
 
-    const include = [
-      { association: "developers" },
-      { association: "merge_proposals" },
-      { association: "pull_requests" },
-      { association: "network" },
-      { association: "repository" },
-      { association: "transactionalToken" },
-    ];
+      const bounties = await db.issues.findAll({where, include});
 
-    const bounties = await db.issues.findAll({where, include});
+      if (!bounties.length) {
+        logger.info(`${name} No bounties to be updated`);
+        return;
+      }
 
-    if (!bounties.length) {
-      logger.info(`${name} No bounties to be updated`);
-      return;
-    }
+      logger.info(`${name} ${bounties.length} bounties to be updated`);
 
-    logger.info(`${name} ${bounties.length} bounties to be updated`);
+      for (const bounty of bounties) {
+        try {
+          logger.debug(`${name} Creating card to bounty ${bounty.issueId}`);
+          const card = await generateCard(bounty);
 
-    for (const bounty of bounties) {
-      try {
-        logger.debug(`${name} Creating card to bounty ${bounty.issueId}`);
-        const card = await generateCard(bounty);
+          const {hash} = await ipfsService.add(card);
+          if (!hash) {
+            logger.warn(`${name} Failed to get hash from IPFS for ${bounty.issueId}`);
+            continue;
+          }
 
-        const {hash} = await ipfsService.add(card);
-        if (!hash) {
-          logger.warn(`${name} Failed to get hash from IPFS for ${bounty.issueId}`);
+          await bounty.update({seoImage: hash});
+
+          bountiesProcessed.push({issueId: bounty.issueId, hash});
+
+          logger.debug(`${name} Bounty card for ${bounty.issueId} has been updated`);
+        } catch (error: any) {
+          logger.error(`${name} Error generating card for ${bounty.issueId}`, error);
           continue;
         }
-
-        await bounty.update({seoImage: hash});
-
-        bountiesProcessed.push({issueId: bounty.issueId, hash});
-
-        logger.debug(`${name} Bounty card for ${bounty.issueId} has been updated`);
-      } catch (error: any) {
-        logger.error(`${name} Error generating card for ${bounty.issueId}`, error);
-        continue;
       }
+
+      if (dbEvent?.lastBlock) {
+        dbEvent.lastBlock += 1;
+        await dbEvent.save();
+      }
+
+    } catch (err: any) {
+      logger.error(`${name} Error`, err?.message || err.toString());
     }
 
-    if(dbEvent?.lastBlock){
-      dbEvent.lastBlock += 1;
-      await dbEvent.save();
-    }
-
-  } catch (err: any) {
-    logger.error(`${name} Error`, err?.message || err.toString());
   }
 
   return bountiesProcessed;

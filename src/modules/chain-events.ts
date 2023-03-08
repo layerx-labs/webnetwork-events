@@ -20,6 +20,10 @@ import {action as DeletePendingNetworks} from "../actions/delete-pending-network
 import {action as DeletePendingBounties} from "../actions/delete-pending-bounties";
 import {action as UpdateNetworkParams} from "../actions/update-network-parameters";
 
+/**
+ * These events rely on parsed-logs to function and can/will rely on Database information, as well as update it
+ */
+
 export const REGISTRY_EVENTS = {
   NetworkRegistered,
   ChangeAllowedTokens,
@@ -31,6 +35,11 @@ export const NETWORK_EVENTS = {
   NetworkCreated, OraclesChanged, ProposalCreated, ProposalDisputed, ProposalRefused, PullRequestCanceled,
   PullRequestCreated, PullRequestReadyForReview, OraclesTransfer, UpdateBountiesToDraft
 }
+
+/**
+ * These actions must request the information needed from the database and don't rely on parsed-logs but instead
+ * on Database values alone. Can update values on Database.
+ */
 
 export const MIDNIGHT_ACTIONS = {
   UpdateBountiesToDraft,

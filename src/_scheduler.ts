@@ -1,7 +1,3 @@
-import db from "./db";
-import {Op} from "sequelize";
-import {nativeZeroAddress} from "@taikai/dappkit/dist/src/utils/constants";
-import {chainsAttributes} from "./db/models/chains";
 import NetworkRegistry from "@taikai/dappkit/dist/build/contracts/NetworkRegistry.json";
 import NetworkV2 from "@taikai/dappkit/dist/build/contracts/NetworkV2.json";
 
@@ -12,29 +8,7 @@ import loggerHandler from "./utils/logger-handler";
 import {differenceInMilliseconds, formatDistance} from "date-fns";
 import {clearInterval, clearTimeout} from "timers";
 import {MappedEventActions} from "./interfaces/block-sniffer";
-
-
-async function getChainsRegistryAndNetworks() {
-
-  const chainsReducer = (p, {
-    chainRpc,
-    registryAddress = nativeZeroAddress,
-    chainId
-  }: chainsAttributes): { [chainRpc: string]: { registryAddress: string, chainId: number } } =>
-    ({...p, [chainRpc]: {registryAddress, chainId}})
-
-  const chains = await db.chains.findAll({where: {registryAddress: {[Op.not]: undefined}}, raw: true});
-
-  return Promise.all(
-    Object.entries(chains.reduce(chainsReducer, {}))
-      .map(([rpc, info]) =>
-        db.networks.findAll({where: {chain_id: info.chainId, networkAddress: {[Op.not]: undefined}}, raw: true})
-          .then(networks => networks.map(network => network.networkAddress!))
-          .then(networks => [rpc, {
-            ...info,
-            networks
-          }] as ([string, { registryAddress: string, chainId: number, networks: string[] }]))))
-}
+import {getChainsRegistryAndNetworks} from "./utils/block-process";
 
 function startChainListeners() {
 
