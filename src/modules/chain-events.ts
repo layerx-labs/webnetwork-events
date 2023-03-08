@@ -24,6 +24,10 @@ import {action as SeoGenerateCards} from "../actions/seo-generate-cards";
  * These events rely on parsed-logs to function and can/will rely on Database information, as well as update it
  */
 
+/**
+ * These events rely on parsed-logs to function and can/will rely on Database information, as well as update it
+ */
+
 export const REGISTRY_EVENTS = {
   NetworkRegistered,
   ChangeAllowedTokens,
