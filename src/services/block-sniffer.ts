@@ -51,14 +51,13 @@ export class BlockSniffer {
    * decoded log entry
    */
   actOnMappedActions(decodedLogs: AddressEventDecodedLog) {
-    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) executing decoded logs`, decodedLogs);
     for (const [a, entry] of Object.entries(decodedLogs))
       for (const [e, logs] of this.mappedEventActions[a] ? Object.entries(entry) : [])
         for (const log of this.mappedEventActions[a].events[e] ? logs : [])
           try {
             const logWithContext = {...log, connection: this.#connection, chainId: this.#actingChainId};
             loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) acting on ${a} ${e}`);
-            loggerHandler.debug(`Payload`, log);
+            loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId})`, log);
             this.mappedEventActions[a].events[e](logWithContext, this.query);
           } catch (e: any) {
             loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed to act ${e} with payload`, log, e?.toString());
@@ -142,13 +141,12 @@ export class BlockSniffer {
     )];
 
     loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) Reading from ${this.#currentBlock} to ${targetBlock}; Will total ${requests < 1 ? 1 : Math.round(requests)} requests`);
-    loggerHandler.debug(`Searching for topics and addresses`, topics, address);
 
     let toBlock = 0;
     for (let fromBlock = this.#currentBlock; fromBlock < targetBlock; fromBlock += this.pagesPerRequest) {
       toBlock = fromBlock + this.pagesPerRequest > targetBlock ? targetBlock : fromBlock + this.pagesPerRequest;
 
-      loggerHandler.log(`BlockSniffer (chain:${this.#actingChainId}) Fetching events from ${fromBlock} to ${toBlock}`);
+      loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) Fetching events from ${fromBlock} to ${toBlock}`);
 
       logs.push(...await _eth.getPastLogs({fromBlock, toBlock, topics, address}));
 
