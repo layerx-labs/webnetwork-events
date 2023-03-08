@@ -11,6 +11,7 @@ export class BlockSniffer {
   #connection: Web3Connection;
   #interval: NodeJS.Timer | null;
   #actingChainId: number;
+  #fetchingLogs = false;
 
   /**
    *
@@ -74,14 +75,15 @@ export class BlockSniffer {
     loggerHandler.debug(`polling every ${this.interval / 1000}s (immediately: ${immediately.toString()}`);
 
     const callback = () =>
-      this.getAndDecodeLogs()
-        .then(this.actOnMappedActions)
-        .catch(e => {
-          loggerHandler.error(`BlockSniffer`, e);
-        });
+      this.#fetchingLogs
+        ? () => null
+        : this.getAndDecodeLogs()
+          .then((logs) => this.actOnMappedActions(logs))
+          .catch(e => {
+            loggerHandler.error(`BlockSniffer`, e);
+          });
 
     this.clearInterval();
-
 
     this.#actingChainId = await this.#connection.eth.getChainId();
     await this.prepareCurrentBlock();
@@ -108,6 +110,12 @@ export class BlockSniffer {
    * targetBlock using pagesPerRequest; Decode the retrieved matching logs and return mapped by address and eventName.
    * */
   async getAndDecodeLogs(): Promise<AddressEventDecodedLog> {
+
+    if (this.#fetchingLogs)
+      return {};
+
+    this.#fetchingLogs = true;
+
     const targetBlock = this.targetBlock || await this.#connection.eth.getBlockNumber();
     const requests = (targetBlock - this.#currentBlock) / this.pagesPerRequest;
     const logs: Log[] = [];
@@ -147,7 +155,8 @@ export class BlockSniffer {
       this.#currentBlock = toBlock;
     }
 
-    await this.saveCurrentBlock();
+    this.#fetchingLogs = false;
+    await this.saveCurrentBlock(this.#currentBlock);
     loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) found ${logs.length} logs`);
 
     return logs.map(log => {
@@ -165,7 +174,7 @@ export class BlockSniffer {
         const eventName = c.eventName;
         const address = c.address;
         return ({...p, [address]: {...(p[address] || {}), [eventName]: [...(p[address][eventName] || []), c]}})
-      });
+      }, {});
   }
 
   private clearInterval() {
