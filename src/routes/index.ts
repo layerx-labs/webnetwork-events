@@ -9,8 +9,10 @@ router.use("/seo", seoRoutes);
 
 router.use("/past-events", eventsRouter);
 
+router.use(`/read/`, readRouter);
+
 router.use("/", async (req, res) => {
   return res.status(200).json("::");
 });
 
-export { router };
+export {router};

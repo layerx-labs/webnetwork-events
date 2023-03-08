@@ -2,30 +2,37 @@ import {Web3Connection} from "@taikai/dappkit";
 import loggerHandler from "../utils/logger-handler";
 import {Log} from "web3-core";
 import {clearInterval} from "timers";
+import db from "../db";
+import {EventsQuery} from "../interfaces/block-chain-service";
 
-interface MappedEventActions {
+type DecodedLog = (Log & { eventName: string; returnValues: any });
+
+export interface MappedEventActions {
   [contractAddress: string]: { //
     abi: { type: any; name: string; inputs: any[] }[]; // ContractABI
     events: {
-      [eventName: string]: (...args: any) => void;
+      [eventName: string]: (log: DecodedLog, query: EventsQuery | null) => void;
     }
   };
 }
 
 interface AddressEventDecodedLog {
-  [address: string]: { [eventName: string]: (Log & { eventName: string; returnValues: any })[] }
+  [address: string]: { [eventName: string]: DecodedLog[] }
 }
 
 export class BlockSniffer {
   #currentBlock = 0;
   #connection: Web3Connection;
   #interval: NodeJS.Timer;
+  #actingChainId: number;
 
   /**
    *
    * @param web3Host {string} the URL of the web3 host to connect to
    * @param mappedEventActions {MappedEventActions} contract addresses and its abi to lookout for
    * @param startBlock {number} start block to query the web3Host on next pass
+   * @param targetBlock {number} end block to query the web3Host on next pass, if none eth.getBlockNumber() will be used
+   * @param query {object} query to pass to mappedAction when executed
    * @param interval {number} interval between chain queries, in milliseconds
    * @param pagesPerRequest {number} number of pages to read per request
    * @param autoStart {boolean} should the sniffer auto-start immediately
@@ -33,6 +40,8 @@ export class BlockSniffer {
   constructor(readonly web3Host: string,
               readonly mappedEventActions: MappedEventActions,
               startBlock: number = 0,
+              readonly targetBlock = 0,
+              readonly query: EventsQuery | null = null,
               readonly interval: number = 1000,
               readonly pagesPerRequest: number = 1500,
               autoStart = true) {
@@ -55,7 +64,7 @@ export class BlockSniffer {
    * targetBlock using pagesPerRequest; Decode the retrieved matching logs and return mapped by address and eventName.
    * */
   async getAndDecodeLogs(): Promise<AddressEventDecodedLog> {
-    const targetBlock = await this.#connection.eth.getBlockNumber();
+    const targetBlock = this.targetBlock || await this.#connection.eth.getBlockNumber();
     const requests = (targetBlock - this.#currentBlock) / this.pagesPerRequest;
     const logs: Log[] = [];
     const _eth = this.#connection.eth;
@@ -80,7 +89,6 @@ export class BlockSniffer {
         ).flat()
     )];
 
-
     loggerHandler.info(`${this.web3Host} Reading from ${this.#currentBlock} to ${targetBlock}; Will total ${requests < 1 ? 1 : Math.round(requests)} requests`);
     loggerHandler.debug(`Searching for topics and addresses`, topics, address);
 
@@ -95,8 +103,8 @@ export class BlockSniffer {
       this.#currentBlock = toBlock;
     }
 
-    loggerHandler.info(`${this.web3Host} found ${logs.length} logs`)
-
+    await this.saveCurrentBlock();
+    loggerHandler.info(`${this.web3Host} found ${logs.length} logs`);
 
     return logs.map(log => {
         const event = mappedAbiEventsAddress[log.address][log.topics[0]];
@@ -117,28 +125,39 @@ export class BlockSniffer {
   }
 
   actOnMappedActions(decodedLogs: AddressEventDecodedLog) {
+    loggerHandler.debug(`${this.web3Host} executing decoded logs`, decodedLogs);
     for (const [a, entry] of Object.entries(decodedLogs))
       for (const [e, logs] of this.mappedEventActions[a] ? Object.entries(entry) : [])
         for (const log of this.mappedEventActions[a].events[e] ? logs : [])
-          this.mappedEventActions[a].events[e](log.returnValues)
+          try {
+            loggerHandler.info(`${this.web3Host} acting on ${a} ${e} with payload`, log);
+            this.mappedEventActions[a].events[e](log, this.query);
+          } catch (e: any) {
+            loggerHandler.error(`${this.web3Host} failed to act ${e} with payload`, log, e?.toString());
+          }
   }
-
 
   /**
    * Will start an interval and query the current Web3Host for logs from #currentBlock to #connection.getLastBlock();
    * on receipt, if any logs contain a known address inside mappedEventsActions and if any topics match an event name inside
    * the mappedEventActions[contractAddress].events it will call its action function
    */
-  start(immediately = false) {
+  async start(immediately = false) {
+    loggerHandler.info(`${this.web3Host} ${this.#interval ? 're' : ''}starting; polling every ${this.interval / 1000}s (immediately: ${immediately.toString()})`);
+
     const callback = () => this.getAndDecodeLogs().then(this.actOnMappedActions);
 
     if (this.#interval)
       clearInterval(this.#interval);
 
+    this.#actingChainId = await this.#connection.eth.getChainId();
+    await this.prepareCurrentBlock();
+
     if (immediately)
       callback();
 
-    this.#interval = setInterval(() => callback(), this.interval);
+    if (this.interval)
+      this.#interval = setInterval(() => callback(), this.interval);
   }
 
   /**
@@ -146,7 +165,32 @@ export class BlockSniffer {
    * Will not stop the already executing callback.
    * */
   stop() {
-    if (this.#interval)
+    if (this.#interval) {
       clearInterval(this.#interval);
+    }
+
+    loggerHandler.info(`${this.web3Host} stopped: ${!this.#interval?.hasRef()}`);
+  }
+
+  private async saveCurrentBlock(currentBlock = 0) {
+    db.chain_events.findOrCreate({
+        where: {name: this.web3Host},
+        defaults: {name: 'global', lastBlock: currentBlock, chain_id: this.#actingChainId}
+      })
+      .then(([event, created]) => {
+        if (!created) {
+          event.lastBlock = currentBlock
+          event.save();
+        }
+
+        loggerHandler.debug(`Updated ${this.#actingChainId} global events to ${currentBlock}`)
+      })
+  }
+
+  private async prepareCurrentBlock() {
+    this.#currentBlock =
+      (await db.chain_events.findOne({where: {chain_id: this.#actingChainId}, raw: true}))?.lastBlock ||
+      +(process.env?.BULK_CHAIN_START_BLOCK || 0);
+    loggerHandler.debug(`${this.web3Host} currentBlock prepared as ${this.#currentBlock}`);
   }
 }
