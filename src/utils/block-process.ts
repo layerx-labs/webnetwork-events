@@ -43,8 +43,6 @@ export async function getChainsRegistryAndNetworks() {
 
   const chains = await db.chains.findAll({where, raw: true});
 
-  console.log(`Chains`, chains);
-
   return Promise.all(
     Object.entries(chains.reduce(chainsReducer, {}))
       .map(([rpc, info]) =>
