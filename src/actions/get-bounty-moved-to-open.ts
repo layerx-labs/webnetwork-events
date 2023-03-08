@@ -6,6 +6,7 @@ import {Op} from "sequelize";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {slashSplit} from "src/utils/string";
 import {Network_v2, Web3Connection} from "@taikai/dappkit";
+import {getChainsRegistryAndNetworks} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 
@@ -15,91 +16,97 @@ export const description =
   "move to 'OPEN' all 'DRAFT' bounties that have Draft Time finished as set at the block chain";
 export const author = "clarkjoao";
 
-const {NEXT_PUBLIC_WEB3_CONNECTION: web3Host, NEXT_WALLET_PRIVATE_KEY: privateKey, EVENTS_CHAIN_ID: chainId} = process.env;
+const {NEXT_WALLET_PRIVATE_KEY: privateKey} = process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
 
-  try {
-    logger.info(`${name} start`);
+  const entries = await getChainsRegistryAndNetworks();
+  for (const [web3Host, {chainId: chain_id,}] of entries) {
 
-    if (!chainId) {
-      logger.error(`${name}: Missing EVENTS_CHAIN_ID`);
+    try {
+      logger.info(`${name} start`);
 
-      return eventsProcessed;
-    }
+      if (!chain_id) {
+        logger.error(`${name}: Missing EVENTS_CHAIN_ID`);
 
-    const web3Connection = new Web3Connection({web3Host, privateKey});
-    await web3Connection.start();
-
-    const timeOnChain = await web3Connection.Web3.eth.getBlock(`latest`).then(({ timestamp }) => +timestamp * 1000);
-
-    const networks = await db.networks.findAll({
-      where: {
-        isRegistered: true,
-        chain_id: +chainId
-      }, 
-      raw: true
-    });
-    if (!networks || !networks.length) {
-      logger.warn(`${name} found no networks`);
-      return eventsProcessed;
-    }
-
-    for (const {networkAddress, id: network_id, name: networkName} of networks) {
-      const _network = new Network_v2(web3Connection, networkAddress);
-      await _network.loadContract();
-      const draftTime = await _network.draftTime();
-      const bounties =
-        await db.issues.findAll({
-          where: {
-            createdAt: {[Op.lt]: subMilliseconds(timeOnChain, draftTime)},
-            network_id,
-            state: "draft"
-          },
-          include: [{ association: "token" }, { association: "repository" }, {association: "network"}]
-        });
-
-      logger.info(`${name} found ${bounties.length} draft bounties on ${networkAddress}`);
-
-      if (!bounties || !bounties.length)
-        continue;
-
-      const repositoriesDetails = {};
-
-      for (const dbBounty of bounties) {
-        logger.info(`${name} Parsing bounty ${dbBounty.issueId}`);
-
-        const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
-        const detailKey = `${owner}/${repo}`;
-
-        if (!repositoriesDetails[detailKey])
-          repositoriesDetails[detailKey] =
-            await GHService.repositoryDetails(repo, owner);
-
-        const labelId = repositoriesDetails[detailKey]
-          .repository.labels.nodes.find((label) => label.name.toLowerCase() === "draft")?.id;
-
-        if (labelId) {
-          const ghIssue = await GHService.issueDetails(repo, owner, dbBounty?.githubId as string);
-          await GHService.issueRemoveLabel(ghIssue.repository.issue.id, labelId);
-        }
-
-        dbBounty.state = "open";
-        await dbBounty.save();
-        sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
-        eventsProcessed[networkName] = {
-          ...eventsProcessed[networkName],
-          [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: null}
-        };
-
-        logger.info(`${name} Parsed bounty ${dbBounty.issueId}`);
-
+        return eventsProcessed;
       }
+
+      const web3Connection = new Web3Connection({web3Host, privateKey});
+      await web3Connection.start();
+
+      const timeOnChain = await web3Connection.Web3.eth.getBlock(`latest`).then(({timestamp}) => +timestamp * 1000);
+
+      const networks = await db.networks.findAll({
+        where: {
+          isRegistered: true,
+          chain_id
+        },
+        raw: true
+      });
+      if (!networks || !networks.length) {
+        logger.warn(`${name} found no networks`);
+        return eventsProcessed;
+      }
+
+      for (const {networkAddress, id: network_id, name: networkName} of networks) {
+        const _network = new Network_v2(web3Connection, networkAddress);
+        await _network.loadContract();
+        const draftTime = await _network.draftTime();
+        const bounties =
+          await db.issues.findAll({
+            where: {
+              createdAt: {[Op.lt]: subMilliseconds(timeOnChain, draftTime)},
+              network_id,
+              state: "draft"
+            },
+            include: [{association: "repository"}]
+          });
+
+        logger.info(`${name} found ${bounties.length} draft bounties on ${networkAddress}`);
+
+        if (!bounties || !bounties.length)
+          continue;
+
+        const repositoriesDetails = {};
+
+        for (const dbBounty of bounties) {
+          logger.info(`${name} Parsing bounty ${dbBounty.issueId}`);
+
+          const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
+          const detailKey = `${owner}/${repo}`;
+
+          if (!repositoriesDetails[detailKey])
+            repositoriesDetails[detailKey] =
+              await GHService.repositoryDetails(repo, owner);
+
+          const labelId = repositoriesDetails[detailKey]
+            .repository.labels.nodes.find((label) => label.name.toLowerCase() === "draft")?.id;
+
+          if (labelId) {
+            const ghIssue = await GHService.issueDetails(repo, owner, dbBounty?.githubId as string);
+            await GHService.issueRemoveLabel(ghIssue.repository.issue.id, labelId);
+          }
+
+          dbBounty.state = "open";
+          await dbBounty.save();
+          sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
+
+          eventsProcessed[networkName!] = {
+            ...eventsProcessed[networkName!],
+            [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: null}
+          };
+
+          logger.info(`${name} Parsed bounty ${dbBounty.issueId}`);
+
+        }
+      }
+
+    } catch (err: any) {
+      logger.error(`${name} Error`, err);
     }
 
-  } catch (err: any) {
-    logger.error(`${name} Error`, err);
   }
 
   return eventsProcessed;
