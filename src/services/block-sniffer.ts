@@ -23,7 +23,7 @@ interface AddressEventDecodedLog {
 export class BlockSniffer {
   #currentBlock = 0;
   #connection: Web3Connection;
-  #interval: NodeJS.Timer;
+  #interval: NodeJS.Timer | null;
   #actingChainId: number;
 
   /**
@@ -89,14 +89,14 @@ export class BlockSniffer {
         ).flat()
     )];
 
-    loggerHandler.info(`${this.web3Host} Reading from ${this.#currentBlock} to ${targetBlock}; Will total ${requests < 1 ? 1 : Math.round(requests)} requests`);
+    loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) Reading from ${this.#currentBlock} to ${targetBlock}; Will total ${requests < 1 ? 1 : Math.round(requests)} requests`);
     loggerHandler.debug(`Searching for topics and addresses`, topics, address);
 
     let toBlock = 0;
     for (let fromBlock = this.#currentBlock; fromBlock < targetBlock; fromBlock += this.pagesPerRequest) {
       toBlock = fromBlock + this.pagesPerRequest > targetBlock ? targetBlock : fromBlock + this.pagesPerRequest;
 
-      loggerHandler.log(`${this.web3Host} Fetching events from ${fromBlock} to ${toBlock}`);
+      loggerHandler.log(`BlockSniffer (chain:${this.#actingChainId}) Fetching events from ${fromBlock} to ${toBlock}`);
 
       logs.push(...await _eth.getPastLogs({fromBlock, toBlock, topics, address}));
 
@@ -104,7 +104,7 @@ export class BlockSniffer {
     }
 
     await this.saveCurrentBlock();
-    loggerHandler.info(`${this.web3Host} found ${logs.length} logs`);
+    loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) found ${logs.length} logs`);
 
     return logs.map(log => {
         const event = mappedAbiEventsAddress[log.address][log.topics[0]];
@@ -125,15 +125,17 @@ export class BlockSniffer {
   }
 
   actOnMappedActions(decodedLogs: AddressEventDecodedLog) {
-    loggerHandler.debug(`${this.web3Host} executing decoded logs`, decodedLogs);
+    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) executing decoded logs`, decodedLogs);
     for (const [a, entry] of Object.entries(decodedLogs))
       for (const [e, logs] of this.mappedEventActions[a] ? Object.entries(entry) : [])
         for (const log of this.mappedEventActions[a].events[e] ? logs : [])
           try {
-            loggerHandler.info(`${this.web3Host} acting on ${a} ${e} with payload`, log);
+            loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) acting on ${a} ${e} with payload`, log);
             this.mappedEventActions[a].events[e](log, this.query);
           } catch (e: any) {
-            loggerHandler.error(`${this.web3Host} failed to act ${e} with payload`, log, e?.toString());
+            loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed to act ${e} with payload`, log, e?.toString());
+            loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) removed ${a} ${e} from rotation`);
+            delete this.mappedEventActions[a].events[e];
           }
   }
 
@@ -143,12 +145,17 @@ export class BlockSniffer {
    * the mappedEventActions[contractAddress].events it will call its action function
    */
   async start(immediately = false) {
-    loggerHandler.info(`${this.web3Host} ${this.#interval ? 're' : ''}starting; polling every ${this.interval / 1000}s (immediately: ${immediately.toString()})`);
+    loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) ${this.#interval ? 're' : ''}starting; polling every ${this.interval / 1000}s (immediately: ${immediately.toString()})`);
 
-    const callback = () => this.getAndDecodeLogs().then(this.actOnMappedActions);
+    const callback = () =>
+      this.getAndDecodeLogs()
+        .then(this.actOnMappedActions)
+        .catch(e => {
+          loggerHandler.error(`BlockSniffer`, e);
+        });
 
-    if (this.#interval)
-      clearInterval(this.#interval);
+    this.clearInterval();
+
 
     this.#actingChainId = await this.#connection.eth.getChainId();
     await this.prepareCurrentBlock();
@@ -169,7 +176,15 @@ export class BlockSniffer {
       clearInterval(this.#interval);
     }
 
-    loggerHandler.info(`${this.web3Host} stopped: ${!this.#interval?.hasRef()}`);
+    loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) stopped: ${!this.#interval?.hasRef()}`);
+  }
+
+  private clearInterval() {
+    if (!this.#interval)
+      return;
+
+    clearInterval(this.#interval!);
+    this.#interval = null;
   }
 
   private async saveCurrentBlock(currentBlock = 0) {
@@ -183,7 +198,7 @@ export class BlockSniffer {
           event.save();
         }
 
-        loggerHandler.debug(`Updated ${this.#actingChainId} global events to ${currentBlock}`)
+        loggerHandler.debug(`Updated BlockSniffer (chain:${this.#actingChainId}) global events to ${currentBlock}`)
       })
   }
 
@@ -191,6 +206,6 @@ export class BlockSniffer {
     this.#currentBlock =
       (await db.chain_events.findOne({where: {chain_id: this.#actingChainId}, raw: true}))?.lastBlock ||
       +(process.env?.BULK_CHAIN_START_BLOCK || 0);
-    loggerHandler.debug(`${this.web3Host} currentBlock prepared as ${this.#currentBlock}`);
+    loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) currentBlock prepared as ${this.#currentBlock}`);
   }
 }
