@@ -21,18 +21,18 @@ router.get(`/:chainId/:address/:event`, async (req, res) => {
   const _networkKeys = Object.keys(NETWORK_EVENTS)
   const _keys = [..._networkKeys, ..._registryKeys];
 
-  if (_keys.includes(event))
+  if (!_keys.includes(event))
     return res.status(400).json({message: `unknown event ${event}`});
 
   let knownAddress;
   const abi: any[] = [];
   const events = {};
 
-  if (_registryKeys) {
+  if (_registryKeys.includes(event)) {
     knownAddress = chainIdExists?.registryAddress === address; // only one registry per chain, no need to query db again
     abi.push(findOnABI(NetworkRegistry.abi, event));
     events[event] = REGISTRY_EVENTS[event];
-  } else {
+  } else if (_networkKeys.includes(event)) {
     knownAddress = await db.networks.findOne({
       where: {
         networkAddress: {[Op.eq]: address},
