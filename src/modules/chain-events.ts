@@ -19,6 +19,7 @@ import {action as UpdateBountiesToDraft} from "../actions/update-bounties-to-dra
 import {action as DeletePendingNetworks} from "../actions/delete-pending-networks";
 import {action as DeletePendingBounties} from "../actions/delete-pending-bounties";
 import {action as UpdateNetworkParams} from "../actions/update-network-parameters";
+import {action as SeoGenerateCards} from "../actions/seo-generate-cards";
 
 /**
  * These events rely on parsed-logs to function and can/will rely on Database information, as well as update it
@@ -45,7 +46,8 @@ export const MIDNIGHT_ACTIONS = {
   UpdateBountiesToDraft,
   DeletePendingNetworks,
   DeletePendingBounties,
-  UpdateNetworkParams
+  UpdateNetworkParams,
+  SeoGenerateCards,
 }
 
 export const MINUTE_ACTIONS = {
