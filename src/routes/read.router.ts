@@ -1,13 +1,16 @@
 import {Router} from "express";
-import db from "../db";
-import {Op} from "sequelize";
-import {NETWORK_EVENTS, REGISTRY_EVENTS} from "../modules/chain-events";
 import NetworkRegistry from "@taikai/dappkit/dist/build/contracts/NetworkRegistry.json";
 import NetworkV2 from "@taikai/dappkit/dist/build/contracts/NetworkV2.json";
+import db from "../db";
+import eventQuery from "../middlewares/event-query";
+import {Op} from "sequelize";
+import {NETWORK_EVENTS, REGISTRY_EVENTS} from "../modules/chain-events";
 import {findOnABI} from "../utils/find-on-abi";
 import {BlockSniffer} from "../services/block-sniffer";
 
 const router = Router();
+
+router.use(eventQuery);
 
 router.get(`/:chainId/:address/:event`, async (req, res) => {
   const {chainId, address, event} = req.params;
@@ -49,3 +52,5 @@ router.get(`/:chainId/:address/:event`, async (req, res) => {
   new BlockSniffer(chainIdExists.chainRpc, {[address]: {abi, events}}, from, to, req.eventQuery)
 
 })
+
+export default router;
