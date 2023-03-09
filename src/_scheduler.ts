@@ -6,9 +6,14 @@ import {MIDNIGHT_ACTIONS, MINUTE_ACTIONS, NETWORK_EVENTS, REGISTRY_EVENTS} from 
 import {findOnABI} from "./utils/find-on-abi";
 import loggerHandler from "./utils/logger-handler";
 import {differenceInMilliseconds, formatDistance} from "date-fns";
-import {clearInterval, clearTimeout} from "timers";
+import {clearTimeout} from "timers";
 import {MappedEventActions} from "./interfaces/block-sniffer";
 import {getChainsRegistryAndNetworks} from "./utils/block-process";
+import {GlobalCatcher} from "./utils/global-catcher";
+
+GlobalCatcher();
+
+let restarter: NodeJS.Timer | null = null;
 
 function startChainListeners() {
 
@@ -32,7 +37,16 @@ function startChainListeners() {
         .map(([rpc, mappedActions]) => new BlockSniffer(rpc, mappedActions))
 
       loggerHandler.info(`_scheduler started ${sniffers.length} sniffers`);
-      loggerHandler.debug(`_scheduler with ${Object.keys(REGISTRY_EVENTS).concat(...Object.keys(NETWORK_EVENTS)).length} actions each`);
+
+      if (!sniffers.length) {
+        loggerHandler.info(`_scheduler found no chains, will retry in 10s`)
+        restarter = setTimeout(() => startChainListeners(), 10 * 1000);
+      } else {
+        if (restarter) {
+          clearTimeout(restarter!);
+          restarter = null;
+        }
+      }
 
     })
     .catch(e => {
@@ -42,8 +56,6 @@ function startChainListeners() {
 
 function startTimedEvents() {
 
-  const timers: { [key: string]: NodeJS.Timer } = {};
-
   const startTimeoutForMidnightAction = (key, callback) => {
     const now = new Date();
     const next24 = new Date().setHours(24, 0, 0, 0);
@@ -51,15 +63,13 @@ function startTimedEvents() {
 
     loggerHandler.info(`_scheduler calling ${key} in ${formatDistance(next24, now)}`);
 
-    timers[key] = setTimeout(() => {
+    setTimeout(() => {
       try {
         loggerHandler.debug(`_scheduler midnight calling ${key}`);
         callback();
         startTimeoutForMidnightAction(key, callback); // start itself when over
       } catch (e) {
         loggerHandler.error(`_scheduler Midnight:${key}`, e);
-        clearTimeout(timers[key])
-        loggerHandler.info(`_scheduler Stopping ${key} timeout`);
       }
     }, diff);
 
@@ -68,14 +78,12 @@ function startTimedEvents() {
   const startIntervalForMinuteAction = (key, callback) => {
     loggerHandler.info(`_scheduler calling ${key} in about a minute`);
 
-    timers[key] = setInterval(() => {
+    setInterval(() => {
       try {
-        loggerHandler.debug(`_scheduler minute calling ${key}`);
+        loggerHandler.info(`_scheduler minute calling ${key}`);
         callback();
       } catch (e: any) {
         loggerHandler.error(`_scheduler Minute:${key}`, e?.stack);
-        loggerHandler.info(`_scheduler Stopping ${key} interval`);
-        clearInterval(timers[key]);
       }
     }, 1000 * 60);
   }
@@ -85,9 +93,12 @@ function startTimedEvents() {
 
 }
 
-(() => {
+(async () => {
   startChainListeners();
   startTimedEvents();
-})();
+})()
+  .catch(e => {
+    loggerHandler.info(`Scheduler Error outside the global catcher`, e);
+  })
 
 

@@ -29,7 +29,7 @@ export class BlockSniffer {
               startBlock: number = 0,
               readonly targetBlock = 0,
               readonly query: EventsQuery | null = null,
-              readonly interval: number = 1000,
+              readonly interval: number = 60 * 1000, // 60s
               readonly pagesPerRequest: number = 1500,
               autoStart = true) {
 
@@ -72,6 +72,7 @@ export class BlockSniffer {
   async start(immediately = false) {
     loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) ${this.#interval ? 're' : ''}starting`);
     loggerHandler.debug(`polling every ${this.interval / 1000}s (immediately: ${immediately.toString()}`);
+    loggerHandler.debug(``)
 
     const callback = () =>
       this.#fetchingLogs
