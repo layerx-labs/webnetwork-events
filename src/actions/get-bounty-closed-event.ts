@@ -7,7 +7,7 @@ import {slashSplit} from "src/utils/string";
 import {EventService} from "../services/event-service";
 import {DB_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {updateCuratorProposalParams} from "src/modules/handle-curators";
-import {updateLeaderboardBounties, updateLeaderboardProposals} from "src/modules/leaderboard";
+import {updateLeaderboardBounties, updateLeaderboardNfts, updateLeaderboardProposals} from "src/modules/leaderboard";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
@@ -141,7 +141,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
 
   await updateCuratorProposal(bounty.proposals[+proposalId].creator, network?.id)
-
+  await updateLeaderboardNfts()
   await updateLeaderboardBounties("closed");
   await updateLeaderboardProposals("accepted");
 

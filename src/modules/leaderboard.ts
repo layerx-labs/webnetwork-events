@@ -31,6 +31,52 @@ async function updateLeaderboardRow(address: string, property: string, value: nu
   return true;
 }
 
+async function updateLeaderboardNfts() {
+  const name = `updateLeaderboardNfts`;
+  logger.info(name);
+
+  try {
+    const distributions = await db.proposal_distributions.findAll({
+      group: ["recipient"],
+      attributes: ["recipient", [Sequelize.fn("COUNT", "proposal.id"), "id"]],
+      include: [
+        {
+          association: "proposal",
+          attributes: [],
+          required: true,
+          include: [
+            {
+              association: "issue",
+              attributes: [],
+              required: true,
+              where: {
+                state: "closed",
+                merged: {
+                  [Op.eq]: Sequelize.cast(Sequelize.col("proposal.contractId"), "varchar")
+                }
+              }
+            }
+          ]
+        }
+      ]
+    })
+
+    if (distributions.length === 0) {
+      logger.warn(name, `no proposal distributions found`);
+      return;
+    }
+
+    for(const distribution of distributions){
+      const { recipient, id: nfts } = distribution
+      if (await updateLeaderboardRow(recipient, 'numberNfts', nfts))
+        logger.info(name, `updated ${recipient} to numberNfts: ${nfts}`);     
+    }
+
+  } catch (error) {
+    logger.error(name, `failed`, error);
+  }
+}
+
 /**
  * Update leaderboard bounties quantity. If the parameter is not passed it will count all bounties.
  */
@@ -148,5 +194,6 @@ async function updateLeaderboardProposals(state: "created" | "accepted" | "rejec
 
 export {
   updateLeaderboardBounties,
-  updateLeaderboardProposals
+  updateLeaderboardProposals,
+  updateLeaderboardNfts
 };
