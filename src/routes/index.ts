@@ -2,6 +2,7 @@ import {Router} from "express";
 
 import {eventsRouter} from "./events.routes";
 import {seoRoutes} from "./seo.routes";
+import readRouter from "./read.router";
 
 const router = Router();
 
