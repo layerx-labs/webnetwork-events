@@ -1,27 +1,19 @@
-import {EventsProcessed,EventsQuery,} from "src/interfaces/block-chain-service";
-import logger from "src/utils/logger-handler";
-import {EventService} from "../services/event-service";
+import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {BountyProposalRefusedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {proposalStateProcessor} from "../modules/proposal-state-processor";
-import { updateLeaderboardProposals } from "src/modules/leaderboard";
+import {updateLeaderboardProposals} from "src/modules/leaderboard";
+import {DecodedLog} from "../interfaces/block-sniffer";
 
 export const name = "getBountyProposalRefusedEvents";
 export const schedule = "*/15 * * * *";
 export const description = "Sync proposal refused events";
 export const author = "clarkjoao";
 
-export async function action(
-  query?: EventsQuery
-): Promise<EventsProcessed> {
+export async function action(block: DecodedLog<BountyProposalRefusedEvent['returnValues']>, query?: EventsQuery): Promise<EventsProcessed> {
   let eventsProcessed: EventsProcessed = {};
 
-  const _service = new EventService<BountyProposalRefusedEvent>(name, query);
-
-  await _service._processEvents(
-    async (block, network) => {
-      eventsProcessed = await proposalStateProcessor(block, network, _service, eventsProcessed);
-      await updateLeaderboardProposals("rejected");
-    })
+  eventsProcessed = await proposalStateProcessor(block, eventsProcessed);
+  await updateLeaderboardProposals("rejected");
 
   return eventsProcessed;
 }

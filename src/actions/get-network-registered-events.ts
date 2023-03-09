@@ -1,58 +1,56 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {EventService} from "../services/event-service";
 import {NetworkCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-factory-v2-events";
-import {BlockProcessor} from "../interfaces/block-processor";
-import { updateNumberOfNetworkHeader } from "src/modules/handle-header-information";
-import DAO from "src/services/dao-service";
-import { findOrCreateToken } from "src/modules/tokens";
+import {updateNumberOfNetworkHeader} from "src/modules/handle-header-information";
+import {findOrCreateToken} from "src/modules/tokens";
+import {DecodedLog} from "../interfaces/block-sniffer";
+import {Network_v2} from "@taikai/dappkit";
 
 export const name = "getNetworkRegisteredEvents";
 export const schedule = "*/10 * * * *";
 export const description = "retrieving network registered on registry events";
 export const author = "vhcsilva";
 
-export async function action(query?: EventsQuery): Promise<EventsProcessed> {
+export async function action(block: DecodedLog<NetworkCreatedEvent['returnValues']>, query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
+  const {returnValues: {network: createdNetworkAddress}, connection, chainId} = block;
 
-  const processor: BlockProcessor<NetworkCreatedEvent> = async (block, _network) => {
-    const {network: createdNetworkAddress} = block.returnValues;
+  const network = await db.networks.findOne({where: {networkAddress: createdNetworkAddress, chain_id: chainId}});
 
-    const network = await db.networks.findOne({ where: { networkAddress: createdNetworkAddress, chain_id: _network.chainId } });
-
-    if (!network)
-      return logger.warn(`${name} network with address ${createdNetworkAddress} not found on db`);
-
-    if (network.isRegistered)
-      return logger.warn(`${name} ${createdNetworkAddress} was already registered`);
-
-    const dao = new DAO({ networkAddress: createdNetworkAddress });
-
-    await dao.start();
-
-    if (dao.network?.networkToken?.contractAddress) {
-      const address = dao.network.networkToken.contractAddress!;
-      const name = await dao.network.networkToken.name();
-      const symbol = await dao.network.networkToken.symbol();
-
-      const networkToken = await findOrCreateToken(address, name, symbol);
-
-      if (networkToken)
-        network.network_token_id = networkToken.id;
-    }
-
-    network.isRegistered = true;
-
-    await network.save();
-
-    await updateNumberOfNetworkHeader();
-    
-    logger.warn(`${name} Registered ${createdNetworkAddress}`);
-    eventsProcessed[network.name!] = [network.networkAddress!];
+  if (!network) {
+    logger.warn(`${name} network with address ${createdNetworkAddress} not found on db`);
+    return eventsProcessed
   }
 
-  await (new EventService(name, query, true, undefined, false))._processEvents(processor);
+  if (network.isRegistered) {
+    logger.warn(`${name} ${createdNetworkAddress} was already registered`);
+    return eventsProcessed
+  }
+
+  const _network = new Network_v2(connection, createdNetworkAddress);
+  await _network.start();
+  await _network.loadContract();
+
+  if (_network.networkToken?.contractAddress) {
+    const address = _network.networkToken.contractAddress!;
+    const name = await _network.networkToken.name();
+    const symbol = await _network.networkToken.symbol();
+
+    const networkToken = await findOrCreateToken(address, name, symbol);
+
+    if (networkToken)
+      network.network_token_id = networkToken.id;
+  }
+
+  network.isRegistered = true;
+
+  await network.save();
+
+  await updateNumberOfNetworkHeader();
+
+  logger.warn(`${name} Registered ${createdNetworkAddress}`);
+  eventsProcessed[network.name!] = [network.networkAddress!];
 
   return eventsProcessed;
 }

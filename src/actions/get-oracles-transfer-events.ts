@@ -2,54 +2,44 @@ import db from "src/db";
 import logger from "src/utils/logger-handler";
 import {Network_v2} from "@taikai/dappkit";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {OraclesChangedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
-import {EventService} from "../services/event-service";
-import {BlockProcessor} from "../interfaces/block-processor";
+import {OraclesTransferEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {handleCurators} from "src/modules/handle-curators";
+import {DecodedLog} from "../interfaces/block-sniffer";
 
 export const name = "getOraclesTransferEvents";
 export const schedule = "*/30 * * * *";
 export const description = "Sync transfer oracles data and update council's count";
 export const author = "marcusviniciusLsantos";
 
-async function handleTransfers(addresses: string[], councilAmount: string, networkId: number, service) {
-  return Promise.all(
-    addresses.map((address) =>
-      service.Actor.getOraclesOf(address).then((votes) =>
-        handleCurators(address, votes, councilAmount, networkId)
-      )
-    )
-  );
-}
-
-export async function action(query?: EventsQuery): Promise<EventsProcessed> {
+export async function action(block: DecodedLog<OraclesTransferEvent['returnValues']>, query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
-  const service = new EventService(name, query);
+  const {returnValues: {from: fromAddress, to: toAddress, amount}, connection, address, chainId} = block;
 
-  let councilAmount: string
+  const dbNetwork = await db.networks.findOne({
+    where: {
+      networkAddress: address,
+      chain_id: chainId
+    }
+  });
 
-  const processor: BlockProcessor<OraclesChangedEvent> = async (block, network) => {
-    const {from: fromAddress, to: toAddress, amount} = block.returnValues;
-
-    const dbNetwork = await db.networks.findOne({
-      where: {
-        networkAddress: network.networkAddress,
-        chain_id: network.chainId
-      }
-      });
-      
-    if (!dbNetwork)
-      return logger.warn(`${name} Could not find network ${network.networkAddress}`);
-
-    if (!councilAmount)
-      councilAmount = await (service.Actor as Network_v2).councilAmount();
-
-    const curators = await handleTransfers([fromAddress, toAddress], councilAmount, dbNetwork.id, service)
-
-    eventsProcessed[network.name] = curators.filter(e => e).length === 2 ? [fromAddress, toAddress] : []
+  if (!dbNetwork) {
+    logger.warn(`${name} Could not find network ${address}`);
+    return eventsProcessed
   }
 
-  await service._processEvents(processor);
+  const service = new Network_v2(connection, address);
+  await service.loadContract();
+
+  const councilAmount = await service.councilAmount();
+
+  const curators =
+    await Promise.all(
+      [fromAddress, toAddress].map((address) =>
+        service.getOraclesOf(address).then((votes) =>
+          handleCurators(address, votes, councilAmount, dbNetwork.id))));
+
+  eventsProcessed[dbNetwork.name!] = curators.filter(e => e).length === 2 ? [fromAddress, toAddress] : []
+
 
   return eventsProcessed;
 }

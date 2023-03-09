@@ -1,7 +1,8 @@
-import { Router } from "express";
+import {Router} from "express";
 
-import { eventsRouter } from "./events.routes";
-import { seoRoutes } from "./seo.routes";
+import {eventsRouter} from "./events.routes";
+import {seoRoutes} from "./seo.routes";
+import readRouter from "./read.router";
 
 const router = Router();
 
@@ -9,8 +10,10 @@ router.use("/seo", seoRoutes);
 
 router.use("/past-events", eventsRouter);
 
+router.use(`/read/`, readRouter);
+
 router.use("/", async (req, res) => {
   return res.status(200).json("::");
 });
 
-export { router };
+export {router};
