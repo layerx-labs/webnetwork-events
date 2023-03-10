@@ -3,7 +3,7 @@ import loggerHandler from "../utils/logger-handler";
 import {Log} from "web3-core";
 import {clearInterval} from "timers";
 import db from "../db";
-import {EventsQuery} from "../interfaces/block-chain-service";
+import {EventsProcessed, EventsQuery} from "../interfaces/block-chain-service";
 import {AddressEventDecodedLog, MappedEventActions} from "../interfaces/block-sniffer";
 
 export class BlockSniffer {
@@ -12,6 +12,12 @@ export class BlockSniffer {
   #interval: NodeJS.Timer | null;
   #actingChainId: number;
   #fetchingLogs = false;
+
+  #lastValue: EventsProcessed[] | null = null;
+
+  get currentBlock() {
+    return this.#currentBlock;
+  }
 
   /**
    *
@@ -37,12 +43,26 @@ export class BlockSniffer {
     this.#connection = new Web3Connection({web3Host});
     this.#connection.start();
 
+    console.log(`from`, mappedEventActions);
+
     if (autoStart)
       this.start(true)
   }
 
-  get currentBlock() {
-    return this.#currentBlock;
+  onParsed() {
+    return new Promise(async (resolve) => {
+
+      const callback = () => {
+        if (this.#lastValue) {
+          resolve(this.#lastValue)
+          this.#lastValue = null;
+        } else poll();
+      }
+
+      const poll = () => setTimeout(() => callback(), 200);
+
+      poll();
+    });
   }
 
 
@@ -51,6 +71,8 @@ export class BlockSniffer {
    * decoded log entry
    */
   actOnMappedActions(decodedLogs: AddressEventDecodedLog) {
+    const result: Promise<EventsProcessed>[] = [];
+
     for (const [a, entry] of Object.entries(decodedLogs))
       for (const [e, logs] of this.mappedEventActions[a] ? Object.entries(entry) : [])
         for (const log of this.mappedEventActions[a].events[e] ? logs : [])
@@ -58,10 +80,15 @@ export class BlockSniffer {
             const logWithContext = {...log, connection: this.#connection, chainId: this.#actingChainId};
             loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) acting on ${a} ${e}`);
             loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId})`, log);
-            this.mappedEventActions[a].events[e](logWithContext, this.query);
+            result.push(this.mappedEventActions[a].events[e](logWithContext, this.query));
           } catch (e: any) {
             loggerHandler.error(`BlockSniffer (chain:${this.#actingChainId}) failed to act ${e} with payload`, log, e?.toString());
           }
+
+    Promise.all(result)
+      .then((p) => {
+        this.#lastValue = p;
+      })
   }
 
   /**
@@ -86,7 +113,8 @@ export class BlockSniffer {
     this.clearInterval();
 
     this.#actingChainId = await this.#connection.eth.getChainId();
-    await this.prepareCurrentBlock();
+    if (!this.#currentBlock)
+      await this.prepareCurrentBlock();
 
     if (immediately)
       callback();
@@ -128,7 +156,10 @@ export class BlockSniffer {
       Object.entries(this.mappedEventActions)
         .map(([a, {abi, events}], i) =>
           Object.keys(events)
-            .map((event) => abi.find(({name}) => event === name))
+            .map((event) => {
+              console.log(`Event`, event, abi)
+              return abi.find(({name}) => event === name)
+            })
             .filter(value => value)
             .map(item => ([_eth.abi.encodeEventSignature(item!), item!]))
             .map(([topic, item]) => {
@@ -159,7 +190,7 @@ export class BlockSniffer {
     loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) found ${logs.length} logs`);
 
     return logs.map(log => {
-        const event = mappedAbiEventsAddress[log.address][log.topics[0]];
+        const event = mappedAbiEventsAddress[log.address]?.[log.topics?.[0]];
         if (!event)
           return {[log.address]: {[log.topics[0]]: [log]}} as any;
         return ({
@@ -172,7 +203,7 @@ export class BlockSniffer {
       .reduce((p, c) => {
         const eventName = c.eventName;
         const address = c.address;
-        return ({...p, [address]: {...(p[address] || {}), [eventName]: [...(p[address][eventName] || []), c]}})
+        return ({...p, [address]: {...(p[address] || {}), [eventName]: [...(p?.[address]?.[eventName] || []), c]}})
       }, {});
   }
 
