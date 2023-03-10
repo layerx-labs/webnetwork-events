@@ -43,8 +43,6 @@ export class BlockSniffer {
     this.#connection = new Web3Connection({web3Host});
     this.#connection.start();
 
-    console.log(`from`, mappedEventActions);
-
     if (autoStart)
       this.start(true)
   }
@@ -156,10 +154,7 @@ export class BlockSniffer {
       Object.entries(this.mappedEventActions)
         .map(([a, {abi, events}], i) =>
           Object.keys(events)
-            .map((event) => {
-              console.log(`Event`, event, abi)
-              return abi.find(({name}) => event === name)
-            })
+            .map((event) => abi.find(({name}) => event === name))
             .filter(value => value)
             .map(item => ([_eth.abi.encodeEventSignature(item!), item!]))
             .map(([topic, item]) => {

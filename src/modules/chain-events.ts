@@ -1,6 +1,5 @@
 import {action as NetworkCreated, action as NetworkRegistered} from "../actions/get-network-registered-events";
 import {action as ChangeAllowedTokens} from "../actions/get-change-allowed-tokens-events";
-import {action as Transfer} from "../actions/get-transfer-bounty-token-events";
 import {action as BountyAmountUpdate} from "../actions/get-bounty-amount-updated-event";
 import {action as BountyCanceled} from "../actions/get-bounty-canceled-event";
 import {action as BountyClosed} from "../actions/get-bounty-closed-event";
@@ -28,7 +27,6 @@ import {action as SeoGenerateCards} from "../actions/seo-generate-cards";
 export const REGISTRY_EVENTS = {
   NetworkRegistered,
   ChangeAllowedTokens,
-  Transfer
 }
 
 export const NETWORK_EVENTS = {

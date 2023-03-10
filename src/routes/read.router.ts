@@ -15,7 +15,6 @@ router.use(eventQuery);
 router.get(`/:chainId/:address/:event`, async (req, res) => {
   const {chainId, address, event} = req.params;
   const {from, to} = req.eventQuery?.blockQuery!;
-  console.log(`req.query`, req.eventQuery)
 
   const chainIdExists = await db.chains.findOne({where: {chainId: {[Op.eq]: +chainId}}, raw: true});
   if (!chainIdExists)
@@ -47,19 +46,14 @@ router.get(`/:chainId/:address/:event`, async (req, res) => {
     events[event] = NETWORK_EVENTS[event];
   }
 
-  console.log(`abi`, event, abi,);
-
   if (!knownAddress)
     return res.status(400).json({message: `unknown network or registry ${address}`});
 
 
-  const sniffer = new BlockSniffer(chainIdExists.chainRpc, {[address]: {abi, events}}, from, to, req.eventQuery);
-  sniffer
+  (new BlockSniffer(chainIdExists.chainRpc, {[address]: {abi, events}}, from, to, req.eventQuery, 0))
     .onParsed()
     .then(data => {
-      console.log(`data`, data)
       res.status(200).json(data).end();
-      sniffer.stop();
     })
 })
 
