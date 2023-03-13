@@ -7,6 +7,7 @@ import {Op} from "sequelize";
 import {NETWORK_EVENTS, REGISTRY_EVENTS} from "../modules/chain-events";
 import {findOnABI} from "../utils/find-on-abi";
 import {BlockSniffer} from "../services/block-sniffer";
+import { ApiBlockSniffer } from "src/services/api-block-sniffer";
 
 const router = Router();
 
@@ -14,7 +15,7 @@ router.use(eventQuery);
 
 router.get(`/:chainId/:address/:event`, async (req, res) => {
   const {chainId, address, event} = req.params;
-  const {from, to} = req.eventQuery?.blockQuery!;
+  const {from, to} = req.eventQuery?.blockQuery || {};
 
   const chainIdExists = await db.chains.findOne({where: {chainId: {[Op.eq]: +chainId}}, raw: true});
   if (!chainIdExists)
@@ -50,7 +51,7 @@ router.get(`/:chainId/:address/:event`, async (req, res) => {
     return res.status(400).json({message: `unknown network or registry ${address}`});
 
 
-  (new BlockSniffer(chainIdExists.chainRpc, {[address]: {abi, events}}, from, to, req.eventQuery, 0))
+  (new ApiBlockSniffer(chainIdExists.chainRpc, {[address]: {abi, events}}, from, to))
     .onParsed()
     .then(data => {
       res.status(200).json(data).end();

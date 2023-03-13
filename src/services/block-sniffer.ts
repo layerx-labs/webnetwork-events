@@ -19,6 +19,14 @@ export class BlockSniffer {
     return this.#currentBlock;
   }
 
+  get actingChainId() {
+    return this.#actingChainId;
+  }
+
+  protected set currentBlock(block: number) {
+    this.#currentBlock = block;
+  }
+
   /**
    *
    * @param web3Host {string} the URL of the web3 host to connect to
@@ -212,10 +220,10 @@ export class BlockSniffer {
     loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) cleared interval`);
   }
 
-  private async saveCurrentBlock(currentBlock = 0) {
+  protected async saveCurrentBlock(currentBlock = 0) {
     db.chain_events.findOrCreate({
-        where: {name: this.web3Host},
-        defaults: {name: 'global', lastBlock: currentBlock, chain_id: this.#actingChainId}
+        where: { name: "global", chain_id: this.#actingChainId },
+        defaults: { name: "global", lastBlock: currentBlock, chain_id: this.#actingChainId }
       })
       .then(([event, created]) => {
         if (!created) {
@@ -227,11 +235,10 @@ export class BlockSniffer {
       })
   }
 
-  private async prepareCurrentBlock() {
+  protected async prepareCurrentBlock() {
     this.#currentBlock =
       (await db.chain_events.findOne({where: {chain_id: this.#actingChainId}, raw: true}))?.lastBlock ||
       +(process.env?.BULK_CHAIN_START_BLOCK || 0);
     loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) currentBlock prepared as ${this.#currentBlock}`);
   }
-
 }
