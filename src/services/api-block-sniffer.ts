@@ -12,14 +12,4 @@ export class ApiBlockSniffer extends BlockSniffer {
   }
 
   protected async saveCurrentBlock(currentBlock = 0) {}
-
-  protected async prepareCurrentBlock() {
-    this.currentBlock = Math.max(
-      (await db.chain_events.findOne({where: {chain_id: this.actingChainId}, raw: true}))?.lastBlock || 0,
-      +(process.env?.BULK_CHAIN_START_BLOCK || 0),
-      this.startBlock
-    );
-
-    loggerHandler.debug(`ApiBlockSniffer (chain:${this.actingChainId}) currentBlock prepared as ${this.currentBlock}`);
-  }
 }

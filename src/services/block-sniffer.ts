@@ -40,7 +40,7 @@ export class BlockSniffer {
    */
   constructor(readonly web3Host: string,
               readonly mappedEventActions: MappedEventActions,
-              startBlock: number = 0,
+              readonly startBlock: number = 0,
               readonly targetBlock = 0,
               readonly query: EventsQuery | null = null,
               readonly interval: number = 60 * 1000, // 60s
@@ -236,9 +236,12 @@ export class BlockSniffer {
   }
 
   protected async prepareCurrentBlock() {
-    this.#currentBlock =
-      (await db.chain_events.findOne({where: {chain_id: this.#actingChainId}, raw: true}))?.lastBlock ||
-      +(process.env?.BULK_CHAIN_START_BLOCK || 0);
+    this.#currentBlock = Math.max(
+      (await db.chain_events.findOne({where: {chain_id: this.actingChainId}, raw: true}))?.lastBlock || 0,
+      +(process.env?.BULK_CHAIN_START_BLOCK || 0),
+      this.startBlock
+    );
+
     loggerHandler.debug(`BlockSniffer (chain:${this.#actingChainId}) currentBlock prepared as ${this.#currentBlock}`);
   }
 }
