@@ -12,8 +12,8 @@ export interface tokensAttributes {
   address: string;
   isTransactional: boolean;
   isAllowed?: boolean;
-  chain_id?: number;
   isReward: boolean;
+  chain_id?: number;
 }
 
 export type tokensPk = "id";
@@ -28,8 +28,8 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   address!: string;
   isTransactional!: boolean;
   isAllowed?: boolean;
-  chain_id?: number;
   isReward!: boolean;
+  chain_id?: number;
 
   // tokens belongsTo chains via chain_id
   chain!: chains;
@@ -114,6 +114,11 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
       type: DataTypes.BOOLEAN,
       allowNull: true
     },
+    isReward: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
     chain_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -121,11 +126,6 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
         model: 'chains',
         key: 'chainId'
       }
-    },
-    isReward: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
     }
   }, {
     tableName: 'tokens',

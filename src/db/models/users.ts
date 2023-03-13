@@ -1,5 +1,6 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { kyc_sessions, kyc_sessionsId } from './kyc_sessions';
 
 export interface usersAttributes {
   id: number;
@@ -25,6 +26,18 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   githubLogin?: string;
   resetedAt?: Date;
 
+  // users hasMany kyc_sessions via user_id
+  kyc_sessions!: kyc_sessions[];
+  getKyc_sessions!: Sequelize.HasManyGetAssociationsMixin<kyc_sessions>;
+  setKyc_sessions!: Sequelize.HasManySetAssociationsMixin<kyc_sessions, kyc_sessionsId>;
+  addKyc_session!: Sequelize.HasManyAddAssociationMixin<kyc_sessions, kyc_sessionsId>;
+  addKyc_sessions!: Sequelize.HasManyAddAssociationsMixin<kyc_sessions, kyc_sessionsId>;
+  createKyc_session!: Sequelize.HasManyCreateAssociationMixin<kyc_sessions>;
+  removeKyc_session!: Sequelize.HasManyRemoveAssociationMixin<kyc_sessions, kyc_sessionsId>;
+  removeKyc_sessions!: Sequelize.HasManyRemoveAssociationsMixin<kyc_sessions, kyc_sessionsId>;
+  hasKyc_session!: Sequelize.HasManyHasAssociationMixin<kyc_sessions, kyc_sessionsId>;
+  hasKyc_sessions!: Sequelize.HasManyHasAssociationsMixin<kyc_sessions, kyc_sessionsId>;
+  countKyc_sessions!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof users {
     return sequelize.define('users', {

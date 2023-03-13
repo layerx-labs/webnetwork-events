@@ -34,15 +34,17 @@ export interface issuesAttributes {
   fundingAmount?: string;
   fundedAmount?: string;
   fundedAt?: Date;
-  chain_id?: number;
+  isKyc?: boolean;
+  kycTierList?: number[];
   tags?: string[];
+  chain_id?: number;
   rewardAmount?: string;
   rewardTokenId?: number;
 }
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId";
+export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "tags" | "chain_id" | "rewardAmount" | "rewardTokenId";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
@@ -68,8 +70,10 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   fundingAmount?: string;
   fundedAmount?: string;
   fundedAt?: Date;
-  chain_id?: number;
+  isKyc?: boolean;
+  kycTierList?: number[];
   tags?: string[];
+  chain_id?: number;
   rewardAmount?: string;
   rewardTokenId?: number;
 
@@ -270,6 +274,18 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       type: DataTypes.DATE,
       allowNull: true
     },
+    isKyc: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    kycTierList: {
+      type: DataTypes.ARRAY(DataTypes.INTEGER),
+      allowNull: true
+    },
+    tags: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true
+    },
     chain_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -277,10 +293,6 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
         model: 'chains',
         key: 'chainId'
       }
-    },
-    tags: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: true
     },
     rewardAmount: {
       type: DataTypes.STRING(255),

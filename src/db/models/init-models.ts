@@ -17,6 +17,8 @@ import { header_information as _header_information } from "./header_information"
 import type { header_informationAttributes, header_informationCreationAttributes } from "./header_information";
 import { issues as _issues } from "./issues";
 import type { issuesAttributes, issuesCreationAttributes } from "./issues";
+import { kyc_sessions as _kyc_sessions } from "./kyc_sessions";
+import type { kyc_sessionsAttributes, kyc_sessionsCreationAttributes } from "./kyc_sessions";
 import { leaderboard as _leaderboard } from "./leaderboard";
 import type { leaderboardAttributes, leaderboardCreationAttributes } from "./leaderboard";
 import { merge_proposals as _merge_proposals } from "./merge_proposals";
@@ -50,6 +52,7 @@ export {
   _disputes as disputes,
   _header_information as header_information,
   _issues as issues,
+  _kyc_sessions as kyc_sessions,
   _leaderboard as leaderboard,
   _merge_proposals as merge_proposals,
   _network_tokens as network_tokens,
@@ -82,6 +85,8 @@ export type {
   header_informationCreationAttributes,
   issuesAttributes,
   issuesCreationAttributes,
+  kyc_sessionsAttributes,
+  kyc_sessionsCreationAttributes,
   leaderboardAttributes,
   leaderboardCreationAttributes,
   merge_proposalsAttributes,
@@ -116,6 +121,7 @@ export function initModels(sequelize: Sequelize) {
   const disputes = _disputes.initModel(sequelize);
   const header_information = _header_information.initModel(sequelize);
   const issues = _issues.initModel(sequelize);
+  const kyc_sessions = _kyc_sessions.initModel(sequelize);
   const leaderboard = _leaderboard.initModel(sequelize);
   const merge_proposals = _merge_proposals.initModel(sequelize);
   const network_tokens = _network_tokens.initModel(sequelize);
@@ -174,6 +180,8 @@ export function initModels(sequelize: Sequelize) {
   tokens.hasMany(network_tokens, { as: "network_tokens", foreignKey: "tokenId"});
   networks.belongsTo(tokens, { as: "network_token_token", foreignKey: "network_token_id"});
   tokens.hasMany(networks, { as: "networks", foreignKey: "network_token_id"});
+  kyc_sessions.belongsTo(users, { as: "user", foreignKey: "user_id"});
+  users.hasMany(kyc_sessions, { as: "kyc_sessions", foreignKey: "user_id"});
 
   return {
     SequelizeMeta: SequelizeMeta,
@@ -185,6 +193,7 @@ export function initModels(sequelize: Sequelize) {
     disputes: disputes,
     header_information: header_information,
     issues: issues,
+    kyc_sessions: kyc_sessions,
     leaderboard: leaderboard,
     merge_proposals: merge_proposals,
     network_tokens: network_tokens,
