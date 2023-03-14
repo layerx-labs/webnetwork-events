@@ -33,13 +33,13 @@ router.get(`/:chainId/:address/:event`, async (req, res) => {
   const events = {};
 
   if (_registryKeys.includes(event)) {
-    knownAddress = chainIdExists?.registryAddress === address; // only one registry per chain, no need to query db again
+    knownAddress = chainIdExists?.registryAddress?.toLowerCase() === address?.toLowerCase(); // only one registry per chain, no need to query db again
     abi.push(findOnABI(NetworkRegistry.abi, event));
     events[event] = REGISTRY_EVENTS[event];
   } else if (_networkKeys.includes(event) || _standaloneKeys.includes(event)) {
     knownAddress = await db.networks.findOne({
       where: {
-        networkAddress: {[Op.eq]: address},
+        networkAddress: {[Op.iLike]: address},
         chain_id: {[Op.eq]: +chainId}
       }, raw: true
     });
