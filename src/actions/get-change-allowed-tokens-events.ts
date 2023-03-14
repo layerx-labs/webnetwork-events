@@ -18,7 +18,6 @@ export async function action(block: DecodedLog<ChangeAllowedTokensEvent['returnV
 
   const {returnValues: {tokens, operation, kind}, connection, address, chainId} = block;
 
-
   const registry = new NetworkRegistry(connection, address);
   await registry.loadContract();
 

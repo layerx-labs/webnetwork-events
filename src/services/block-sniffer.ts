@@ -193,9 +193,10 @@ export class BlockSniffer {
     loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) found ${logs.length} logs`);
 
     return logs.map(log => {
-        const event = mappedAbiEventsAddress[log.address]?.[log.topics?.[0]];
+        const logAddress = log.address?.toLowerCase();
+        const event = mappedAbiEventsAddress[logAddress]?.[log.topics?.[0]];
         if (!event)
-          return {[log.address]: {[log.topics[0]]: [log]}} as any;
+          return {[logAddress]: {[log.topics[0]]: [log]}} as any;
         return ({
           ...log,
           eventName: event.name as string,
@@ -205,7 +206,7 @@ export class BlockSniffer {
       .filter(log => log.eventName)
       .reduce((p, c) => {
         const eventName = c.eventName;
-        const address = c.address;
+        const address = c.address?.toLowerCase();
         return ({...p, [address]: {...(p[address] || {}), [eventName]: [...(p?.[address]?.[eventName] || []), c]}})
       }, {});
   }
