@@ -10,7 +10,7 @@ import {NEW_BOUNTY_OPEN} from "../integrations/telegram/messages";
 import {isZeroAddress} from "ethereumjs-util";
 import {isAddress} from "web3-utils";
 import {DecodedLog} from "../interfaces/block-sniffer";
-import {getBountyFromChain, getNetwork} from "../utils/block-process";
+import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {BountyCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 
 export const name = "getBountyCreatedEvents";
@@ -58,11 +58,11 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
   const dbBounty = await db.issues.findOne({where: {issueId, network_id: network.id}, include: [{ association: "network" }]});
   if (!dbBounty) {
     logger.warn(DB_BOUNTY_NOT_FOUND(name, issueId, network.id));
-    return eventsProcessed
+    return eventsProcessed;
   }
 
   if (dbBounty.state !== "pending") {
-    logger.warn(`${name} Bounty ${issueId} was already parsed.`)
+    logger.warn(`${name} Bounty ${issueId} was already parsed.`);
     return eventsProcessed;
   }
 
@@ -94,7 +94,7 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
 
   eventsProcessed[network.name!] = {
     ...eventsProcessed[network.name!],
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}
+    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
   return eventsProcessed;

@@ -6,6 +6,7 @@ import db from "../db";
 import {nativeZeroAddress} from "@taikai/dappkit/dist/src/utils/constants";
 import {chainsAttributes} from "../db/models/chains";
 import {Op} from "sequelize";
+import { DecodedLog } from "src/interfaces/block-sniffer";
 
 const {EVENTS_CHAIN_ID} = process.env;
 
@@ -53,4 +54,13 @@ export async function getChainsRegistryAndNetworks() {
             ...info,
             networks
           }] as ([string, { registryAddress: string, chainId: number, networks: string[] }]))))
+}
+
+export function parseLogWithContext(log: DecodedLog) {
+  return {
+    ...log,
+    connection: {
+      options: log.connection.options
+    }
+  };
 }
