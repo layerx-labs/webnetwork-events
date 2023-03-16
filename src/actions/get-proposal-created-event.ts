@@ -6,7 +6,7 @@ import {validateProposal} from "../modules/proposal-validate-state";
 import BigNumber from "bignumber.js";
 import {updateLeaderboardProposals} from "src/modules/leaderboard";
 import {DecodedLog} from "../interfaces/block-sniffer";
-import {getBountyFromChain, getNetwork} from "../utils/block-process";
+import {getBountyFromChain, getNetwork,parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED, PROPOSAL_CREATED} from "../integrations/telegram/messages";
 
@@ -86,7 +86,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
   await updateLeaderboardProposals();
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}
+    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
 

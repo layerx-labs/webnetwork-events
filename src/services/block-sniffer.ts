@@ -71,7 +71,6 @@ export class BlockSniffer {
     });
   }
 
-
   /**
    * Loop decoded logs and search for a matching address and event, if found: try-catch the callback with the
    * decoded log entry

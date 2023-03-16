@@ -5,7 +5,7 @@ import {BountyFunded} from "@taikai/dappkit/dist/src/interfaces/events/network-v
 import {DB_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import BigNumber from "bignumber.js";
 import {handleBenefactors} from "src/modules/handle-benefactors";
-import {getBountyFromChain, getNetwork} from "../utils/block-process";
+import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_FUNDED} from "../integrations/telegram/messages";
@@ -51,7 +51,7 @@ export async function action(block: DecodedLog<BountyFunded['returnValues']>, qu
   sendMessageToTelegramChannels(BOUNTY_FUNDED(`${dbBounty.amount}${dbBounty.transactionalToken.symbol}`, `${bounty.fundingAmount}${dbBounty.transactionalToken.symbol}`, dbBounty))
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}
+    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
   return eventsProcessed;

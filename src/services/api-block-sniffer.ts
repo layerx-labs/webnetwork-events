@@ -1,7 +1,5 @@
-import db from "src/db";
 import { MappedEventActions } from "src/interfaces/block-sniffer";
 import { BlockSniffer } from "src/services/block-sniffer";
-import loggerHandler from "src/utils/logger-handler";
 
 export class ApiBlockSniffer extends BlockSniffer {
   constructor(readonly web3Host: string,

@@ -4,7 +4,7 @@ import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service"
 import {BountyPullRequestReadyForReviewEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND} from "../utils/messages.const";
 import {DecodedLog} from "../interfaces/block-sniffer";
-import {getBountyFromChain, getNetwork} from "../utils/block-process";
+import {getBountyFromChain, getNetwork,parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 
@@ -62,7 +62,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
   }
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}
+    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
 

@@ -40,7 +40,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   sendMessageToTelegramChannels(BOUNTY_AMOUNT_UPDATED(dbBounty.amount, dbBounty));
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: {...block, connection: undefined}}
+    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
 

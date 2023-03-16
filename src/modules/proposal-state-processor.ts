@@ -5,7 +5,7 @@ import validateProposalState, {validateProposal} from "./proposal-validate-state
 import {name} from "../actions/get-bounty-funded-updated-event";
 import db from "src/db";
 import BigNumber from "bignumber.js";
-import {getBountyFromChain, getNetwork} from "../utils/block-process";
+import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {PROPOSAL_DISPUTED, PROPOSAL_DISPUTED_COMPLETE} from "../integrations/telegram/messages";
@@ -62,7 +62,7 @@ export async function proposalStateProcessor(block: DecodedLog<BountyProposalDis
 
   eventsProcessed[network.name!] = {
     ...eventsProcessed[network.name!],
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}
+    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
   return eventsProcessed;
