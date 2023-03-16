@@ -54,9 +54,9 @@ router.get(`/:chainId/:address/:event`, async (req, res) => {
     return res.status(400).json({message: `unknown network or registry ${address}`});
 
   if (_standaloneKeys.includes(event))
-    (MIDNIGHT_ACTIONS[event] || MINUTE_ACTIONS[event])()
+    (MIDNIGHT_ACTIONS[event] || MINUTE_ACTIONS[event])({ chainId, address })
       .then(data => {
-        res.status(200).json(data).end();
+        res.status(200).json([data]).end();
       });
   else
     (new ApiBlockSniffer(chainIdExists.chainRpc, {[address]: {abi, events}}, from, to))

@@ -18,6 +18,8 @@ export interface EventsPerNetwork<T = any> {
 
 export interface EventsQuery {
   networkName: string;
+  address: string;
+  chainId: string;
   blockQuery: BlockQuery;
   bountyQuery: BountyQuery;
 }
