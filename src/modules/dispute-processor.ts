@@ -12,10 +12,11 @@ import {getNetwork} from "../utils/block-process";
 export async function disputeProcessor(block: DecodedLog<BountyProposalDisputedEvent['returnValues']>, isProposalRequired = true) {
   const {returnValues: {bountyId, prId, proposalId}, connection, address, chainId} = block;
 
-
   logger.debug(`disputeProcessor(${[bountyId, prId, proposalId].join(', ')})`);
 
   const Actor = new Network_v2(connection, address);
+
+  await Actor.loadContract();
 
   const {from: actorAddress} = await connection.eth.getTransaction(block.transactionHash);
 
