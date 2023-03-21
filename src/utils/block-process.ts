@@ -59,8 +59,6 @@ export async function getChainsRegistryAndNetworks() {
 export function parseLogWithContext(log: DecodedLog) {
   return {
     ...log,
-    connection: {
-      options: log.connection.options
-    }
+    connection: undefined
   };
 }
