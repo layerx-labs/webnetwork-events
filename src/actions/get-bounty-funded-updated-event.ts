@@ -29,7 +29,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
     const dbBounty = await db.issues.findOne({
       where: {contractId: id, issueId: bounty.cid, network_id: network?.id,},
-      include: [{ association: "benefactors" }]
+      include: [{ association: "benefactors" }, {association: "network"}]
     })
     
     if (!dbBounty)

@@ -101,6 +101,7 @@ export async function action(
         {association: "repository",},
         {association: "merge_proposals",},
         {association: "pull_requests",},
+        {association: "network"},
       ],
     });
 

@@ -54,6 +54,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         include: [
           { association: "repository", },
           { association: "pull_requests", },
+          {association: "network"}
         ],
       });
 

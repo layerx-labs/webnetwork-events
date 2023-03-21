@@ -26,7 +26,9 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       return logger.warn(NETWORK_BOUNTY_NOT_FOUND(name, bountyId, network.networkAddress));
 
     const dbBounty = await db.issues.findOne({
-      where:{ issueId: bounty.cid, contractId: bountyId, network_id: network.id}})
+      where:{ issueId: bounty.cid, contractId: bountyId, network_id: network.id},
+      include: [{association: "network"}]
+    })
     if (!dbBounty)
       return logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
 
