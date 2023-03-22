@@ -41,7 +41,9 @@ export async function proposalStateProcessor(block: DecodedLog<BountyProposalDis
 
   const Actor = new Network_v2(connection, address);
   const oldWeight = dbProposal.disputeWeight || 0;
-  dbProposal.isDisputed = await Actor.isProposalDisputed(bountyId, proposal.id)
+  const isDisputed = await Actor.isProposalDisputed(bountyId, proposal.id);
+  
+  dbProposal.isDisputed = isDisputed;
   dbProposal.disputeWeight = new BigNumber(proposal.disputeWeight).toFixed()
   dbProposal.refusedByBountyOwner = proposal.refusedByBountyOwner
 

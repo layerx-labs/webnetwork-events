@@ -90,7 +90,7 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
   await updateLeaderboardBounties();
   await updateBountiesHeader();
   
-  sendMessageToTelegramChannels(NEW_BOUNTY_OPEN(_dbBounty!));
+  sendMessageToTelegramChannels(NEW_BOUNTY_OPEN(dbBounty!));
 
   eventsProcessed[network.name!] = {
     ...eventsProcessed[network.name!],

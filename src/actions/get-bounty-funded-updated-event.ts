@@ -48,7 +48,7 @@ export async function action(block: DecodedLog<BountyFunded['returnValues']>, qu
 
   await dbBounty.save();
   
-  sendMessageToTelegramChannels(BOUNTY_FUNDED(`${amount}${dbBounty.token.symbol}`, `${bounty.fundingAmount}${dbBounty.token.symbol}`, dbBounty))
+  sendMessageToTelegramChannels(BOUNTY_FUNDED(`${dbBounty.amount}${dbBounty.transactionalToken.symbol}`, `${bounty.fundingAmount}${dbBounty.transactionalToken.symbol}`, dbBounty))
 
   eventsProcessed[network.name!] = {
     [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: block}
