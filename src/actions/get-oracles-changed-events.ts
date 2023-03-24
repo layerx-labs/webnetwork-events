@@ -51,9 +51,9 @@ export async function action(block: DecodedLog<OraclesChangedEvent['returnValues
   const actorsNewTotal = BigNumber(fromSmartContractDecimals(newLockedTotal, decimals));
   const networkCouncilMembers = network.councilMembers || [];
   const actorExistsInDb = networkCouncilMembers.some(address => actor === address);
-  const actorTotalVotes = await service.getOraclesOf(actor)
+  const actorVotesResume = await service.getOraclesResume(actor)
 
-  await handleCurators(actor, actorTotalVotes, councilAmount, dbNetwork.id);
+  await handleCurators(actor, actorVotesResume, councilAmount, dbNetwork.id);
 
   await handleIsDisputed(name, service, dbNetwork.id)
 
