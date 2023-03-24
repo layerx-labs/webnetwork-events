@@ -12,11 +12,12 @@ export interface curatorsAttributes {
   isCurrentlyCurator: boolean;
   createdAt: Date;
   updatedAt: Date;
+  delegatedToMe?: string;
 }
 
 export type curatorsPk = "id";
 export type curatorsId = curators[curatorsPk];
-export type curatorsOptionalAttributes = "id" | "acceptedProposals" | "disputedProposals" | "tokensLocked" | "createdAt" | "updatedAt";
+export type curatorsOptionalAttributes = "id" | "acceptedProposals" | "disputedProposals" | "tokensLocked" | "createdAt" | "updatedAt" | "delegatedToMe";
 export type curatorsCreationAttributes = Optional<curatorsAttributes, curatorsOptionalAttributes>;
 
 export class curators extends Model<curatorsAttributes, curatorsCreationAttributes> implements curatorsAttributes {
@@ -29,6 +30,7 @@ export class curators extends Model<curatorsAttributes, curatorsCreationAttribut
   isCurrentlyCurator!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
+  delegatedToMe?: string;
 
   // curators belongsTo networks via networkId
   network!: networks;
@@ -72,6 +74,11 @@ export class curators extends Model<curatorsAttributes, curatorsCreationAttribut
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
+    },
+    delegatedToMe: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      defaultValue: "0"
     }
   }, {
     tableName: 'curators',
