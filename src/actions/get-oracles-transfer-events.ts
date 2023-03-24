@@ -35,8 +35,8 @@ export async function action(block: DecodedLog<OraclesTransferEvent['returnValue
   const curators =
     await Promise.all(
       [fromAddress, toAddress].map((address) =>
-        service.getOraclesOf(address).then((votes) =>
-          handleCurators(address, votes, councilAmount, dbNetwork.id))));
+        service.getOraclesResume(address)
+        .then(resume => handleCurators(address, resume, councilAmount, dbNetwork.id))));
 
   eventsProcessed[dbNetwork.name!] = curators.filter(e => e).length === 2 ? [fromAddress, toAddress] : []
 

@@ -2,21 +2,25 @@ import BigNumber from "bignumber.js";
 import db from "src/db";
 import {curators} from "src/db/models/curators";
 import loggerHandler from "../utils/logger-handler";
+import { OraclesResume } from "@taikai/dappkit";
 
 export async function handleCurators(
   address: string,
-  totalVotes: string,
+  votesResume: OraclesResume,
   councilAmount: number | string,
   networkId: number
 ) {
-  const isCurator = BigNumber(totalVotes).gte(councilAmount);
+  const { locked, delegatedByOthers } = votesResume;
+
+  const isCurator = BigNumber(locked).gte(councilAmount);
   const curatorInDb = await db.curators.findOne({where: {address, networkId}});
 
-  loggerHandler.debug(`handleCurators(${address}, ${totalVotes}, ${councilAmount}, ${networkId})`)
+  loggerHandler.debug(`handleCurators(${address}, ${locked}, ${councilAmount}, ${networkId})`)
 
   if (curatorInDb) {
     curatorInDb.isCurrentlyCurator = isCurator;
-    curatorInDb.tokensLocked = totalVotes
+    curatorInDb.tokensLocked = locked.toString();
+    curatorInDb.delegatedToMe = delegatedByOthers.toString();
 
     await curatorInDb.save();
     return curatorInDb
@@ -25,7 +29,8 @@ export async function handleCurators(
       address,
       networkId,
       isCurrentlyCurator: isCurator,
-      tokensLocked: totalVotes
+      tokensLocked: locked.toString(),
+      delegatedToMe: delegatedByOthers.toString()
     });
   }
 
