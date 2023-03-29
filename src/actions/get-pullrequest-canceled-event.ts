@@ -37,7 +37,8 @@ export async function action(block: DecodedLog<BountyPullRequestCanceledEvent['r
     return eventsProcessed;
 
   const dbBounty = await db.issues.findOne({
-    where: {contractId: bounty.id, network_id: network.id}, include: [{association: "repository"}]
+    where: {contractId: bounty.id, network_id: network.id}, 
+    include: [{association: "repository"}, {association: "network"}]
   });
 
   if (!dbBounty) {

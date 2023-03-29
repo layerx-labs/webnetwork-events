@@ -28,7 +28,8 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
     return eventsProcessed;
 
   const dbBounty = await db.issues.findOne({
-    where: {issueId: bounty.cid, contractId: bountyId, network_id: network.id}
+    where: {issueId: bounty.cid, contractId: bountyId, network_id: network.id},
+    include: [{association: "network"}]
   })
   if (!dbBounty) {
     logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
