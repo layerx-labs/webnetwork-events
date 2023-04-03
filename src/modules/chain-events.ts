@@ -20,6 +20,7 @@ import {action as DeletePendingBounties} from "../actions/delete-pending-bountie
 import {action as UpdateNetworkParams} from "../actions/update-network-parameters";
 import {action as SeoGenerateCards} from "../actions/seo-generate-cards";
 import {action as BountyWithdrawReward} from "../actions/get-bounty-reward-withdraw";
+import {action as UpdateHeaders} from "../actions/get-prices-header-information";
 
 /**
  * These events rely on parsed-logs to function and can/will rely on Database information, as well as update it
@@ -37,7 +38,7 @@ export const REGISTRY_EVENTS = {
 export const NETWORK_EVENTS = {
   BountyCreated, BountyCanceled, BountyFunded, BountyClosed, BountyPullRequestCreated, BountyPullRequestReadyForReview,
   BountyPullRequestCanceled, BountyProposalCreated, BountyProposalDisputed, BountyProposalRefused, BountyAmountUpdated,
-  OraclesChanged, OraclesTransfer
+  OraclesChanged, OraclesTransfer,
 }
 
 /**
@@ -55,5 +56,6 @@ export const MIDNIGHT_ACTIONS = {
 
 export const MINUTE_ACTIONS = {
   BountyMovedToOpen,
-  BountyWithdrawReward
+  BountyWithdrawReward,
+  UpdateHeaders,
 }
