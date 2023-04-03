@@ -123,9 +123,11 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
 
 
   try {
-    const mergedPR = await mergeProposal(dbBounty, dbProposal.pullRequestId, dbProposal.issueId, network?.id);
-    if (mergedPR)
-      await closePullRequests(dbBounty, mergedPR.githubId, network?.id);
+    if (network.allowMerge) {
+      const mergedPR = await mergeProposal(dbBounty, dbProposal.pullRequestId, dbProposal.issueId, network?.id);
+      if (mergedPR)
+        await closePullRequests(dbBounty, mergedPR.githubId, network?.id);
+    }
 
   } catch (error) {
     logger.error(`${name} proposal ${proposalId} was not is not mergeable`, error?.toString());
