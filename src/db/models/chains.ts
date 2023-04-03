@@ -17,14 +17,14 @@ export interface chainsAttributes {
   eventsApi?: string;
   blockScanner?: string;
   isDefault?: boolean;
+  color?: string;
   createdAt: Date;
   updatedAt: Date;
-  color?: string;
 }
 
 export type chainsPk = "id";
 export type chainsId = chains[chainsPk];
-export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "createdAt" | "updatedAt" | "color";
+export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "color" | "createdAt" | "updatedAt";
 export type chainsCreationAttributes = Optional<chainsAttributes, chainsOptionalAttributes>;
 
 export class chains extends Model<chainsAttributes, chainsCreationAttributes> implements chainsAttributes {
@@ -40,9 +40,9 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
   eventsApi?: string;
   blockScanner?: string;
   isDefault?: boolean;
+  color?: string;
   createdAt!: Date;
   updatedAt!: Date;
-  color?: string;
 
   // chains hasMany issues via chain_id
   issues!: issues[];
