@@ -5,7 +5,7 @@ import {getCoinPrice} from "src/services/coingecko";
 import BigNumber from "bignumber.js";
 import {Op} from "sequelize";
 import { addMinutes } from "date-fns";
-import { updatePriceHeader } from "src/modules/handle-header-information";
+import { updateBountiesHeader, updateNumberOfNetworkHeader, updatePriceHeader } from "src/modules/handle-header-information";
 
 export const name = "getPricesHeaderInformation";
 export const schedule = "*/15 * * * *";
@@ -26,10 +26,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     if (currentHeader && addMinutes(new Date(currentHeader?.updatedAt), +(headerTtl || 0)) < new Date())
       return eventsProcessed;
 
-    const headerProcessed = await updatePriceHeader();
+    await updatePriceHeader();
+    await updateBountiesHeader();
+    await updateNumberOfNetworkHeader();
 
-    eventsProcessed['header-information'] = headerProcessed.processed;
-    logger.info(`${name} ${headerProcessed.message}`)
+    eventsProcessed['header-information'] = ["processed"];
+
+    logger.info(`${name} processed`)
   } catch (err: any) {
     logger.error(`${name} Error`, err);
   }
