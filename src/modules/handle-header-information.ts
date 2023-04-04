@@ -26,28 +26,25 @@ async function headerInformationData() {
 
 export async function updatePriceHeader() {
   try {
+    logger.debug(`updatePriceHeader`);
+
     const headerInformation = await headerInformationData();
 
-    const networks = await db.networks.findAndCountAll({
+    const networks = await db.networks.findAll({
       where: { 
         isClosed: false,
         isRegistered: true,
       },
       include: [
         { association: "network_token_token" },
-        { association: "curators" },
-        {
-          association: "issues",
-          where: {
-            state: {
-              [Op.ne]: "pending"
-            }
-          }
+        { 
+          association: "curators",
+          required: false
         }
       ]
     });
 
-    if (networks.count === 0) {
+    if (networks.length === 0) {
       return {
         processed: [],
         message: `updatePriceHeader no networks found`
@@ -55,41 +52,43 @@ export async function updatePriceHeader() {
     }
 
     const header = {
-      bounties: networks.rows.reduce((acc, { issues }) => acc + issues.length, 0),
-      networks: networks.count,
       tvl: BigNumber(0),
       lastPrice: {}
     };
 
-    const symbols = networks.rows.map(({ network_token_token: { symbol } }) => symbol);
+    const symbols = networks.map(({ network_token_token: { symbol } }) => symbol);
     const prices = addMinutes(new Date(headerInformation?.updatedAt!), +(headerTtl || 0)) < new Date() ? 
       await getCoinPrice(symbols.join(), currency || 'eur') : 
       headerInformation?.last_price_used;
 
-    header.tvl = networks.rows.reduce((acc, current) => {
+    header.tvl = networks.reduce((acc, current) => {
       const { network_token_token, curators } = current;
       const symbol = network_token_token.symbol.toLowerCase();
 
       const totalLocked = curators.reduce((acc, { tokensLocked }) => acc.plus(tokensLocked || 0), BigNumber(0));
+      
+      const price = prices.hasOwnProperty(symbol) ? prices[symbol][currency!] : 
+        headerInformation?.last_price_used?.hasOwnProperty(symbol) ? headerInformation.last_price_used[symbol][currency!] : 0;
 
-      return acc.plus(totalLocked.multipliedBy(prices[symbol][currency!] || 0));
+      return acc.plus(totalLocked.multipliedBy(price || 0));
       
     }, BigNumber(0));
 
     header.lastPrice = {
+      ...headerInformation?.last_price_used,
       ...prices,
       updatedAt: new Date()
     };
 
     headerInformation.TVL = header.tvl.toFixed();
-    headerInformation.number_of_network = header.networks;
-    headerInformation.bounties = header.bounties;
     headerInformation.last_price_used = header.lastPrice;
     
     await headerInformation.save();
 
+    logger.debug(`updatePriceHeader saved`);
+
     return {
-      processed: networks.rows.map(n => n.name!),
+      processed: networks.map(n => n.name!),
       message: `updated Header values`
     };
   } catch (err: any) {
