@@ -1,5 +1,6 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { delegations, delegationsId } from './delegations';
 import type { issues, issuesId } from './issues';
 import type { networks, networksId } from './networks';
 import type { tokens, tokensId } from './tokens';
@@ -44,6 +45,18 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
   updatedAt!: Date;
   color?: string;
 
+  // chains hasMany delegations via chainId
+  delegations!: delegations[];
+  getDelegations!: Sequelize.HasManyGetAssociationsMixin<delegations>;
+  setDelegations!: Sequelize.HasManySetAssociationsMixin<delegations, delegationsId>;
+  addDelegation!: Sequelize.HasManyAddAssociationMixin<delegations, delegationsId>;
+  addDelegations!: Sequelize.HasManyAddAssociationsMixin<delegations, delegationsId>;
+  createDelegation!: Sequelize.HasManyCreateAssociationMixin<delegations>;
+  removeDelegation!: Sequelize.HasManyRemoveAssociationMixin<delegations, delegationsId>;
+  removeDelegations!: Sequelize.HasManyRemoveAssociationsMixin<delegations, delegationsId>;
+  hasDelegation!: Sequelize.HasManyHasAssociationMixin<delegations, delegationsId>;
+  hasDelegations!: Sequelize.HasManyHasAssociationsMixin<delegations, delegationsId>;
+  countDelegations!: Sequelize.HasManyCountAssociationsMixin;
   // chains hasMany issues via chain_id
   issues!: issues[];
   getIssues!: Sequelize.HasManyGetAssociationsMixin<issues>;

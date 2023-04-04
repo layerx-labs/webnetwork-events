@@ -1,5 +1,6 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { delegations, delegationsId } from './delegations';
 import type { networks, networksId } from './networks';
 
 export interface curatorsAttributes {
@@ -32,6 +33,18 @@ export class curators extends Model<curatorsAttributes, curatorsCreationAttribut
   updatedAt!: Date;
   delegatedToMe?: string;
 
+  // curators hasMany delegations via curatorId
+  delegations!: delegations[];
+  getDelegations!: Sequelize.HasManyGetAssociationsMixin<delegations>;
+  setDelegations!: Sequelize.HasManySetAssociationsMixin<delegations, delegationsId>;
+  addDelegation!: Sequelize.HasManyAddAssociationMixin<delegations, delegationsId>;
+  addDelegations!: Sequelize.HasManyAddAssociationsMixin<delegations, delegationsId>;
+  createDelegation!: Sequelize.HasManyCreateAssociationMixin<delegations>;
+  removeDelegation!: Sequelize.HasManyRemoveAssociationMixin<delegations, delegationsId>;
+  removeDelegations!: Sequelize.HasManyRemoveAssociationsMixin<delegations, delegationsId>;
+  hasDelegation!: Sequelize.HasManyHasAssociationMixin<delegations, delegationsId>;
+  hasDelegations!: Sequelize.HasManyHasAssociationsMixin<delegations, delegationsId>;
+  countDelegations!: Sequelize.HasManyCountAssociationsMixin;
   // curators belongsTo networks via networkId
   network!: networks;
   getNetwork!: Sequelize.BelongsToGetAssociationMixin<networks>;
