@@ -1,13 +1,13 @@
-import { Network_v2, Web3Connection } from "@taikai/dappkit";
 import BigNumber from "bignumber.js";
+import { addMinutes } from "date-fns";
 import { Op } from "sequelize";
 import db from "src/db";
+import { getCoinPrice } from "src/services/coingecko";
 import logger from "src/utils/logger-handler";
 
 const {
-  NEXT_PUBLIC_WEB3_CONNECTION: web3Host,
   NEXT_PUBLIC_CURRENCY_MAIN: currency,
-  EVENTS_CHAIN_ID: chainId
+  HEADER_TTL_MINUTES: headerTtl,
 } = process.env;
 
 async function headerInformationData() {
@@ -21,75 +21,86 @@ async function headerInformationData() {
     },
   });
 
-  if (!headerInformation) {
-    logger.error("Update Price Header failed - Header information not found");
-    return;
-  }
-
   return headerInformation;
 }
 
 export async function updatePriceHeader() {
   try {
+    logger.debug(`updatePriceHeader`);
+
     const headerInformation = await headerInformationData();
 
-    if (headerInformation) {
-      const web3Connection = new Web3Connection({ web3Host });
-      await web3Connection.start();
+    const networks = await db.networks.findAll({
+      where: { 
+        isClosed: false,
+        isRegistered: true,
+      },
+      include: [
+        { association: "network_token_token" },
+        { 
+          association: "curators",
+          required: false
+        }
+      ]
+    });
 
-      const networks = await db.networks.findAll({
-        where: { 
-          isClosed: false,
-          chain_id: chainId
-        },
-      });
-
-      const tokens: {
-        TVL: BigNumber;
-        symbol: string;
-      }[] = [];
-
-      for (const { networkAddress, id: network_id } of networks) {
-        const _network = new Network_v2(web3Connection, networkAddress);
-        await _network.loadContract();
-
-        const symbol = await _network.networkToken.symbol();
-
-        const tokenslocked = await db.curators
-          .findAll({ where: { networkId: network_id } })
-          .then((data) =>
-            data.map((curator) => BigNumber(curator.tokensLocked || 0))
-          );
-
-        const totalTokensLocked = tokenslocked.reduce(
-          (acc, value) => value.plus(acc),
-          BigNumber(0)
-        );
-
-        tokens.push({ TVL: totalTokensLocked, symbol });
-      }
-
-      const totalFiat = tokens
-        .map(({ TVL, symbol }) =>
-          TVL.multipliedBy(
-            headerInformation.last_price_used?.[symbol.toLowerCase()]?.[
-              currency || "eur"
-            ]
-          )
-        )
-        .reduce((acc, value) => value.plus(acc), BigNumber(0))
-        .toFixed();
-
-      headerInformation.TVL = totalFiat;
-      await headerInformation.save();
-
-      logger.info(`HeaderInformation: Updated TVL(Price)`);
+    if (networks.length === 0) {
+      return {
+        processed: [],
+        message: `updatePriceHeader no networks found`
+      };
     }
+
+    const header = {
+      tvl: BigNumber(0),
+      lastPrice: {}
+    };
+
+    const symbols = networks.map(({ network_token_token: { symbol } }) => symbol);
+    const prices = addMinutes(new Date(headerInformation?.updatedAt!), +(headerTtl || 0)) < new Date() ? 
+      await getCoinPrice(symbols.join(), currency || 'eur') : 
+      headerInformation?.last_price_used;
+
+    header.tvl = networks.reduce((acc, current) => {
+      const { network_token_token, curators } = current;
+      const symbol = network_token_token.symbol.toLowerCase();
+
+      const totalLocked = curators.reduce((acc, { tokensLocked }) => acc.plus(tokensLocked || 0), BigNumber(0));
+      
+      const price = prices.hasOwnProperty(symbol) ? prices[symbol][currency!] : 
+        headerInformation?.last_price_used?.hasOwnProperty(symbol) ? headerInformation.last_price_used[symbol][currency!] : 0;
+
+      return acc.plus(totalLocked.multipliedBy(price || 0));
+      
+    }, BigNumber(0));
+
+    header.lastPrice = {
+      ...headerInformation?.last_price_used,
+      ...prices,
+      updatedAt: new Date()
+    };
+
+    headerInformation.TVL = header.tvl.toFixed();
+    headerInformation.last_price_used = header.lastPrice;
+    
+    await headerInformation.save();
+
+    logger.debug(`updatePriceHeader saved`);
+
+    return {
+      processed: networks.map(n => n.name!),
+      message: `updated Header values`
+    };
   } catch (err: any) {
     logger.error(
       `HeaderInformation: Update Price Header Error`,
       err?.message || err.toString()
     );
+
+    return {
+      processed: [],
+      message: err?.message || err.toString()
+    };
   }
 }
 
