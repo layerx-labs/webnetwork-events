@@ -112,6 +112,7 @@ export async function updateBountiesHeader() {
       const numberIssues = await db.issues.count({
         where: {
           state: { [Op.not]: "pending" },
+          visible: true,
         },
       });
 
