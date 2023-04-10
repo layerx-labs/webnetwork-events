@@ -40,6 +40,7 @@ export interface issuesAttributes {
   tags?: string[];
   rewardAmount?: string;
   rewardTokenId?: number;
+  visible?: boolean;
 }
 
 export type issuesPk = "id";
@@ -76,6 +77,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   tags?: string[];
   rewardAmount?: string;
   rewardTokenId?: number;
+  visible?: boolean;
 
   // issues belongsTo chains via chain_id
   chain!: chains;
@@ -306,7 +308,12 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
         model: 'tokens',
         key: 'id'
       }
-    }
+    },
+    visible: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: true
+    },
   }, {
     tableName: 'issues',
     schema: 'public',
