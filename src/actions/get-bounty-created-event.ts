@@ -75,6 +75,7 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
   dbBounty.branch = bounty.branch;
   dbBounty.title = bounty.title;
   dbBounty.contractId = +id;
+  dbBounty.contractCreationDate = bounty.creationDate.toString();
 
   await validateToken(connection, bounty.transactional, true, chainId)
     .then(id => dbBounty.transactionalTokenId = id)
