@@ -41,6 +41,7 @@ export interface issuesAttributes {
   rewardAmount?: string;
   rewardTokenId?: number;
   visible?: boolean;
+  contractCreationDate?: string;
 }
 
 export type issuesPk = "id";
@@ -78,6 +79,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   rewardAmount?: string;
   rewardTokenId?: number;
   visible?: boolean;
+  contractCreationDate?: string;
 
   // issues belongsTo chains via chain_id
   chain!: chains;
@@ -313,6 +315,10 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: true
+    },
+    contractCreationDate: {
+      type: DataTypes.STRING(255),
+      allowNull: true
     },
   }, {
     tableName: 'issues',
