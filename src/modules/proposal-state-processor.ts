@@ -40,6 +40,9 @@ export async function proposalStateProcessor(block: DecodedLog<BountyProposalDis
   if (!dbProposal) return logger.warn(`${name} Proposal ${proposal.id} not found on database`);
 
   const Actor = new Network_v2(connection, address);
+
+  await Actor.loadContract();
+
   const oldWeight = dbProposal.disputeWeight || 0;
   const isDisputed = await Actor.isProposalDisputed(bountyId, proposal.id);
   
