@@ -6,7 +6,7 @@ import eventQuery from "../middlewares/event-query";
 import {Op} from "sequelize";
 import {MIDNIGHT_ACTIONS, MINUTE_ACTIONS, NETWORK_EVENTS, REGISTRY_EVENTS} from "../modules/chain-events";
 import {findOnABI} from "../utils/find-on-abi";
-import { ApiBlockSniffer } from "src/services/api-block-sniffer";
+import {ApiBlockSniffer} from "src/services/api-block-sniffer";
 
 const router = Router();
 
@@ -59,7 +59,7 @@ router.get(`/:chainId/:address/:event`, async (req, res) => {
         res.status(200).json([data]).end();
       });
   else
-    (new ApiBlockSniffer(chainIdExists.chainRpc, {[address]: {abi, events}}, from, to))
+    (new ApiBlockSniffer(chainIdExists.chainRpc, {[address]: {abi, events}}, from))
       .onParsed()
       .then(data => {
         res.status(200).json(data).end();
