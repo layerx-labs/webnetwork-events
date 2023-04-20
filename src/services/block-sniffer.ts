@@ -115,7 +115,7 @@ export class BlockSniffer {
     this.#actingChainId = await this.#connection.eth.getChainId();
 
     loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) ${this.#interval ? 're' : ''}starting`);
-    loggerHandler.debug(`${this.interval ? `polling every ${this.interval / 1000}s` : ``} (immediately: ${immediately.toString()}`);
+    loggerHandler.debug(`${this.interval ? `polling every ${this.interval / 1000}s, ` : ``}immediately: ${immediately.toString()}`);
     loggerHandler.debug(``)
 
     if (!this.#currentBlock)
