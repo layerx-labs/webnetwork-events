@@ -102,10 +102,6 @@ export class BlockSniffer {
    * the mappedEventActions[contractAddress].events it will call its action function
    */
   async start(immediately = false) {
-    loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) ${this.#interval ? 're' : ''}starting`);
-    loggerHandler.debug(`polling every ${this.interval / 1000}s (immediately: ${immediately.toString()}`);
-    loggerHandler.debug(``)
-
     const callback = () =>
       this.#fetchingLogs
         ? () => null
@@ -116,8 +112,12 @@ export class BlockSniffer {
           });
 
     this.clearInterval();
-
     this.#actingChainId = await this.#connection.eth.getChainId();
+
+    loggerHandler.info(`BlockSniffer (chain:${this.#actingChainId}) ${this.#interval ? 're' : ''}starting`);
+    loggerHandler.debug(`${this.interval ? `polling every ${this.interval / 1000}s, ` : ``}immediately: ${immediately.toString()}`);
+    loggerHandler.debug(``)
+
     if (!this.#currentBlock)
       await this.prepareCurrentBlock();
 
