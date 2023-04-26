@@ -14,19 +14,25 @@ async function updateLeaderboardRow(address: string, property: string, value: nu
     return false;
   }
 
-  const userLeaderboard = await db.leaderboard.findOne({
-    where: { address }
-  });
-
-  if(userLeaderboard) {
-    userLeaderboard[property] = value;
-
-    await userLeaderboard.save();
-  } else
-    await db.leaderboard.create({
-      address,
-      [property]: value,
+  if(address) {
+    const userLeaderboard = await db.leaderboard.findOne({
+      where: { address }
     });
+  
+    if(userLeaderboard) {
+      userLeaderboard[property] = value;
+  
+      await userLeaderboard.save();
+    } else
+      await db.leaderboard.create({
+        address,
+        [property]: value,
+      });
+  } else {
+    logger.error("updateLeaderboardRow invalid address passed")
+    
+    return false;
+  }
 
   return true;
 }
