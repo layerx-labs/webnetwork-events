@@ -65,7 +65,7 @@ export async function updatePriceHeader() {
       const { network_token_token, curators } = current;
       const symbol = network_token_token.symbol.toLowerCase();
 
-      const totalLocked = curators.reduce((acc, { tokensLocked }) => acc.plus(tokensLocked || 0), BigNumber(0));
+      const totalLocked = curators.reduce((acc, { tokensLocked, delegatedToMe }) => acc.plus(tokensLocked || 0).plus(delegatedToMe || 0), BigNumber(0));
       
       const price = prices.hasOwnProperty(symbol) ? prices[symbol][currency!] : 
         headerInformation?.last_price_used?.hasOwnProperty(symbol) ? headerInformation.last_price_used[symbol][currency!] : 0;
