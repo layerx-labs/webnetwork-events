@@ -44,7 +44,7 @@ export async function action(block: DecodedLog<ChangeAllowedTokensEvent['returnV
 
             const [token, created] = await db.tokens.findOrCreate({
               where: {
-                address: tokenAddress,
+                address: tokenAddress.toLowerCase(),
                 chain_id: chainId
               },
               defaults: {
