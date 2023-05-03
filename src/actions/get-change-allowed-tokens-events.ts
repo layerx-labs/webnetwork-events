@@ -4,7 +4,7 @@ import {ERC20, NetworkRegistry,} from "@taikai/dappkit";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {ChangeAllowedTokensEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-registry";
 import {DecodedLog} from "../interfaces/block-sniffer";
-import { Sequelize } from "sequelize";
+import { Sequelize, WhereOptions } from "sequelize";
 
 export const name = "getChangeAllowedTokensEvents";
 export const schedule = "*/60 * * * *";
@@ -43,15 +43,17 @@ export async function action(block: DecodedLog<ChangeAllowedTokensEvent['returnV
             const erc20 = new ERC20(connection, tokenAddress)
             await erc20.loadContract();
 
+            const whereCondition: WhereOptions = {
+              address: Sequelize.where(
+                Sequelize.fn("LOWER", Sequelize.col("tokens.address")),
+                "=",
+                tokenAddress.toLowerCase()
+              ),
+              chain_id: chainId,
+            };
+
             const [token, created] = await db.tokens.findOrCreate({
-              where: {
-                address: Sequelize.where(
-                  Sequelize.fn("LOWER", Sequelize.col("tokens.address")),
-                  "=",
-                  tokenAddress.toLowerCase()
-                ),
-                chain_id: chainId,
-              },
+              where: whereCondition,
               defaults: {
                 name: await erc20.name(),
                 symbol: await erc20.symbol(),
