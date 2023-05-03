@@ -9,7 +9,7 @@ export interface tokensAttributes {
   id: number;
   name: string;
   symbol: string;
-  address: string | Sequelize.WhereOptions<tokensAttributes>;
+  address: string;
   isTransactional: boolean;
   isAllowed?: boolean;
   chain_id?: number;
@@ -25,7 +25,7 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   id!: number;
   name!: string;
   symbol!: string;
-  address!: string | Sequelize.WhereOptions<tokensAttributes>;
+  address!: string;
   isTransactional!: boolean;
   isAllowed?: boolean;
   chain_id?: number;
