@@ -23,7 +23,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   try {
     const currentHeader = await db.header_information.findOne();
 
-    if (currentHeader && addMinutes(new Date(currentHeader?.updatedAt), +(headerTtl || 0)) < new Date())
+    if (currentHeader && addMinutes(new Date(currentHeader?.updatedAt), +(headerTtl || 0)) > new Date())
       return eventsProcessed;
 
     await updatePriceHeader();
