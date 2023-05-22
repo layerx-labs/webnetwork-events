@@ -7,6 +7,7 @@ import {nativeZeroAddress} from "@taikai/dappkit/dist/src/utils/constants";
 import {chainsAttributes} from "../db/models/chains";
 import {Op} from "sequelize";
 import { DecodedLog } from "src/interfaces/block-sniffer";
+import { Sequelize, WhereOptions } from "sequelize";
 
 const {EVENTS_CHAIN_ID} = process.env;
 
@@ -21,7 +22,14 @@ export async function getBountyFromChain(connection: Web3Connection, address, id
 }
 
 export async function getNetwork(chain_id, address) {
-  const network = await db.networks.findOne({where: {networkAddress: address, chain_id}});
+  const network = await db.networks.findOne({
+    where: {
+      networkAddress: Sequelize.where(Sequelize.fn("LOWER", Sequelize.col("networks.networkAddress")), 
+                                      "=",
+                                      address.toString().toLowerCase()),
+      chain_id
+    } as WhereOptions
+  });
 
   if (!network)
     logger.error(NETWORK_NOT_FOUND(name, address));
