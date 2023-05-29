@@ -237,7 +237,7 @@ export class BlockSniffer {
 
   protected async prepareCurrentBlock() {
     this.#currentBlock = Math.max(
-      (await db.chain_events.findOne({where: {chain_id: this.actingChainId}, raw: true}))?.lastBlock || 0,
+      (await db.chain_events.findOne({where: {name: "global", chain_id: this.actingChainId}, raw: true}))?.lastBlock || 0,
       +(process.env?.BULK_CHAIN_START_BLOCK || 0),
       this.startBlock
     );
