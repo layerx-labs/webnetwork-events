@@ -5,23 +5,17 @@ import ipfsService from "src/services/ipfs-service";
 import logger from "src/utils/logger-handler";
 import {getChainsRegistryAndNetworks} from "../utils/block-process";
 import {subMinutes} from "date-fns";
+import { isIpfsEnvs } from "src/utils/ipfs-envs-verify";
 
 export const name = "seo-generate-cards";
 export const schedule = "*/10 * * * *";
 export const description = "Try generate SeoCards for all updated or new bounties";
 export const author = "clarkjoao";
 
-const {
-  NEXT_IPFS_PROJECT_ID,
-  NEXT_IPFS_PROJECT_SECRET,
-  NEXT_IPFS_UPLOAD_ENDPOINT,
-  EVENTS_CHAIN_ID: chainId
-} = process.env;
-
 export async function action(issueId?: string) {
   const bountiesProcessed: any[] = [];
 
-  if ([NEXT_IPFS_PROJECT_ID, NEXT_IPFS_PROJECT_SECRET, NEXT_IPFS_UPLOAD_ENDPOINT].some(v => !v)) {
+  if (isIpfsEnvs) {
     logger.warn(`${name} Missing id, secret or baseURL, for IPFService`);
     return bountiesProcessed;
   }
