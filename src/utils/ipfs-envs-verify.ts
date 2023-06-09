@@ -1,0 +1,11 @@
+const {
+  NEXT_IPFS_PROJECT_ID,
+  NEXT_IPFS_PROJECT_SECRET,
+  NEXT_IPFS_UPLOAD_ENDPOINT,
+} = process.env;
+
+export const isIpfsEnvs = [
+  NEXT_IPFS_PROJECT_ID,
+  NEXT_IPFS_PROJECT_SECRET,
+  NEXT_IPFS_UPLOAD_ENDPOINT,
+].some((v) => v);
