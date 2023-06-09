@@ -33,7 +33,7 @@ function importHtml(htmlPathName: string) {
   });
 }
 
-export default async function generateBountyCards(issue) {
+export default async function generateBountyCards(issue, symbol = "") {
   if (!issue) throw new Error("issue is required");
 
   const background = await image2base64("pattern.png");
@@ -53,7 +53,7 @@ export default async function generateBountyCards(issue) {
     working: issue?.working?.length || 0,
     proposals: issue?.merge_proposals?.length || 0,
     pullRequests: issue?.pull_requests?.length || 0,
-    currency: issue?.transactionalToken?.symbol,
+    currency: symbol || issue?.transactionalToken?.symbol,
     background,
     logo,
     font,
