@@ -15,7 +15,7 @@ export const author = "clarkjoao";
 export async function action(issueId?: string) {
   const bountiesProcessed: any[] = [];
 
-  if (isIpfsEnvs) {
+  if (!isIpfsEnvs) {
     logger.warn(`${name} Missing id, secret or baseURL, for IPFService`);
     return bountiesProcessed;
   }
