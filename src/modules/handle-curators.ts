@@ -47,7 +47,7 @@ export async function handleCurators(
 
   loggerHandler.debug(`handleCurators(${address}, ${locked}, ${councilAmount}, ${networkId})`)
 
-  const isCurator = BigNumber(locked).gte(councilAmount);
+  const isCurator = BigNumber(locked).plus(delegatedByOthers).gte(councilAmount);
 
   const [curator, created] = await db.curators.findOrCreate({
     where: {
