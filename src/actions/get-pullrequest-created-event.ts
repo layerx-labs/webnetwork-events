@@ -24,8 +24,9 @@ const getPRStatus = (prStatus): string =>
 
 async function createCommentOnIssue(bounty: Bounty, pullRequest: PullRequest) {
   const networkName = bounty?.network?.name || "bepro";
+  const chainName = bounty?.network?.chain?.chainShortName
 
-  const issueLink = `${webAppUrl}/${networkName}/bounty?id=${bounty.githubId}&repoId=${bounty.repository_id}`;
+  const issueLink = `${webAppUrl}/${networkName}/${chainName}/bounty?id=${bounty.githubId}&repoId=${bounty.repository_id}`;
   const body = `@${pullRequest.githubLogin} has a solution - [check your bounty](${issueLink})`;
 
   const [owner, repo] = slashSplit(bounty?.repository?.githubPath as string);
@@ -49,7 +50,11 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
 
   const dbBounty = await db.issues.findOne({
     where: {contractId: bountyId, issueId: bounty.cid, network_id: network.id},
-    include: [{association: "repository"}, {association: "network"}]
+    include: [{association: "repository"}, {association: "network", include: [
+      {
+        association: "chain"
+      }
+    ]}]
   });
 
   if (!dbBounty) {
