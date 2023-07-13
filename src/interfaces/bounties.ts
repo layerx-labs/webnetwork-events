@@ -1,4 +1,5 @@
 import { deliverablesAttributes } from "src/db/models/deliverables";
+import { chainsAttributes } from "src/db/models/chains";
 import { issuesAttributes } from "src/db/models/issues";
 import { networksAttributes } from "src/db/models/networks";
 import { repositoriesAttributes } from "src/db/models/repositories";
@@ -12,5 +13,9 @@ export interface Bounty extends issuesAttributes {
   repository?: Repository;
   deliverables?: Deliverables[];
   transactionalToken: tokensAttributes;
-  network?: networksAttributes;
+  network?: Network;
+}
+
+interface Network extends networksAttributes {
+  chain?: chainsAttributes;
 }
