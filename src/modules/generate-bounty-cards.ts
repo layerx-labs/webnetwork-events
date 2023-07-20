@@ -33,19 +33,19 @@ function importHtml(htmlPathName: string) {
   });
 }
 
-export default async function generateBountyCards(issue, symbol = "") {
+async function generateImage(issue, symbol, logoName, template) {
   if (!issue) throw new Error("issue is required");
 
   const background = await image2base64("pattern.png");
-  const logo = await image2base64("bepro-icon.png");
+  const logo = await image2base64(logoName);
   const font = await font2base64("SpaceGrotesk.ttf");
-  const html = (await importHtml("seo-bounty-cards.hbs")) as string;
+  const html = (await importHtml(template)) as string;
 
   const content = {
     githubId: issue?.githubId,
     state: issue?.state,
     title: issue?.title,
-    repository: slashSplit(issue?.repository?.githubPath)[1] || "",
+    repository: issue?.repository?.githubPath || "",
     amount: lessThenWei(formatNumberToNScale(+BigNumber(issue?.amount))|| 0),
     fundingAmount: lessThenWei(formatNumberToNScale(+BigNumber(issue?.fundingAmount)) || 0),
     fundedAmount: lessThenWei(formatNumberToNScale(+BigNumber(issue?.fundedAmount)) || 0),
@@ -55,6 +55,7 @@ export default async function generateBountyCards(issue, symbol = "") {
     pullRequests: issue?.pull_requests?.length || 0,
     currency: symbol || issue?.transactionalToken?.symbol,
     background,
+    network: issue?.network?.name || "",
     logo,
     font,
   };
@@ -76,4 +77,12 @@ export default async function generateBountyCards(issue, symbol = "") {
   })) as string;
 
   return Buffer.from(card);
+}
+
+export default async function generateBountyCards(issue, symbol = "") {
+  return generateImage(issue, symbol, "bepro-icon.png", "seo-bounty-cards.hbs");
+}
+
+export async function generateNftImage(issue, symbol = "") {
+  return generateImage(issue, symbol, "bepro-logo.png", "nft.hbs");
 }
