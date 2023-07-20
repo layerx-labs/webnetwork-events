@@ -42,11 +42,12 @@ export interface issuesAttributes {
   rewardTokenId?: number;
   visible?: boolean;
   contractCreationDate?: string;
+  nftImage?: string;
 }
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId";
+export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId" | "visible" | "contractCreationDate" | "nftImage";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
@@ -80,6 +81,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   rewardTokenId?: number;
   visible?: boolean;
   contractCreationDate?: string;
+  nftImage?: string;
 
   // issues belongsTo chains via chain_id
   chain!: chains;
@@ -320,6 +322,10 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       type: DataTypes.STRING(255),
       allowNull: true
     },
+    nftImage: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    }
   }, {
     tableName: 'issues',
     schema: 'public',
