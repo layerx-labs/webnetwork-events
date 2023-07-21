@@ -135,11 +135,9 @@
         <div class="repo-tag">
             <span>{{repository}}</span>
         </div>
-        {{#if isFudingBounty}}
-            <h1 class="amount">{{fundedAmount}} <span class="title">of</span> {{fundingAmount}}<span class="currency">{{currency}}</span></h1>
-        {{else}}
-            <h1 class="amount">{{amount}} <span class="currency">{{currency}}</span></h1>
-        {{/if}}
+        
+        <h1 class="amount">{{amount}} <span class="currency">{{currency}}</span></h1>
+
         <div class="container-legend">
             <div>
                 <h3>@{{network}}</h3>
