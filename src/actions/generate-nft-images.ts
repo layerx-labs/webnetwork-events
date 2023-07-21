@@ -55,10 +55,12 @@ export async function action(issueId?: string) {
         {association: "transactionalToken"},
       ];
 
+      const MAX_NFT_PER_EXECUTION = 5;
+
       const bounties = await db.issues.findAll({
         where,
         include,
-        limit: 5
+        limit: MAX_NFT_PER_EXECUTION
       });
 
       if (!bounties.length) {
