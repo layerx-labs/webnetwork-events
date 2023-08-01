@@ -21,6 +21,7 @@ import {action as UpdateNetworkParams} from "../actions/update-network-parameter
 import {action as SeoGenerateCards} from "../actions/seo-generate-cards";
 import {action as BountyWithdrawReward} from "../actions/get-bounty-reward-withdraw";
 import {action as UpdateHeaders} from "../actions/get-prices-header-information";
+import {action as GenerateNftImage} from "../actions/generate-nft-images";
 
 /**
  * These events rely on parsed-logs to function and can/will rely on Database information, as well as update it
@@ -58,4 +59,5 @@ export const MINUTE_ACTIONS = {
   BountyMovedToOpen,
   BountyWithdrawReward,
   UpdateHeaders,
+  GenerateNftImage,
 }

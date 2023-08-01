@@ -49,7 +49,8 @@ export class leaderboard extends Model<leaderboardAttributes, leaderboardCreatio
     },
     numberNfts: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
+      defaultValue: 0
     },
     ownedBountiesOpened: {
       type: DataTypes.INTEGER,

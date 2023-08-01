@@ -21,11 +21,12 @@ export interface chainsAttributes {
   color?: string;
   createdAt: Date;
   updatedAt: Date;
+  icon?: string;
 }
 
 export type chainsPk = "id";
 export type chainsId = chains[chainsPk];
-export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "color" | "createdAt" | "updatedAt";
+export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "color" | "createdAt" | "updatedAt" | "icon";
 export type chainsCreationAttributes = Optional<chainsAttributes, chainsOptionalAttributes>;
 
 export class chains extends Model<chainsAttributes, chainsCreationAttributes> implements chainsAttributes {
@@ -44,6 +45,7 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
   color?: string;
   createdAt!: Date;
   updatedAt!: Date;
+  icon?: string;
 
   // chains hasMany delegations via chainId
   delegations!: delegations[];
@@ -149,6 +151,10 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
       allowNull: true
     },
     color: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    icon: {
       type: DataTypes.STRING(255),
       allowNull: true
     }
