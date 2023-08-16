@@ -3,13 +3,11 @@ import logger from "src/utils/logger-handler";
 import loggerHandler from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {Network_v2, Web3Connection} from "@taikai/dappkit";
-import {slashSplit} from "src/utils/string";
-import GHService from "src/services/github";
 import {isAfter, subMilliseconds} from "date-fns";
 import {getChainsRegistryAndNetworks} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
-import { Op, WhereOptions } from "sequelize";
+import { Op } from "sequelize";
 
 export const name = "updateBountiesToDraft";
 export const schedule = "0 2 * * *" // every 2 AM
@@ -64,8 +62,6 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
         loggerHandler.info(`${name} found ${bounties?.length} opened bounties at ${networkName}`);
 
-        const repositoriesDetails = {};
-
         const draftTime = await _network.draftTime()
         const timeOnChain = await web3Connection.Web3.eth.getBlock(`latest`).then(({timestamp}) => +timestamp * 1000);
 
@@ -78,21 +74,6 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
           if (isAfter(subMilliseconds(timeOnChain, draftTime), networkBounty.creationDate))
             continue;
-
-          const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
-          const detailKey = `${owner}/${repo}`;
-
-          if (!repositoriesDetails[detailKey])
-            repositoriesDetails[detailKey] =
-              await GHService.repositoryDetails(repo, owner);
-
-          const labelId = repositoriesDetails[detailKey]
-            .repository.labels.nodes.find((label) => label.name.toLowerCase() === "draft")?.id;
-
-          if (labelId) {
-            const ghIssue = await GHService.issueDetails(repo, owner, dbBounty?.githubId as string);
-            await GHService.issueAddLabel(ghIssue.repository.issue.id, labelId);
-          }
 
           dbBounty.state = "draft";
           await dbBounty.save();
