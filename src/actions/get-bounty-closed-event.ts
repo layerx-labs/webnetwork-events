@@ -1,9 +1,7 @@
 import {Op} from "sequelize";
 import db from "src/db";
-import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {slashSplit} from "src/utils/string";
 import {EventService} from "../services/event-service";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {updateCuratorProposalParams} from "src/modules/handle-curators";
@@ -18,7 +16,7 @@ export const schedule = "*/12 * * * *";
 export const description = "Move to 'Closed' status the bounty";
 export const author = "clarkjoao";
 
-async function mergeProposal(bounty, id, issueId, network_id) {
+async function mergeProposal(id, issueId, network_id) {
   const pullRequest =
     await db.pull_requests.findOne({where: {id, issueId, network_id},});
 
@@ -26,11 +24,6 @@ async function mergeProposal(bounty, id, issueId, network_id) {
     logger.debug(`mergeProposal() has no pullRequest on database`);
     return;
   }
-
-  const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
-
-  await GHService.mergeProposal(repo, owner, pullRequest?.githubId as string);
-  await GHService.issueClose(repo, owner, bounty?.githubId);
 
   pullRequest.status = "merged";
   await pullRequest.save();
@@ -47,10 +40,7 @@ async function closePullRequests(bounty, mergedPullRequestId, network_id) {
     }
   });
 
-  const [owner, repo] = slashSplit(bounty?.repository?.githubPath);
-
   for (const pr of pullRequests) {
-    await GHService.pullrequestClose(owner, repo, pr.githubId as string);
     pr.status = "closed";
     await pr.save();
   }
@@ -126,7 +116,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
 
   try {
     if (network.allowMerge) {
-      const mergedPR = await mergeProposal(dbBounty, dbProposal.pullRequestId, dbProposal.issueId, network?.id);
+      const mergedPR = await mergeProposal(dbProposal.pullRequestId, dbProposal.issueId, network?.id);
       if (mergedPR)
         await closePullRequests(dbBounty, mergedPR.githubId, network?.id);
     }
