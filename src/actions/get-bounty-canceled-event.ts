@@ -16,12 +16,6 @@ export const schedule = "*/11 * * * *";
 export const description = "Move to 'Canceled' status the bounty";
 export const author = "clarkjoao";
 
-async function closeAndRemovePullRequests(pullRequests: pull_requests[]) {
-  for (const pr of pullRequests) {
-    await pr.destroy()
-  }
-}
-
 export async function action(block: DecodedLog, query?: EventsQuery): Promise<EventsProcessed> {
 
   const eventsProcessed: EventsProcessed = {};
@@ -63,7 +57,9 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
 
   if(isHardCancel) {
     if(dbBounty?.pull_requests.length > 0) 
-      closeAndRemovePullRequests(dbBounty?.pull_requests)
+      for (const pr of dbBounty?.pull_requests) {
+        await pr.destroy()
+      }
       
   }
 
