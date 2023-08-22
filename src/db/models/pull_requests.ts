@@ -1,5 +1,6 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { comments, commentsId } from './comments';
 import type { issues, issuesId } from './issues';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 import type { networks, networksId } from './networks';
@@ -50,6 +51,18 @@ export class pull_requests extends Model<pull_requestsAttributes, pull_requestsC
   getNetwork!: Sequelize.BelongsToGetAssociationMixin<networks>;
   setNetwork!: Sequelize.BelongsToSetAssociationMixin<networks, networksId>;
   createNetwork!: Sequelize.BelongsToCreateAssociationMixin<networks>;
+  // pull_requests hasMany comments via deliverableId
+  comments!: comments[];
+  getComments!: Sequelize.HasManyGetAssociationsMixin<comments>;
+  setComments!: Sequelize.HasManySetAssociationsMixin<comments, commentsId>;
+  addComment!: Sequelize.HasManyAddAssociationMixin<comments, commentsId>;
+  addComments!: Sequelize.HasManyAddAssociationsMixin<comments, commentsId>;
+  createComment!: Sequelize.HasManyCreateAssociationMixin<comments>;
+  removeComment!: Sequelize.HasManyRemoveAssociationMixin<comments, commentsId>;
+  removeComments!: Sequelize.HasManyRemoveAssociationsMixin<comments, commentsId>;
+  hasComment!: Sequelize.HasManyHasAssociationMixin<comments, commentsId>;
+  hasComments!: Sequelize.HasManyHasAssociationsMixin<comments, commentsId>;
+  countComments!: Sequelize.HasManyCountAssociationsMixin;
   // pull_requests hasMany merge_proposals via pullRequestId
   merge_proposals!: merge_proposals[];
   getMerge_proposals!: Sequelize.HasManyGetAssociationsMixin<merge_proposals>;
