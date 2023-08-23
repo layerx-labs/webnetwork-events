@@ -4,7 +4,6 @@ import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {slashSplit} from "src/utils/string";
-import {EventService} from "../services/event-service";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {updateCuratorProposalParams} from "src/modules/handle-curators";
 import {updateLeaderboardBounties, updateLeaderboardNfts, updateLeaderboardProposals} from "src/modules/leaderboard";
@@ -79,9 +78,6 @@ async function updateCuratorProposal(address: string, networkId: number) {
 }
 
 export async function action(block: DecodedLog, query?: EventsQuery): Promise<EventsProcessed> {
-
-  const service = new EventService(name, query);
-
   const eventsProcessed: EventsProcessed = {};
   const {returnValues: {id, proposalId}, connection, address, chainId} = block;
 
@@ -96,9 +92,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   }
 
   const dbBounty = await db.issues.findOne({
-    where: {contractId: id, issueId: bounty.cid, network_id: network?.id,},
+    where: {contractId: id, network_id: network?.id,},
     include: [
-      {association: "repository",},
       {association: "merge_proposals",},
       {association: "pull_requests",},
       {association: "network"},
@@ -123,7 +118,6 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     return eventsProcessed;
   }
 
-
   try {
     if (network.allowMerge) {
       const mergedPR = await mergeProposal(dbBounty, dbProposal.pullRequestId, dbProposal.issueId, network?.id);
@@ -135,9 +129,9 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     logger.error(`${name} proposal ${proposalId} was not is not mergeable`, error?.toString());
   }
 
-
   dbBounty.merged = dbProposal?.contractId as any;
   dbBounty.state = "closed";
+
   await dbBounty.save();
   
   sendMessageToTelegramChannels(BOUNTY_CLOSED(dbBounty, dbProposal, proposalId));
@@ -150,7 +144,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   await updateLeaderboardProposals("accepted");
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
   return eventsProcessed;

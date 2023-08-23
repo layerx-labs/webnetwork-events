@@ -52,7 +52,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
             required: true,
             where: {
               state: "closed",
-              ...bountyQuery?.issueId ? {issueId: bountyQuery.issueId} : {},
+              ...bountyQuery?.issueId ? {id: bountyQuery.issueId} : {},
               fundingAmount: validAmont,
               rewardAmount: validAmont
             },
@@ -83,20 +83,20 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         await network.loadContract();
 
         for (const issue of issues) {
-          const {issueId, contractId, benefactors} = issue;
+          const {id, contractId, benefactors} = issue;
           const {funding} = await network.getBounty(contractId!);
 
           for (const benefactor of benefactors) {
             if (funding[benefactor.contractId].amount === "0") {
               benefactor.withdrawn = true;
               await benefactor.save();
-              logger.info(`${name} ${networkAddress} ${issueId} ${benefactor.address} reward withdrawn`);
+              logger.info(`${name} ${networkAddress} ${id} ${benefactor.address} reward withdrawn`);
             }
           }
 
           eventsProcessed[name!] = {
             ...eventsProcessed[name!],
-            [issueId!]: {bounty: issue, eventBlock: null}
+            [id.toString()]: {bounty: issue, eventBlock: null}
           };
         }
       }

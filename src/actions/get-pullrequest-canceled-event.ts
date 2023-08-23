@@ -40,7 +40,7 @@ export async function action(block: DecodedLog<BountyPullRequestCanceledEvent['r
 
   const dbBounty = await db.issues.findOne({
     where: {contractId: bounty.id, network_id: network.id},
-    include: [{association: "repository"}, {association: "network"}]
+    include: [{association: "network"}]
   });
 
   if (!dbBounty) {
@@ -81,7 +81,7 @@ export async function action(block: DecodedLog<BountyPullRequestCanceledEvent['r
   }
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
 

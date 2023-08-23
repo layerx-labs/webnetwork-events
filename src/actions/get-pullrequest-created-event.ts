@@ -36,7 +36,6 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   const eventsProcessed: EventsProcessed = {};
   const {returnValues: {bountyId, pullRequestId}, connection, address, chainId} = block;
 
-
   const bounty = await getBountyFromChain(connection, address, bountyId, name);
   if (!bounty)
     return eventsProcessed;
@@ -48,15 +47,14 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   }
 
   const dbBounty = await db.issues.findOne({
-    where: {contractId: bountyId, issueId: bounty.cid, network_id: network.id},
-    include: [{association: "repository"}, {association: "network"}]
+    where: {contractId: bountyId, network_id: network.id},
+    include: [{association: "network"}]
   });
 
   if (!dbBounty) {
     logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
     return eventsProcessed
   }
-
 
   const pullRequest = bounty.pullRequests[pullRequestId];
 
@@ -82,9 +80,8 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
     .catch(logger.error);
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
-
 
   return eventsProcessed;
 }

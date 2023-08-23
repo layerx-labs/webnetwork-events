@@ -61,7 +61,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
               network_id,
               state: "draft"
             },
-            include: [{association: "repository"}, {association: "network"}]
+            include: [{association: "network"}]
           });
 
         logger.info(`${name} found ${bounties.length} draft bounties on ${networkAddress}`);
@@ -72,7 +72,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         const repositoriesDetails = {};
 
         for (const dbBounty of bounties) {
-          logger.info(`${name} Parsing bounty ${dbBounty.issueId}`);
+          logger.info(`${name} Parsing bounty ${dbBounty.id}`);
 
           const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
           const detailKey = `${owner}/${repo}`;
@@ -95,10 +95,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
           eventsProcessed[networkName!] = {
             ...eventsProcessed[networkName!],
-            [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: null}
+            [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: null}
           };
 
-          logger.info(`${name} Parsed bounty ${dbBounty.issueId}`);
+          logger.info(`${name} Parsed bounty ${dbBounty.id}`);
 
         }
       }

@@ -56,7 +56,6 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
             network_id,
           },
           include: [
-            {association: "repository",},
             {association: "pull_requests",},
             {association: "network",},
           ],
@@ -74,7 +73,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           if (dbBounty.pull_requests.length)
             continue;
 
-          const networkBounty = await _network.cidBountyId(`${dbBounty?.issueId}`).then(id => _network.getBounty(+id));
+          const networkBounty = await _network.cidBountyId(dbBounty?.ipfsUrl!).then(id => _network.getBounty(+id));
 
           if (isAfter(subMilliseconds(timeOnChain, draftTime), networkBounty.creationDate))
             continue;
@@ -99,10 +98,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
           eventsProcessed[networkName!] = {
             ...eventsProcessed[networkName!],
-            [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: null}
+            [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: null}
           };
 
-          logger.info(`${name} Parsed bounty ${dbBounty.issueId}`);
+          logger.info(`${name} Parsed bounty ${dbBounty.id}`);
         }
       }
 

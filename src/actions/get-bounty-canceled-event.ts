@@ -26,7 +26,6 @@ async function closeAndRemovePullRequests(pullRequests: pull_requests[], owner: 
 }
 
 export async function action(block: DecodedLog, query?: EventsQuery): Promise<EventsProcessed> {
-
   const eventsProcessed: EventsProcessed = {};
   const {returnValues: {id}, connection, address, chainId} = block;
 
@@ -41,9 +40,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   }
 
   const dbBounty = await db.issues.findOne({
-    where: {contractId: block.returnValues.id, issueId: bounty.cid, network_id: network.id,},
+    where: {contractId: block.returnValues.id, network_id: network.id,},
     include: [
-      {association: "repository"},
       {association: "benefactors"},
       {association: "network"},
       {association: "pull_requests", required: false},
@@ -94,9 +92,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   await updateLeaderboardBounties("canceled");
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
-
 
   return eventsProcessed;
 }

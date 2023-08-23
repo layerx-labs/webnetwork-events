@@ -33,7 +33,7 @@ export async function action(issueId?: string) {
       const where = {
         chain_id,
         ...issueId
-          ? {issueId: {[Op.iLike]: issueId}}
+          ? {id: {[Op.iLike]: issueId}}
           : {
             [Op.or]: [
               {seoImage: null},
@@ -47,7 +47,6 @@ export async function action(issueId?: string) {
         {association: "merge_proposals"},
         {association: "pull_requests"},
         {association: "network"},
-        {association: "repository"},
         {association: "transactionalToken"},
       ];
 
@@ -62,22 +61,22 @@ export async function action(issueId?: string) {
 
       for (const bounty of bounties) {
         try {
-          logger.debug(`${name} Creating card to bounty ${bounty.issueId}`);
+          logger.debug(`${name} Creating card to bounty ${bounty.id}`);
           const card = await generateCard(bounty);
 
           const {hash} = await ipfsService.add(card);
           if (!hash) {
-            logger.warn(`${name} Failed to get hash from IPFS for ${bounty.issueId}`);
+            logger.warn(`${name} Failed to get hash from IPFS for ${bounty.id}`);
             continue;
           }
 
           await bounty.update({seoImage: hash});
 
-          bountiesProcessed.push({issueId: bounty.issueId, hash});
+          bountiesProcessed.push({id: bounty.issueId, hash});
 
-          logger.debug(`${name} Bounty card for ${bounty.issueId} has been updated`);
+          logger.debug(`${name} Bounty card for ${bounty.id} has been updated`);
         } catch (error: any) {
-          logger.error(`${name} Error generating card for ${bounty.issueId}`, error);
+          logger.error(`${name} Error generating card for ${bounty.id}`, error);
           continue;
         }
       }

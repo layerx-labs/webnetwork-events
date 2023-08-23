@@ -14,7 +14,7 @@ seoRoutes.get("/", async (req, res) => {
 
   const bounty = await db.issues.findOne({
     where: {
-      issueId: issueId as string,
+      id: issueId as string,
     },
   });
 
