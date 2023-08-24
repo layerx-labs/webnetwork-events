@@ -53,10 +53,6 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     return eventsProcessed;
   }
 
-  if (!dbBounty.githubId) {
-    logger.warn(`${name} Bounty ${bounty.id} missing githubId`, bounty);
-    return eventsProcessed
-  }
   const fundingAmount = dbBounty?.fundingAmount !== '0' ? dbBounty?.fundingAmount : undefined
   const fundedAmount = dbBounty?.fundedAmount !== '0' ? dbBounty?.fundedAmount : undefined
   const isFunded = BigNumber(fundingAmount || 0).isEqualTo(BigNumber(fundedAmount || 1))
