@@ -68,7 +68,7 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
 
   const dbBounty = await db.issues.findOne({
     where: {
-      id,
+      ipfsUrl: cid,
       network_id: network.id
     },
     include: [
