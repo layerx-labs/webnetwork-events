@@ -1,10 +1,7 @@
 import "dotenv/config";
 import db from "src/db";
 import logger from "src/utils/logger-handler";
-import GHService from "src/services/github";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {Bounty, PullRequest} from "src/interfaces/bounties";
-import {slashSplit} from "src/utils/string";
 import {BountyPullRequestCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {DecodedLog} from "../interfaces/block-sniffer";
@@ -17,20 +14,8 @@ export const schedule = "*/10 * * * *";
 export const description = "Sync pull-request created events";
 export const author = "clarkjoao";
 
-const webAppUrl = process.env.WEBAPP_URL || "http://localhost:3000";
-
 const getPRStatus = (prStatus): string =>
   prStatus?.canceled ? "canceled" : prStatus?.ready ? "ready" : "draft";
-
-async function createCommentOnIssue(bounty: Bounty, pullRequest: PullRequest) {
-  const networkName = bounty?.network?.name || "bepro";
-
-  const issueLink = `${webAppUrl}/${networkName}/bounty?id=${bounty.githubId}&repoId=${bounty.repository_id}`;
-  const body = `@${pullRequest.githubLogin} has a solution - [check your bounty](${issueLink})`;
-
-  const [owner, repo] = slashSplit(bounty?.repository?.githubPath as string);
-  return await GHService.createCommentOnIssue(repo, owner, bounty?.githubId as string, body);
-}
 
 export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['returnValues']>, query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
@@ -75,9 +60,6 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
 
   await dbPullRequest.save();
     sendMessageToTelegramChannels(PULL_REQUEST_OPEN(dbBounty, dbPullRequest, pullRequestId));
-
-  await createCommentOnIssue(dbBounty, dbPullRequest)
-    .catch(logger.error);
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}

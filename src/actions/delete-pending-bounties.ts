@@ -3,8 +3,6 @@ import db from "src/db";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {Network_v2, Web3Connection} from "@taikai/dappkit";
 import logger from "src/utils/logger-handler";
-import {slashSplit} from "src/utils/string";
-import GHService from "src/services/github";
 import {subHours} from "date-fns";
 import {Op} from "sequelize";
 import {getChainsRegistryAndNetworks} from "../utils/block-process";
@@ -64,11 +62,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           if (isBountyOnNetwork.toString() === '0' && dbBounty?.githubId) {
             logger.info(`${name} Removing pending bounty ${dbBounty.id}`);
 
-            const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
-
-            await GHService.issueClose(repo, owner, dbBounty?.githubId)
-
-            await dbBounty.destroy();
+              await dbBounty.destroy();
 
             eventsProcessed[networkName!] = {
               ...eventsProcessed[networkName!],
