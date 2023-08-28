@@ -15,12 +15,15 @@ import type { users_payments, users_paymentsId } from './users_payments';
 
 export interface issuesAttributes {
   id: number;
+  issueId?: string;
+  githubId?: string;
   state?: string;
   createdAt: Date;
   updatedAt: Date;
   creatorAddress?: string;
   creatorGithub?: string;
   amount?: string;
+  repository_id?: number;
   working?: string[];
   merged?: string;
   title?: string;
@@ -42,9 +45,6 @@ export interface issuesAttributes {
   visible?: boolean;
   contractCreationDate?: string;
   nftImage?: string;
-  issueId?: string;
-  githubId?: string;
-  repository_id?: number;
   ipfsUrl?: string;
   type?: string;
   origin?: string;
@@ -53,17 +53,20 @@ export interface issuesAttributes {
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId" | "visible" | "contractCreationDate" | "nftImage" | "issueId" | "githubId" | "repository_id" | "ipfsUrl" | "type" | "origin" | "userId";
+export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId" | "visible" | "contractCreationDate" | "nftImage" | "ipfsUrl" | "type" | "origin" | "userId";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
   id!: number;
+  issueId?: string;
+  githubId?: string;
   state?: string;
   createdAt!: Date;
   updatedAt!: Date;
   creatorAddress?: string;
   creatorGithub?: string;
   amount?: string;
+  repository_id?: number;
   working?: string[];
   merged?: string;
   title?: string;
@@ -85,9 +88,6 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   visible?: boolean;
   contractCreationDate?: string;
   nftImage?: string;
-  issueId?: string;
-  githubId?: string;
-  repository_id?: number;
   ipfsUrl?: string;
   type?: string;
   origin?: string;
@@ -216,6 +216,14 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       allowNull: false,
       primaryKey: true
     },
+    issueId: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    githubId: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
     state: {
       type: DataTypes.STRING(255),
       allowNull: true
@@ -231,6 +239,14 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
     amount: {
       type: DataTypes.STRING(255),
       allowNull: true
+    },
+    repository_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'repositories',
+        key: 'id'
+      }
     },
     working: {
       type: DataTypes.ARRAY(DataTypes.STRING),
@@ -336,22 +352,6 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
     nftImage: {
       type: DataTypes.STRING(255),
       allowNull: true
-    },
-    issueId: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    githubId: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    repository_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'repositories',
-        key: 'id'
-      }
     },
     ipfsUrl: {
       type: DataTypes.STRING(255),
