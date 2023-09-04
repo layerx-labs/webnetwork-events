@@ -62,9 +62,9 @@ export async function validateProposal(bounty: Bounty, prId: number, proposalId:
   if (!pullRequest)
     return logger.error(`Could not find prId ${prId} on bounty ${bounty.cid}`, bounty.pullRequests);
 
-  const dbPullRequest = await db.pull_requests.findOne({
-    where: {githubId: pullRequest.cid.toString(), contractId: +prId, network_id, issueId: dbBounty.id}});
-  if (!dbPullRequest)
+  const dbDeliverable = await db.deliverables.findOne({
+    where: {id: pullRequest.cid, prContractId: +prId, issueId: dbBounty.id}});
+  if (!dbDeliverable)
     return logger.error(`Could not find pullRequest ${pullRequest.id} in database for network ${network_id}`, pullRequest)
 
   const proposal = bounty.proposals.find(proposal => proposal.id === +proposalId);
@@ -72,7 +72,7 @@ export async function validateProposal(bounty: Bounty, prId: number, proposalId:
     return logger.error(`Could not find proposal for ${prId}`, bounty);
 
   const dbProposal = await db.merge_proposals.findOne({
-    where: {pullRequestId: dbPullRequest.id, issueId: dbBounty.id, contractId: +proposalId, network_id}});
+    where: {deliverableId: dbDeliverable.id, issueId: dbBounty.id, contractId: +proposalId, network_id}});
   if (!isProposalRequired && dbProposal)
     return logger.warn(`Proposal ${proposalId} already exists`, bounty);
 
@@ -84,5 +84,5 @@ export async function validateProposal(bounty: Bounty, prId: number, proposalId:
   if (!dbUser)
     logger.warn(`User with address ${proposal.creator} was not found in database`);
 
-  return {proposal, dbBounty, dbUser, dbPullRequest, dbProposal};
+  return {proposal, dbBounty, dbUser, dbDeliverable, dbProposal};
 }

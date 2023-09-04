@@ -32,10 +32,10 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
   }
 
   const values = await validateProposal(bounty, prId, proposalId, network.id, false);
-  if (!values?.proposal || !values?.dbBounty || !values?.dbPullRequest)
+  if (!values?.proposal || !values?.dbBounty || !values?.dbDeliverable)
     return eventsProcessed;
 
-  const {proposal, dbBounty, dbUser, dbPullRequest} = values;
+  const {proposal, dbBounty, dbUser, dbDeliverable} = values;
 
   const dbIssue = await db.issues.findOne({where: {issueId: bounty.cid, network_id: network.id}});
   if (!dbIssue) {
@@ -62,7 +62,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
     disputeWeight: new BigNumber(proposal.disputeWeight).toFixed(),
     contractCreationDate: proposal.creationDate.toString(),
     issueId: dbBounty.id,
-    pullRequestId: dbPullRequest.id,
+    deliverableId: dbDeliverable.id,
     githubLogin: dbUser?.githubLogin,
     creator: proposal.creator,
     isDisputed: false,
