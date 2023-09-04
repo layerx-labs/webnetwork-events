@@ -7,7 +7,7 @@ import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
-import {PULL_REQUEST_OPEN} from "../integrations/telegram/messages";
+import {DELIVERABLE_OPEN} from "../integrations/telegram/messages";
 
 export const name = "getBountyPullRequestCreatedEvents";
 export const schedule = "*/10 * * * *";
@@ -59,7 +59,7 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   dbDeliverable.bountyId = bounty.id
   await dbDeliverable.save();
 
-  sendMessageToTelegramChannels(PULL_REQUEST_OPEN(dbBounty, dbDeliverable, pullRequestId));
+  sendMessageToTelegramChannels(DELIVERABLE_OPEN(dbBounty, dbDeliverable, pullRequestId));
 
   eventsProcessed[network.name!] = {
     [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}

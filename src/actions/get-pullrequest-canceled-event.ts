@@ -6,7 +6,7 @@ import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
-import {BOUNTY_STATE_CHANGED, PULL_REQUEST_CANCELED} from "../integrations/telegram/messages";
+import {BOUNTY_STATE_CHANGED, DELIVERABLE_CANCELED} from "../integrations/telegram/messages";
 
 export const name = "getBountyPullRequestCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -61,7 +61,7 @@ export async function action(block: DecodedLog<BountyPullRequestCanceledEvent['r
 
       await dbBounty.save();
       sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
-      sendMessageToTelegramChannels(PULL_REQUEST_CANCELED(dbBounty, dbDeliverable, pullRequestId))
+      sendMessageToTelegramChannels(DELIVERABLE_CANCELED(dbBounty, dbDeliverable, pullRequestId))
   }
 
   eventsProcessed[network.name!] = {
