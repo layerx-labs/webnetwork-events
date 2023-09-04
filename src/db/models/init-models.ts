@@ -43,6 +43,8 @@ import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
+import { deliverables as _deliverables } from "./deliverables";
+import type { deliverableAttributes, deliverableCreationAttributes } from "./deliverables";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -67,6 +69,7 @@ export {
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
+  _deliverables as deliverables
 };
 
 export type {
@@ -114,6 +117,8 @@ export type {
   usersCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
+  deliverableAttributes,
+  deliverableCreationAttributes,
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -139,6 +144,7 @@ export function initModels(sequelize: Sequelize) {
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
+  const deliverables = _deliverables.initModel(sequelize);
 
   delegations.belongsTo(chains, { as: "chain", foreignKey: "chainId"});
   chains.hasMany(delegations, { as: "delegations", foreignKey: "chainId"});
@@ -194,6 +200,10 @@ export function initModels(sequelize: Sequelize) {
   tokens.hasMany(networks, { as: "networks", foreignKey: "network_token_id"});
   kyc_sessions.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(kyc_sessions, { as: "kyc_sessions", foreignKey: "user_id"});
+  deliverables.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
+  deliverables.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "deliverableId"});
+  merge_proposals.belongsTo(deliverables, { as: "deliverable", foreignKey: "deliverableId"});
+  issues.hasMany(deliverables, { as: "deliverables", foreignKey: "issueId"});
 
   return {
     SequelizeMeta: SequelizeMeta,
@@ -218,5 +228,6 @@ export function initModels(sequelize: Sequelize) {
     tokens: tokens,
     users: users,
     users_payments: users_payments,
+    deliverables: deliverables
   };
 }
