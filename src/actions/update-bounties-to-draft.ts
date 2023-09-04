@@ -9,7 +9,7 @@ import {isAfter, subMilliseconds} from "date-fns";
 import {getChainsRegistryAndNetworks} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
-import { Op, WhereOptions } from "sequelize";
+import { Op } from "sequelize";
 
 export const name = "updateBountiesToDraft";
 export const schedule = "0 2 * * *" // every 2 AM
@@ -57,7 +57,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           },
           include: [
             {association: "repository",},
-            {association: "pull_requests",},
+            {association: "deliverables",},
             {association: "network",},
           ],
         });
@@ -71,7 +71,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
         for (const dbBounty of bounties) {
 
-          if (dbBounty.pull_requests.length)
+          if (dbBounty.deliverables.length)
             continue;
 
           const networkBounty = await _network.cidBountyId(`${dbBounty?.issueId}`).then(id => _network.getBounty(+id));
