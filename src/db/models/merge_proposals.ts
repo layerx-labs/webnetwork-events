@@ -4,12 +4,12 @@ import type { disputes, disputesId } from './disputes';
 import type { issues, issuesId } from './issues';
 import type { networks, networksId } from './networks';
 import type { proposal_distributions, proposal_distributionsId } from './proposal_distributions';
-import type { pull_requests, pull_requestsId } from './pull_requests';
+import { deliverableId, deliverables } from './deliverables';
 
 export interface merge_proposalsAttributes {
   id: number;
   issueId?: number;
-  pullRequestId?: number;
+  deliverableId?: number;
   createdAt: Date;
   updatedAt: Date;
   githubLogin?: string;
@@ -24,13 +24,13 @@ export interface merge_proposalsAttributes {
 
 export type merge_proposalsPk = "id";
 export type merge_proposalsId = merge_proposals[merge_proposalsPk];
-export type merge_proposalsOptionalAttributes = "id" | "issueId" | "pullRequestId" | "createdAt" | "updatedAt" | "githubLogin" | "contractId" | "creator" | "network_id" | "contractCreationDate" | "disputeWeight";
+export type merge_proposalsOptionalAttributes = "id" | "issueId" | "deliverableId" | "createdAt" | "updatedAt" | "githubLogin" | "contractId" | "creator" | "network_id" | "contractCreationDate" | "disputeWeight";
 export type merge_proposalsCreationAttributes = Optional<merge_proposalsAttributes, merge_proposalsOptionalAttributes>;
 
 export class merge_proposals extends Model<merge_proposalsAttributes, merge_proposalsCreationAttributes> implements merge_proposalsAttributes {
   id!: number;
   issueId?: number;
-  pullRequestId?: number;
+  deliverableId?: number;
   createdAt!: Date;
   updatedAt!: Date;
   githubLogin?: string;
@@ -76,11 +76,11 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
   getNetwork!: Sequelize.BelongsToGetAssociationMixin<networks>;
   setNetwork!: Sequelize.BelongsToSetAssociationMixin<networks, networksId>;
   createNetwork!: Sequelize.BelongsToCreateAssociationMixin<networks>;
-  // merge_proposals belongsTo pull_requests via pullRequestId
-  pullRequest!: pull_requests;
-  getPullRequest!: Sequelize.BelongsToGetAssociationMixin<pull_requests>;
-  setPullRequest!: Sequelize.BelongsToSetAssociationMixin<pull_requests, pull_requestsId>;
-  createPullRequest!: Sequelize.BelongsToCreateAssociationMixin<pull_requests>;
+  // merge_proposals belongsTo deliverables via deliverableId
+  deliverables!: deliverables;
+  getDeliverable!: Sequelize.BelongsToGetAssociationMixin<deliverables>;
+  setDeliverable!: Sequelize.BelongsToSetAssociationMixin<deliverables, deliverableId>;
+  createDeliverable!: Sequelize.BelongsToCreateAssociationMixin<deliverables>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof merge_proposals {
     return sequelize.define('merge_proposals', {
@@ -98,11 +98,11 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
         key: 'id'
       }
     },
-    pullRequestId: {
+    deliverableId: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'pull_requests',
+        model: 'deliverables',
         key: 'id'
       }
     },
