@@ -362,7 +362,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       allowNull: true
     },
     origin: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     userId: {

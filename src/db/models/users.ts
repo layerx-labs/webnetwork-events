@@ -6,7 +6,6 @@ import type { kyc_sessions, kyc_sessionsId } from './kyc_sessions';
 
 export interface usersAttributes {
   id: number;
-  githubHandle?: string;
   address?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -20,12 +19,11 @@ export interface usersAttributes {
 
 export type usersPk = "id";
 export type usersId = users[usersPk];
-export type usersOptionalAttributes = "id" | "githubHandle" | "address" | "createdAt" | "updatedAt" | "githubLogin" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt";
+export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "githubLogin" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt";
 export type usersCreationAttributes = Optional<usersAttributes, usersOptionalAttributes>;
 
 export class users extends Model<usersAttributes, usersCreationAttributes> implements usersAttributes {
   id!: number;
-  githubHandle?: string;
   address?: string;
   createdAt!: Date;
   updatedAt!: Date;
@@ -80,10 +78,6 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
-    },
-    githubHandle: {
-      type: DataTypes.STRING(255),
-      allowNull: true
     },
     address: {
       type: DataTypes.STRING(255),
