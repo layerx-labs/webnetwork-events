@@ -52,7 +52,7 @@ async function generateImage(issue, symbol, logoName, template) {
     isFudingBounty: BigNumber(issue?.fundingAmount).gt(0),
     working: issue?.working?.length || 0,
     proposals: issue?.merge_proposals?.length || 0,
-    pullRequests: issue?.pull_requests?.length || 0,
+    deliverables: issue?.deliverables?.length || 0,
     currency: symbol || issue?.transactionalToken?.symbol,
     background,
     network: issue?.network?.name || "",
