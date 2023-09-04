@@ -3,19 +3,19 @@ import {
   _BOUNTY_CLOSED,
   _BOUNTY_FUNDED,
   _BOUNTY_STATE_CHANGED,
+  _DELIVERABLE_CANCELED,
+  _DELIVERABLE_OPEN,
   _NEW_BOUNTY,
   _PROPOSAL_CREATED,
   _PROPOSAL_DISPUTED,
   _PROPOSAL_DISPUTED_COMPLETE,
   _PROPOSAL_READY,
-  _PULL_REQUEST_CANCELED,
-  _PULL_REQUEST_OPEN,
   AMOUNT_AND_SYMBOL,
 } from "./message-template";
-import {dbBountyProposalUrl, dbBountyPRUrl, dbBountyUrl} from "../../utils/db-bounty-url";
+import {dbBountyProposalUrl, dbBountyDeliverableUrl, dbBountyUrl} from "../../utils/db-bounty-url";
 import {issues} from "../../db/models/issues";
-import {pull_requests} from "../../db/models/pull_requests";
 import {merge_proposals} from "../../db/models/merge_proposals";
+import { deliverables } from "src/db/models/deliverables";
 
 const _url = (s) => `${process.env.WEBAPP_URL}${s}`;
 
@@ -36,11 +36,11 @@ export const BOUNTY_AMOUNT_UPDATED = (newPrice: string | number, dbBounty: issue
     dbBounty
   });
 
-export const PULL_REQUEST_OPEN = (dbBounty: issues, pr: pull_requests, prId: string | number) =>
-  _PULL_REQUEST_OPEN({url: _url(dbBountyPRUrl(dbBounty, pr, prId)), dbBounty, pr});
+export const DELIVERABLE_OPEN = (dbBounty: issues, deliverable: deliverables, deliverableId: string | number) =>
+  _DELIVERABLE_OPEN({url: _url(dbBountyDeliverableUrl(dbBounty, deliverableId)), dbBounty, deliverable});
 
-export const PULL_REQUEST_CANCELED = (dbBounty: issues, pr: pull_requests, prId: string | number) =>
-  _PULL_REQUEST_CANCELED({url: _url(dbBountyPRUrl(dbBounty, pr, prId)), dbBounty, pr});
+export const DELIVERABLE_CANCELED = (dbBounty: issues, deliverable: deliverables, deliverableId: string | number) =>
+  _DELIVERABLE_CANCELED({url: _url(dbBountyDeliverableUrl(dbBounty, deliverableId)), dbBounty, deliverable});
 
 export const PROPOSAL_CREATED = (dbBounty: issues, proposal: merge_proposals, proposalId) =>
   _PROPOSAL_CREATED({url: _url(dbBountyProposalUrl(dbBounty, proposal, proposalId)), dbBounty, proposal});

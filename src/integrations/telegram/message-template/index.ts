@@ -20,11 +20,11 @@ export const _BOUNTY_STATE_CHANGED = (info) =>
 export const _BOUNTY_AMOUNT_UPDATED = (info) =>
   Handlebars.compile(readFileSync(file(`bounty-amount-changed.hbs`), 'utf-8'))(info, {allowProtoPropertiesByDefault: true});
 
-export const _PULL_REQUEST_OPEN = (info) =>
-  Handlebars.compile(readFileSync(file(`pull-request-open.hbs`), 'utf-8'))(info, {allowProtoPropertiesByDefault: true});
+export const _DELIVERABLE_OPEN = (info) =>
+  Handlebars.compile(readFileSync(file(`deliverable-open.hbs`), 'utf-8'))(info, {allowProtoPropertiesByDefault: true});
 
-export const _PULL_REQUEST_CANCELED = (info) =>
-  Handlebars.compile(readFileSync(file(`pull-request-canceled.hbs`), 'utf-8'))(info, {allowProtoPropertiesByDefault: true});
+export const _DELIVERABLE_CANCELED = (info) =>
+  Handlebars.compile(readFileSync(file(`deliverable-canceled.hbs`), 'utf-8'))(info, {allowProtoPropertiesByDefault: true});
 
 export const _PROPOSAL_CREATED = (info) =>
   Handlebars.compile(readFileSync(file(`proposal-created.hbs`), 'utf-8'))(info, {allowProtoPropertiesByDefault: true});

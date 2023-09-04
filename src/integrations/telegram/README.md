@@ -53,9 +53,9 @@ export const BOUNTY_STATE_CHANGED = (newState: string, dbBounty: issues) => { /*
 }
 export const BOUNTY_AMOUNT_UPDATED = (newPrice: string, dbBounty: issues) => { /** implementation */
 }
-export const PULL_REQUEST_OPEN = (dbBounty: issues, pr: pull_requests, prId: string) => { /** implementation */
+export const DELIVERABLE_OPEN = (dbBounty: issues, deliverableId: string) => { /** implementation */
 }
-export const PULL_REQUEST_CANCELED = (dbBounty: issues, pr: pull_requests, prId: string) => { /** implementation */
+export const DELIVERABLE_CANCELED = (dbBounty: issues, deliverableId: string) => { /** implementation */
 }
 export const PROPOSAL_CREATED = (dbBounty: issues, proposal: merge_proposals, proposalId) => { /** implementation */
 }
