@@ -58,8 +58,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     where: {contractId: id, issueId: bounty.cid, network_id: network?.id,},
     include: [
       {association: "repository",},
-      {association: "merge_proposals",},
-      {association: "pull_requests",},
+      {association: "merge_proposals"},
       {association: "network"},
     ],
   });
