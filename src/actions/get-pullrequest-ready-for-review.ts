@@ -41,22 +41,20 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
 
   const pullRequest = bounty.pullRequests[pullRequestId];
 
-  const dbPullRequest = await db.pull_requests.findOne({
-    where: {issueId: dbBounty.id, githubId: pullRequest.cid.toString(), status: "draft", network_id: network?.id}
+  const dbDeliverable = await db.deliverables.findOne({
+    where: {id: pullRequest.cid}
   })
 
-  if (!dbPullRequest) {
-    logger.warn(`${name} No pull request found with "draft" and id ${pullRequest.cid}, maybe it was already parsed?`);
+  if (!dbDeliverable) {
+    logger.warn(`${name} No deliverable found with "draft" and id ${pullRequest.cid}, maybe it was already parsed?`);
     return eventsProcessed;
   }
 
+  dbDeliverable.canceled = pullRequest.canceled
+  dbDeliverable.markedReadyForReview = pullRequest?.ready
 
-  if (!["closed", "merged"].includes(dbPullRequest.status!.toString())) {
-    dbPullRequest.status =
-      pullRequest.canceled ? "canceled" : pullRequest?.ready ? "ready" : "draft";
+  await dbDeliverable.save();
 
-    await dbPullRequest.save();
-  }
 
   if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
     dbBounty.state = "ready";

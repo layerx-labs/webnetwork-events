@@ -1,10 +1,7 @@
 import "dotenv/config";
 import db from "src/db";
 import logger from "src/utils/logger-handler";
-import GHService from "src/services/github";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {Bounty, PullRequest} from "src/interfaces/bounties";
-import {slashSplit} from "src/utils/string";
 import {BountyPullRequestCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {DecodedLog} from "../interfaces/block-sniffer";
@@ -17,20 +14,6 @@ export const schedule = "*/10 * * * *";
 export const description = "Sync pull-request created events";
 export const author = "clarkjoao";
 
-const webAppUrl = process.env.WEBAPP_URL || "http://localhost:3000";
-
-const getPRStatus = (prStatus): string =>
-  prStatus?.canceled ? "canceled" : prStatus?.ready ? "ready" : "draft";
-
-async function createCommentOnIssue(bounty: Bounty, pullRequest: PullRequest) {
-  const networkName = bounty?.network?.name || "bepro";
-
-  const issueLink = `${webAppUrl}/${networkName}/bounty?id=${bounty.githubId}&repoId=${bounty.repository_id}`;
-  const body = `@${pullRequest.githubLogin} has a solution - [check your bounty](${issueLink})`;
-
-  const [owner, repo] = slashSplit(bounty?.repository?.githubPath as string);
-  return await GHService.createCommentOnIssue(repo, owner, bounty?.githubId as string, body);
-}
 
 export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['returnValues']>, query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
@@ -57,29 +40,26 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
     return eventsProcessed
   }
 
-
   const pullRequest = bounty.pullRequests[pullRequestId];
 
-  const dbPullRequest = await db.pull_requests.findOne({
-    where: {issueId: dbBounty.id, githubId: pullRequest.cid.toString(), status: "pending", network_id: network?.id}
+  const dbDeliverable = await db.deliverables.findOne({
+    where: { id: pullRequest.cid }
   });
 
-  if (!dbPullRequest) {
-    logger.warn(`${name} No pull request found with "pending" and id ${pullRequest.cid}, maybe it was already parsed?`);
+  if (!dbDeliverable) {
+    logger.warn(`${name} No deliverable found with "pending" and id ${pullRequest.cid}, maybe it was already parsed?`);
     return eventsProcessed;
   }
 
-  dbPullRequest.status = getPRStatus(dbPullRequest);
-  dbPullRequest.userRepo = pullRequest.userRepo;
-  dbPullRequest.userBranch = pullRequest.userBranch;
-  dbPullRequest.contractId = pullRequest.id;
-  dbPullRequest.userAddress = pullRequest.creator;
+  if(pullRequest?.originCID?.toLowerCase() !== dbDeliverable?.ipfsLink?.toLowerCase()){
+    dbDeliverable.ipfsLink = pullRequest.originCID
+  }
 
-  await dbPullRequest.save();
-    sendMessageToTelegramChannels(PULL_REQUEST_OPEN(dbBounty, dbPullRequest, pullRequestId));
+  dbDeliverable.prContractId = pullRequest.id
+  dbDeliverable.bountyId = bounty.id
+  await dbDeliverable.save();
 
-  await createCommentOnIssue(dbBounty, dbPullRequest)
-    .catch(logger.error);
+  sendMessageToTelegramChannels(PULL_REQUEST_OPEN(dbBounty, dbDeliverable, pullRequestId));
 
   eventsProcessed[network.name!] = {
     [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
