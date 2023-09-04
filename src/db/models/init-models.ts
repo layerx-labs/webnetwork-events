@@ -31,8 +31,6 @@ import { networks as _networks } from "./networks";
 import type { networksAttributes, networksCreationAttributes } from "./networks";
 import { proposal_distributions as _proposal_distributions } from "./proposal_distributions";
 import type { proposal_distributionsAttributes, proposal_distributionsCreationAttributes } from "./proposal_distributions";
-import { pull_requests as _pull_requests } from "./pull_requests";
-import type { pull_requestsAttributes, pull_requestsCreationAttributes } from "./pull_requests";
 import { repositories as _repositories } from "./repositories";
 import type { repositoriesAttributes, repositoriesCreationAttributes } from "./repositories";
 import { settings as _settings } from "./settings";
@@ -63,7 +61,6 @@ export {
   _network_tokens as network_tokens,
   _networks as networks,
   _proposal_distributions as proposal_distributions,
-  _pull_requests as pull_requests,
   _repositories as repositories,
   _settings as settings,
   _tokens as tokens,
@@ -105,8 +102,6 @@ export type {
   networksCreationAttributes,
   proposal_distributionsAttributes,
   proposal_distributionsCreationAttributes,
-  pull_requestsAttributes,
-  pull_requestsCreationAttributes,
   repositoriesAttributes,
   repositoriesCreationAttributes,
   settingsAttributes,
@@ -138,7 +133,6 @@ export function initModels(sequelize: Sequelize) {
   const network_tokens = _network_tokens.initModel(sequelize);
   const networks = _networks.initModel(sequelize);
   const proposal_distributions = _proposal_distributions.initModel(sequelize);
-  const pull_requests = _pull_requests.initModel(sequelize);
   const repositories = _repositories.initModel(sequelize);
   const settings = _settings.initModel(sequelize);
   const tokens = _tokens.initModel(sequelize);
@@ -164,8 +158,6 @@ export function initModels(sequelize: Sequelize) {
   issues.hasMany(disputes, { as: "disputes", foreignKey: "issueId"});
   merge_proposals.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "issueId"});
-  pull_requests.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
-  issues.hasMany(pull_requests, { as: "pull_requests", foreignKey: "issueId"});
   users_payments.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(users_payments, { as: "users_payments", foreignKey: "issueId"});
   disputes.belongsTo(merge_proposals, { as: "proposal", foreignKey: "proposalId"});
@@ -182,12 +174,8 @@ export function initModels(sequelize: Sequelize) {
   networks.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "network_id"});
   network_tokens.belongsTo(networks, { as: "network", foreignKey: "networkId"});
   networks.hasMany(network_tokens, { as: "network_tokens", foreignKey: "networkId"});
-  pull_requests.belongsTo(networks, { as: "network", foreignKey: "network_id"});
-  networks.hasMany(pull_requests, { as: "pull_requests", foreignKey: "network_id"});
   repositories.belongsTo(networks, { as: "network", foreignKey: "network_id"});
   networks.hasMany(repositories, { as: "repositories", foreignKey: "network_id"});
-  merge_proposals.belongsTo(pull_requests, { as: "pullRequest", foreignKey: "pullRequestId"});
-  pull_requests.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "pullRequestId"});
   issues.belongsTo(repositories, { as: "repository", foreignKey: "repository_id"});
   repositories.hasMany(issues, { as: "issues", foreignKey: "repository_id"});
   issues.belongsTo(tokens, { as: "rewardToken", foreignKey: "rewardTokenId"});
@@ -222,7 +210,6 @@ export function initModels(sequelize: Sequelize) {
     network_tokens: network_tokens,
     networks: networks,
     proposal_distributions: proposal_distributions,
-    pull_requests: pull_requests,
     repositories: repositories,
     settings: settings,
     tokens: tokens,
