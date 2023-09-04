@@ -45,7 +45,7 @@ export async function action(issueId?: string) {
       const include = [
         {association: "developers"},
         {association: "merge_proposals"},
-        {association: "pull_requests"},
+        {association: "deliverables"},
         {association: "network"},
         {association: "repository"},
         {association: "transactionalToken"},
