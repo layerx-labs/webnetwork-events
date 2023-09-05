@@ -65,7 +65,7 @@ export async function proposalStateProcessor(block: DecodedLog<BountyProposalDis
 
   eventsProcessed[network.name!] = {
     ...eventsProcessed[network.name!],
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
   return eventsProcessed;

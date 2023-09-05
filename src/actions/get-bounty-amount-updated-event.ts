@@ -26,9 +26,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     return eventsProcessed;
   }
 
-
   const dbBounty = await db.issues.findOne({
-    where: {contractId: id, issueId: bounty.cid, network_id: network?.id},
+    where: {contractId: id, network_id: network?.id},
     include: [
       {association: "network"}
     ]
@@ -45,7 +44,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   sendMessageToTelegramChannels(BOUNTY_AMOUNT_UPDATED(dbBounty.amount, dbBounty));
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
 

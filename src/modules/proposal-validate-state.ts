@@ -52,7 +52,7 @@ export default async function validateProposalState(currentState: string,
 
 export async function validateProposal(bounty: Bounty, prId: number, proposalId: number, network_id: number, isProposalRequired = true) {
   const dbBounty = await db.issues.findOne({
-    where: {contractId: bounty.id, issueId: bounty.cid, network_id},
+    where: {contractId: bounty.id, network_id},
     include: [ { association: "network" }]
   })
   if (!dbBounty)

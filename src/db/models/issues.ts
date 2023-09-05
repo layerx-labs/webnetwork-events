@@ -2,6 +2,7 @@ import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { benefactors, benefactorsId } from './benefactors';
 import type { chains, chainsId } from './chains';
+import type { comments, commentsId } from './comments';
 import type { developers, developersId } from './developers';
 import type { disputes, disputesId } from './disputes';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
@@ -9,6 +10,7 @@ import type { networks, networksId } from './networks';
 import type { pull_requests, pull_requestsId } from './pull_requests';
 import type { repositories, repositoriesId } from './repositories';
 import type { tokens, tokensId } from './tokens';
+import type { users, usersId } from './users';
 import type { users_payments, users_paymentsId } from './users_payments';
 
 export interface issuesAttributes {
@@ -43,11 +45,15 @@ export interface issuesAttributes {
   visible?: boolean;
   contractCreationDate?: string;
   nftImage?: string;
+  ipfsUrl?: string;
+  type?: string;
+  origin?: string;
+  userId?: number;
 }
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId" | "visible" | "contractCreationDate" | "nftImage";
+export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId" | "visible" | "contractCreationDate" | "nftImage" | "ipfsUrl" | "type" | "origin" | "userId";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
@@ -82,6 +88,10 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   visible?: boolean;
   contractCreationDate?: string;
   nftImage?: string;
+  ipfsUrl?: string;
+  type?: string;
+  origin?: string;
+  userId?: number;
 
   // issues belongsTo chains via chain_id
   chain!: chains;
@@ -100,6 +110,18 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   hasBenefactor!: Sequelize.HasManyHasAssociationMixin<benefactors, benefactorsId>;
   hasBenefactors!: Sequelize.HasManyHasAssociationsMixin<benefactors, benefactorsId>;
   countBenefactors!: Sequelize.HasManyCountAssociationsMixin;
+  // issues hasMany comments via issueId
+  comments!: comments[];
+  getComments!: Sequelize.HasManyGetAssociationsMixin<comments>;
+  setComments!: Sequelize.HasManySetAssociationsMixin<comments, commentsId>;
+  addComment!: Sequelize.HasManyAddAssociationMixin<comments, commentsId>;
+  addComments!: Sequelize.HasManyAddAssociationsMixin<comments, commentsId>;
+  createComment!: Sequelize.HasManyCreateAssociationMixin<comments>;
+  removeComment!: Sequelize.HasManyRemoveAssociationMixin<comments, commentsId>;
+  removeComments!: Sequelize.HasManyRemoveAssociationsMixin<comments, commentsId>;
+  hasComment!: Sequelize.HasManyHasAssociationMixin<comments, commentsId>;
+  hasComments!: Sequelize.HasManyHasAssociationsMixin<comments, commentsId>;
+  countComments!: Sequelize.HasManyCountAssociationsMixin;
   // issues hasMany developers via issueId
   developers!: developers[];
   getDevelopers!: Sequelize.HasManyGetAssociationsMixin<developers>;
@@ -180,6 +202,11 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   getTransactionalToken!: Sequelize.BelongsToGetAssociationMixin<tokens>;
   setTransactionalToken!: Sequelize.BelongsToSetAssociationMixin<tokens, tokensId>;
   createTransactionalToken!: Sequelize.BelongsToCreateAssociationMixin<tokens>;
+  // issues belongsTo users via userId
+  user!: users;
+  getUser!: Sequelize.BelongsToGetAssociationMixin<users>;
+  setUser!: Sequelize.BelongsToSetAssociationMixin<users, usersId>;
+  createUser!: Sequelize.BelongsToCreateAssociationMixin<users>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof issues {
     return sequelize.define('issues', {
@@ -325,6 +352,26 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
     nftImage: {
       type: DataTypes.STRING(255),
       allowNull: true
+    },
+    ipfsUrl: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    type: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    origin: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
     }
   }, {
     tableName: 'issues',

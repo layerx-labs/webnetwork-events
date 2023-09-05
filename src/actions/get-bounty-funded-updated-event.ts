@@ -29,9 +29,8 @@ export async function action(block: DecodedLog<BountyFunded['returnValues']>, qu
     return eventsProcessed;
   }
 
-
   const dbBounty = await db.issues.findOne({
-    where: {contractId: id, issueId: bounty.cid, network_id: network?.id,},
+    where: {contractId: id, network_id: network?.id,},
     include: [{association: "benefactors"}, {association: "network"}, {association: "transactionalToken"}]
   })
 
@@ -53,7 +52,7 @@ export async function action(block: DecodedLog<BountyFunded['returnValues']>, qu
   sendMessageToTelegramChannels(BOUNTY_FUNDED(`${dbBounty.amount}${dbBounty.transactionalToken.symbol}`, `${bounty.fundingAmount}${dbBounty.transactionalToken.symbol}`, dbBounty))
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
   return eventsProcessed;
