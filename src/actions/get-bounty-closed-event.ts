@@ -10,6 +10,7 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_CLOSED} from "../integrations/telegram/messages";
+import { updateBountiesHeader } from "src/modules/handle-header-information";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
@@ -137,6 +138,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   await updateLeaderboardNfts()
   await updateLeaderboardBounties("closed");
   await updateLeaderboardProposals("accepted");
+  await updateBountiesHeader();
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}

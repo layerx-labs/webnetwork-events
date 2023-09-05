@@ -10,6 +10,7 @@ import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/bloc
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {pull_requests} from "src/db/models/pull_requests";
+import { updateBountiesHeader } from "src/modules/handle-header-information";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -68,6 +69,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
 
   await updateLeaderboardBounties("canceled");
+  await updateBountiesHeader();
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
