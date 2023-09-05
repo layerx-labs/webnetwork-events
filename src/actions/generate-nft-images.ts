@@ -51,7 +51,6 @@ export async function action(issueId?: string) {
         {association: "merge_proposals"},
         {association: "deliverables"},
         {association: "network"},
-        {association: "repository"},
         {association: "transactionalToken"},
       ];
 
@@ -72,22 +71,22 @@ export async function action(issueId?: string) {
 
       for (const bounty of bounties) {
         try {
-          logger.debug(`${name} Creating NFT to bounty ${bounty.issueId}`);
+          logger.debug(`${name} Creating NFT to bounty ${bounty.id}`);
           const card = await generateNftImage(bounty);
 
           const {hash} = await ipfsService.add(card);
           if (!hash) {
-            logger.warn(`${name} Failed to get hash from IPFS for ${bounty.issueId}`);
+            logger.warn(`${name} Failed to get hash from IPFS for ${bounty.id}`);
             continue;
           }
 
           await bounty.update({ nftImage: hash });
 
-          bountiesProcessed.push({issueId: bounty.issueId, hash});
+          bountiesProcessed.push({id: bounty.id, hash});
 
-          logger.debug(`${name} Bounty NFT for ${bounty.issueId} has been updated`);
+          logger.debug(`${name} Bounty NFT for ${bounty.id} has been updated`);
         } catch (error: any) {
-          logger.error(`${name} Error generating NFT for ${bounty.issueId}`, error);
+          logger.error(`${name} Error generating NFT for ${bounty.id}`, error);
           continue;
         }
       }
@@ -100,7 +99,6 @@ export async function action(issueId?: string) {
     } catch (err: any) {
       logger.error(`${name} Error`, err?.message || err.toString());
     }
-
   }
 
   return bountiesProcessed;

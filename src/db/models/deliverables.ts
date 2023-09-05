@@ -2,6 +2,7 @@ import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { issues, issuesId } from './issues';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
+import { comments, commentsId } from './comments';
 
 export interface deliverableAttributes {
   id: number;
@@ -57,6 +58,18 @@ export class deliverables extends Model<deliverableAttributes, deliverableCreati
   hasMerge_proposal!: Sequelize.HasManyHasAssociationMixin<merge_proposals, merge_proposalsId>;
   hasMerge_proposals!: Sequelize.HasManyHasAssociationsMixin<merge_proposals, merge_proposalsId>;
   countMerge_proposals!: Sequelize.HasManyCountAssociationsMixin;
+  // deliverables hasMany comments via deliverableId
+  comments!: comments[];
+  getComments!: Sequelize.HasManyGetAssociationsMixin<comments>;
+  setComments!: Sequelize.HasManySetAssociationsMixin<comments, commentsId>;
+  addComment!: Sequelize.HasManyAddAssociationMixin<comments, commentsId>;
+  addComments!: Sequelize.HasManyAddAssociationsMixin<comments, commentsId>;
+  createComment!: Sequelize.HasManyCreateAssociationMixin<comments>;
+  removeComment!: Sequelize.HasManyRemoveAssociationMixin<comments, commentsId>;
+  removeComments!: Sequelize.HasManyRemoveAssociationsMixin<comments, commentsId>;
+  hasComment!: Sequelize.HasManyHasAssociationMixin<comments, commentsId>;
+  hasComments!: Sequelize.HasManyHasAssociationsMixin<comments, commentsId>;
+  countComments!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof deliverables {
     return sequelize.define('deliverables', {

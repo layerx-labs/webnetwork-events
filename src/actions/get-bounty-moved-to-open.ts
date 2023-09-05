@@ -1,10 +1,8 @@
 import db from "src/db";
-import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
 import {subMilliseconds} from "date-fns";
 import {Op} from "sequelize";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {slashSplit} from "src/utils/string";
 import {Network_v2, Web3Connection} from "@taikai/dappkit";
 import {getChainsRegistryAndNetworks} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
@@ -61,7 +59,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
               network_id,
               state: "draft"
             },
-            include: [{association: "repository"}, {association: "network"}]
+            include: [{association: "network"}]
           });
 
         logger.info(`${name} found ${bounties.length} draft bounties on ${networkAddress}`);
@@ -69,25 +67,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         if (!bounties || !bounties.length)
           continue;
 
-        const repositoriesDetails = {};
-
         for (const dbBounty of bounties) {
-          logger.info(`${name} Parsing bounty ${dbBounty.issueId}`);
-
-          const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
-          const detailKey = `${owner}/${repo}`;
-
-          if (!repositoriesDetails[detailKey])
-            repositoriesDetails[detailKey] =
-              await GHService.repositoryDetails(repo, owner);
-
-          const labelId = repositoriesDetails[detailKey]
-            .repository.labels.nodes.find((label) => label.name.toLowerCase() === "draft")?.id;
-
-          if (labelId) {
-            const ghIssue = await GHService.issueDetails(repo, owner, dbBounty?.githubId as string);
-            await GHService.issueRemoveLabel(ghIssue.repository.issue.id, labelId);
-          }
+          logger.info(`${name} Parsing bounty ${dbBounty.id}`);
 
           dbBounty.state = "open";
           await dbBounty.save();
@@ -95,10 +76,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
           eventsProcessed[networkName!] = {
             ...eventsProcessed[networkName!],
-            [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: null}
+            [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: null}
           };
 
-          logger.info(`${name} Parsed bounty ${dbBounty.issueId}`);
+          logger.info(`${name} Parsed bounty ${dbBounty.id}`);
 
         }
       }

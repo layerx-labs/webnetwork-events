@@ -164,14 +164,11 @@
     <div class="container">
         <div class="container-status">
             <div id="status-label-{{state}}" class="status-label"><span>{{state}}</span></div>
-            <span class="issue-number">#{{githubId}}</span>
+            <span class="issue-number">#{{id}}</span>
         </div>
         <h1 class="title">
             {{title}}
         </h1>
-        <div class="repo-tag">
-            <span>{{repository}}</span>
-        </div>
         {{#if isFudingBounty}}
             <h1 class="amount">{{fundedAmount}} <span class="title">of</span> {{fundingAmount}}<span class="currency">{{currency}}</span></h1>
         {{else}}

@@ -1,8 +1,6 @@
 import db from "src/db";
-import GHService from "src/services/github";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {slashSplit} from "src/utils/string";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {handleBenefactors} from "src/modules/handle-benefactors";
 import BigNumber from "bignumber.js";
@@ -18,7 +16,6 @@ export const description = "Move to 'Canceled' status the bounty";
 export const author = "clarkjoao";
 
 export async function action(block: DecodedLog, query?: EventsQuery): Promise<EventsProcessed> {
-
   const eventsProcessed: EventsProcessed = {};
   const {returnValues: {id}, connection, address, chainId} = block;
 
@@ -33,9 +30,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   }
 
   const dbBounty = await db.issues.findOne({
-    where: {contractId: block.returnValues.id, issueId: bounty.cid, network_id: network.id,},
+    where: {contractId: block.returnValues.id, network_id: network.id,},
     include: [
-      {association: "repository"},
       {association: "benefactors"},
       {association: "network"}
     ],
@@ -46,28 +42,18 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     return eventsProcessed;
   }
 
-  if (!dbBounty.githubId) {
-    logger.warn(`${name} Bounty ${bounty.id} missing githubId`, bounty);
-    return eventsProcessed
-  }
   const fundingAmount = dbBounty?.fundingAmount !== '0' ? dbBounty?.fundingAmount : undefined
   const fundedAmount = dbBounty?.fundedAmount !== '0' ? dbBounty?.fundedAmount : undefined
   const isFunded = BigNumber(fundingAmount || 0).isEqualTo(BigNumber(fundedAmount || 1))
   const isHardCancel = ['open', 'ready'].includes(dbBounty?.state || '') && (dbBounty.fundingAmount === ('0' || undefined) || isFunded)
 
   if(isHardCancel) {
-    const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
+    if(dbBounty?.deliverables.length > 0) 
+      for (const dr of dbBounty?.deliverables) {
+        await dr.destroy()
+      }
       
-    await GHService.issueClose(repo, owner, dbBounty?.githubId)
-    const body = "Governor chose to remove your bounty from listing, please contact governance for more information";
-    await GHService.createCommentOnIssue(repo, owner, dbBounty?.githubId, body);
   }
-
-
-  const [owner, repo] = slashSplit(dbBounty.repository.githubPath);
-
-  await GHService.issueClose(repo, owner, dbBounty.githubId)
-    .catch(e => logger.error(`${name} Failed to close ${owner}/${repo}/issues/${dbBounty.githubId}`, e?.message || e.toString()));
 
   dbBounty.state = `canceled`;
 
@@ -82,9 +68,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   await updateLeaderboardBounties("canceled");
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
-
 
   return eventsProcessed;
 }

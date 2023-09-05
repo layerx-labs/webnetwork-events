@@ -47,7 +47,6 @@ export async function action(issueId?: string) {
         {association: "merge_proposals"},
         {association: "deliverables"},
         {association: "network"},
-        {association: "repository"},
         {association: "transactionalToken"},
       ];
 

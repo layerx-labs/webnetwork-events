@@ -36,11 +36,12 @@ export interface networksAttributes {
   cancelableTime?: number;
   proposerFeeShare?: number;
   allowMerge?: boolean;
+  banned_domains?: string[];
 }
 
 export type networksPk = "id";
 export type networksId = networks[networksPk];
-export type networksOptionalAttributes = "id" | "name" | "colors" | "networkAddress" | "logoIcon" | "fullLogo" | "createdAt" | "updatedAt" | "isClosed" | "allowCustomTokens" | "councilMembers" | "isRegistered" | "isDefault" | "chain_id" | "network_token_id" | "councilAmount" | "disputableTime" | "draftTime" | "oracleExchangeRate" | "mergeCreatorFeeShare" | "percentageNeededForDispute" | "cancelableTime" | "proposerFeeShare" | "allowMerge";
+export type networksOptionalAttributes = "id" | "name" | "colors" | "networkAddress" | "logoIcon" | "fullLogo" | "createdAt" | "updatedAt" | "isClosed" | "allowCustomTokens" | "councilMembers" | "isRegistered" | "isDefault" | "chain_id" | "network_token_id" | "councilAmount" | "disputableTime" | "draftTime" | "oracleExchangeRate" | "mergeCreatorFeeShare" | "percentageNeededForDispute" | "cancelableTime" | "proposerFeeShare" | "allowMerge" | "banned_domains";
 export type networksCreationAttributes = Optional<networksAttributes, networksOptionalAttributes>;
 
 export class networks extends Model<networksAttributes, networksCreationAttributes> implements networksAttributes {
@@ -70,6 +71,7 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
   cancelableTime?: number;
   proposerFeeShare?: number;
   allowMerge?: boolean;
+  banned_domains?: string[];
 
   // networks belongsTo chains via chain_id
   chain!: chains;
@@ -268,6 +270,11 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: true
+    },
+    banned_domains: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: ["(ARRAY[]"]
     }
   }, {
     tableName: 'networks',

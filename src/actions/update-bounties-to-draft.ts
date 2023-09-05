@@ -3,8 +3,6 @@ import logger from "src/utils/logger-handler";
 import loggerHandler from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {Network_v2, Web3Connection} from "@taikai/dappkit";
-import {slashSplit} from "src/utils/string";
-import GHService from "src/services/github";
 import {isAfter, subMilliseconds} from "date-fns";
 import {getChainsRegistryAndNetworks} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
@@ -74,25 +72,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           if (dbBounty.deliverables.length)
             continue;
 
-          const networkBounty = await _network.cidBountyId(`${dbBounty?.issueId}`).then(id => _network.getBounty(+id));
+          const networkBounty = await _network.cidBountyId(`${dbBounty?.ipfsUrl!}`).then(id => _network.getBounty(+id));
 
           if (isAfter(subMilliseconds(timeOnChain, draftTime), networkBounty.creationDate))
             continue;
-
-          const [owner, repo] = slashSplit(dbBounty?.repository?.githubPath);
-          const detailKey = `${owner}/${repo}`;
-
-          if (!repositoriesDetails[detailKey])
-            repositoriesDetails[detailKey] =
-              await GHService.repositoryDetails(repo, owner);
-
-          const labelId = repositoriesDetails[detailKey]
-            .repository.labels.nodes.find((label) => label.name.toLowerCase() === "draft")?.id;
-
-          if (labelId) {
-            const ghIssue = await GHService.issueDetails(repo, owner, dbBounty?.githubId as string);
-            await GHService.issueAddLabel(ghIssue.repository.issue.id, labelId);
-          }
 
           dbBounty.state = "draft";
           await dbBounty.save();

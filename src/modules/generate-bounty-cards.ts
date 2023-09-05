@@ -3,7 +3,6 @@ import nodeHtmlToImage from "node-html-to-image";
 import path from "path";
 import BigNumber from "bignumber.js";
 import { formatNumberToNScale } from "src/utils/formatNumber";
-import { slashSplit } from "src/utils/string";
 
 export const lessThenWei = (number: number | string) => number!== 0 && BigNumber(number).isLessThan(0.0001) ? '< 0.0001' : number;
 
@@ -42,10 +41,9 @@ async function generateImage(issue, symbol, logoName, template) {
   const html = (await importHtml(template)) as string;
 
   const content = {
-    githubId: issue?.githubId,
+    id: issue?.id,
     state: issue?.state,
     title: issue?.title,
-    repository: issue?.repository?.githubPath || "",
     amount: lessThenWei(formatNumberToNScale(+BigNumber(issue?.amount))|| 0),
     fundingAmount: lessThenWei(formatNumberToNScale(+BigNumber(issue?.fundingAmount)) || 0),
     fundedAmount: lessThenWei(formatNumberToNScale(+BigNumber(issue?.fundedAmount)) || 0),

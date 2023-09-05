@@ -30,7 +30,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
   }
 
   const dbBounty = await db.issues.findOne({
-    where: {issueId: bounty.cid, contractId: bountyId, network_id: network.id},
+    where: {contractId: bountyId, network_id: network.id},
     include: [{association: "network"}]
   })
   if (!dbBounty) {

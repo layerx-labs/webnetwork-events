@@ -37,7 +37,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
 
   const {proposal, dbBounty, dbUser, dbDeliverable} = values;
 
-  const dbIssue = await db.issues.findOne({where: {issueId: bounty.cid, network_id: network.id}});
+  const dbIssue = await db.issues.findOne({where: {contractId: bounty.id, network_id: network.id}});
   if (!dbIssue) {
     logger.warn(`${name} Issue ${bounty.cid} not found`);
     return eventsProcessed;
