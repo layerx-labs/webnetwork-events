@@ -58,7 +58,7 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   dbDeliverable.bountyId = bounty.id
   await dbDeliverable.save();
 
-  sendMessageToTelegramChannels(DELIVERABLE_OPEN(dbBounty, dbDeliverable, pullRequestId));
+  sendMessageToTelegramChannels(DELIVERABLE_OPEN(dbBounty, dbDeliverable, dbDeliverable.id));
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
