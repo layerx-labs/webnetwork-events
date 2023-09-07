@@ -63,7 +63,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
   }
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
 
