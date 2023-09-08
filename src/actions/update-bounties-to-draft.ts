@@ -54,15 +54,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
             network_id,
           },
           include: [
-            {association: "repository",},
             {association: "deliverables",},
             {association: "network",},
           ],
         });
 
         loggerHandler.info(`${name} found ${bounties?.length} opened bounties at ${networkName}`);
-
-        const repositoriesDetails = {};
 
         const draftTime = await _network.draftTime()
         const timeOnChain = await web3Connection.Web3.eth.getBlock(`latest`).then(({timestamp}) => +timestamp * 1000);
