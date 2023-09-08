@@ -61,11 +61,11 @@ export async function action(block: DecodedLog<BountyPullRequestCanceledEvent['r
 
       await dbBounty.save();
       sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
-      sendMessageToTelegramChannels(DELIVERABLE_CANCELED(dbBounty, dbDeliverable, pullRequestId))
+      sendMessageToTelegramChannels(DELIVERABLE_CANCELED(dbBounty, dbDeliverable, dbDeliverable.id))
   }
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
 
