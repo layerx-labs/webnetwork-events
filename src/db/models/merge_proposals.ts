@@ -1,16 +1,15 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { comments, commentsId } from './comments';
+import type { deliverables, deliverablesId } from './deliverables';
 import type { disputes, disputesId } from './disputes';
 import type { issues, issuesId } from './issues';
 import type { networks, networksId } from './networks';
 import type { proposal_distributions, proposal_distributionsId } from './proposal_distributions';
-import { deliverableId, deliverables } from './deliverables';
 
 export interface merge_proposalsAttributes {
   id: number;
   issueId?: number;
-  deliverableId?: number;
   createdAt: Date;
   updatedAt: Date;
   githubLogin?: string;
@@ -21,17 +20,17 @@ export interface merge_proposalsAttributes {
   disputeWeight?: string;
   refusedByBountyOwner: boolean;
   isDisputed: boolean;
+  deliverableId?: number;
 }
 
 export type merge_proposalsPk = "id";
 export type merge_proposalsId = merge_proposals[merge_proposalsPk];
-export type merge_proposalsOptionalAttributes = "id" | "issueId" | "deliverableId" | "createdAt" | "updatedAt" | "githubLogin" | "contractId" | "creator" | "network_id" | "contractCreationDate" | "disputeWeight";
+export type merge_proposalsOptionalAttributes = "id" | "issueId" | "createdAt" | "updatedAt" | "githubLogin" | "contractId" | "creator" | "network_id" | "contractCreationDate" | "disputeWeight" | "deliverableId";
 export type merge_proposalsCreationAttributes = Optional<merge_proposalsAttributes, merge_proposalsOptionalAttributes>;
 
 export class merge_proposals extends Model<merge_proposalsAttributes, merge_proposalsCreationAttributes> implements merge_proposalsAttributes {
   id!: number;
   issueId?: number;
-  deliverableId?: number;
   createdAt!: Date;
   updatedAt!: Date;
   githubLogin?: string;
@@ -42,7 +41,13 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
   disputeWeight?: string;
   refusedByBountyOwner!: boolean;
   isDisputed!: boolean;
+  deliverableId?: number;
 
+  // merge_proposals belongsTo deliverables via deliverableId
+  deliverable!: deliverables;
+  getDeliverable!: Sequelize.BelongsToGetAssociationMixin<deliverables>;
+  setDeliverable!: Sequelize.BelongsToSetAssociationMixin<deliverables, deliverablesId>;
+  createDeliverable!: Sequelize.BelongsToCreateAssociationMixin<deliverables>;
   // merge_proposals belongsTo issues via issueId
   issue!: issues;
   getIssue!: Sequelize.BelongsToGetAssociationMixin<issues>;
@@ -89,11 +94,6 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
   getNetwork!: Sequelize.BelongsToGetAssociationMixin<networks>;
   setNetwork!: Sequelize.BelongsToSetAssociationMixin<networks, networksId>;
   createNetwork!: Sequelize.BelongsToCreateAssociationMixin<networks>;
-  // merge_proposals belongsTo deliverables via deliverableId
-  deliverables!: deliverables;
-  getDeliverable!: Sequelize.BelongsToGetAssociationMixin<deliverables>;
-  setDeliverable!: Sequelize.BelongsToSetAssociationMixin<deliverables, deliverableId>;
-  createDeliverable!: Sequelize.BelongsToCreateAssociationMixin<deliverables>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof merge_proposals {
     return sequelize.define('merge_proposals', {
@@ -108,14 +108,6 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
       allowNull: true,
       references: {
         model: 'issues',
-        key: 'id'
-      }
-    },
-    deliverableId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'deliverables',
         key: 'id'
       }
     },
@@ -156,6 +148,14 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
+    },
+    deliverableId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'deliverables',
+        key: 'id'
+      }
     }
   }, {
     tableName: 'merge_proposals',

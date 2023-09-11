@@ -13,6 +13,8 @@ import { curators as _curators } from "./curators";
 import type { curatorsAttributes, curatorsCreationAttributes } from "./curators";
 import { delegations as _delegations } from "./delegations";
 import type { delegationsAttributes, delegationsCreationAttributes } from "./delegations";
+import { deliverables as _deliverables } from "./deliverables";
+import type { deliverablesAttributes, deliverablesCreationAttributes } from "./deliverables";
 import { developers as _developers } from "./developers";
 import type { developersAttributes, developersCreationAttributes } from "./developers";
 import { disputes as _disputes } from "./disputes";
@@ -43,8 +45,6 @@ import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
-import { deliverables as _deliverables } from "./deliverables";
-import type { deliverableAttributes, deliverableCreationAttributes } from "./deliverables";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -54,6 +54,7 @@ export {
   _comments as comments,
   _curators as curators,
   _delegations as delegations,
+  _deliverables as deliverables,
   _developers as developers,
   _disputes as disputes,
   _header_information as header_information,
@@ -69,7 +70,6 @@ export {
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
-  _deliverables as deliverables
 };
 
 export type {
@@ -87,6 +87,8 @@ export type {
   curatorsCreationAttributes,
   delegationsAttributes,
   delegationsCreationAttributes,
+  deliverablesAttributes,
+  deliverablesCreationAttributes,
   developersAttributes,
   developersCreationAttributes,
   disputesAttributes,
@@ -117,8 +119,6 @@ export type {
   usersCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
-  deliverableAttributes,
-  deliverableCreationAttributes,
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -129,6 +129,7 @@ export function initModels(sequelize: Sequelize) {
   const comments = _comments.initModel(sequelize);
   const curators = _curators.initModel(sequelize);
   const delegations = _delegations.initModel(sequelize);
+  const deliverables = _deliverables.initModel(sequelize);
   const developers = _developers.initModel(sequelize);
   const disputes = _disputes.initModel(sequelize);
   const header_information = _header_information.initModel(sequelize);
@@ -144,7 +145,6 @@ export function initModels(sequelize: Sequelize) {
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
-  const deliverables = _deliverables.initModel(sequelize);
 
   delegations.belongsTo(chains, { as: "chain", foreignKey: "chainId"});
   chains.hasMany(delegations, { as: "delegations", foreignKey: "chainId"});
@@ -158,10 +158,16 @@ export function initModels(sequelize: Sequelize) {
   comments.hasMany(comments, { as: "comments", foreignKey: "replyId"});
   delegations.belongsTo(curators, { as: "curator", foreignKey: "curatorId"});
   curators.hasMany(delegations, { as: "delegations", foreignKey: "curatorId"});
+  comments.belongsTo(deliverables, { as: "deliverable", foreignKey: "deliverableId"});
+  deliverables.hasMany(comments, { as: "comments", foreignKey: "deliverableId"});
+  merge_proposals.belongsTo(deliverables, { as: "deliverable", foreignKey: "deliverableId"});
+  deliverables.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "deliverableId"});
   benefactors.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(benefactors, { as: "benefactors", foreignKey: "issueId"});
   comments.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(comments, { as: "comments", foreignKey: "issueId"});
+  deliverables.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
+  issues.hasMany(deliverables, { as: "deliverables", foreignKey: "issueId"});
   developers.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(developers, { as: "developers", foreignKey: "issueId"});
   disputes.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
@@ -188,8 +194,6 @@ export function initModels(sequelize: Sequelize) {
   networks.hasMany(network_tokens, { as: "network_tokens", foreignKey: "networkId"});
   repositories.belongsTo(networks, { as: "network", foreignKey: "network_id"});
   networks.hasMany(repositories, { as: "repositories", foreignKey: "network_id"});
-  comments.belongsTo(deliverables, { as: "deliverable", foreignKey: "deliverableId"});
-  deliverables.hasMany(comments, { as: "comments", foreignKey: "deliverableId"});
   issues.belongsTo(repositories, { as: "repository", foreignKey: "repository_id"});
   repositories.hasMany(issues, { as: "issues", foreignKey: "repository_id"});
   issues.belongsTo(tokens, { as: "rewardToken", foreignKey: "rewardTokenId"});
@@ -202,14 +206,12 @@ export function initModels(sequelize: Sequelize) {
   tokens.hasMany(networks, { as: "networks", foreignKey: "network_token_id"});
   comments.belongsTo(users, { as: "user", foreignKey: "userId"});
   users.hasMany(comments, { as: "comments", foreignKey: "userId"});
+  deliverables.belongsTo(users, { as: "user", foreignKey: "userId"});
+  users.hasMany(deliverables, { as: "deliverables", foreignKey: "userId"});
   issues.belongsTo(users, { as: "user", foreignKey: "userId"});
   users.hasMany(issues, { as: "issues", foreignKey: "userId"});
   kyc_sessions.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(kyc_sessions, { as: "kyc_sessions", foreignKey: "user_id"});
-  deliverables.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
-  deliverables.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "deliverableId"});
-  merge_proposals.belongsTo(deliverables, { as: "deliverable", foreignKey: "deliverableId"});
-  issues.hasMany(deliverables, { as: "deliverables", foreignKey: "issueId"});
 
   return {
     SequelizeMeta: SequelizeMeta,
@@ -219,6 +221,7 @@ export function initModels(sequelize: Sequelize) {
     comments: comments,
     curators: curators,
     delegations: delegations,
+    deliverables: deliverables,
     developers: developers,
     disputes: disputes,
     header_information: header_information,
@@ -234,6 +237,5 @@ export function initModels(sequelize: Sequelize) {
     tokens: tokens,
     users: users,
     users_payments: users_payments,
-    deliverables: deliverables
   };
 }
