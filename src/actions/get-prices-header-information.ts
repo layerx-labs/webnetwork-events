@@ -14,6 +14,7 @@ export const author = "MarcusviniciusLsantos";
 
 const {
   HEADER_TTL_MINUTES: headerTtl,
+  NEXT_ENABLE_COINGECKO: enableCoinGecko
 } = process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
@@ -26,7 +27,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
     if (currentHeader && addMinutes(new Date(currentHeader?.updatedAt), +(headerTtl || 0)) > new Date())
       return eventsProcessed;
 
-    await updatePriceHeader();
+    if (enableCoinGecko === "true")
+      await updatePriceHeader();
     await updateBountiesHeader();
     await updateNumberOfNetworkHeader();
 
