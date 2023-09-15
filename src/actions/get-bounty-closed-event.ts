@@ -1,4 +1,3 @@
-import {Op} from "sequelize";
 import db from "src/db";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
@@ -12,40 +11,11 @@ import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_CLOSED} from "../integrations/telegram/messages";
 import { updateBountiesHeader } from "src/modules/handle-header-information";
 
+
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
 export const description = "Move to 'Closed' status the bounty";
 export const author = "clarkjoao";
-
-async function mergeProposal(id, issueId, network_id) {
-  const pullRequest =
-    await db.pull_requests.findOne({where: {id, issueId, network_id},});
-
-  if (!pullRequest) {
-    logger.debug(`mergeProposal() has no pullRequest on database`);
-    return;
-  }
-
-  pullRequest.status = "merged";
-  await pullRequest.save();
-
-  return pullRequest;
-}
-
-async function closePullRequests(bounty, mergedPullRequestId, network_id) {
-  const pullRequests = await db.pull_requests.findAll({
-    where: {
-      issueId: bounty.id,
-      githubId: {[Op.not]: mergedPullRequestId},
-      network_id
-    }
-  });
-
-  for (const pr of pullRequests) {
-    pr.status = "closed";
-    await pr.save();
-  }
-}
 
 async function updateUserPayments(proposal, transactionHash, issueId, tokenAmount) {
   return Promise.all(
@@ -89,8 +59,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   const dbBounty = await db.issues.findOne({
     where: {contractId: id, network_id: network?.id,},
     include: [
-      {association: "merge_proposals",},
-      {association: "pull_requests",},
+      {association: "repository",},
+      {association: "merge_proposals"},
       {association: "network"},
     ],
   });
@@ -116,9 +86,15 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
 
   try {
     if (network.allowMerge) {
-      const mergedPR = await mergeProposal(dbProposal.pullRequestId, dbProposal.issueId, network?.id);
-      if (mergedPR)
-        await closePullRequests(dbBounty, mergedPR.githubId, network?.id);
+      const deliverable = await db.deliverables.findOne({ where: { id: dbProposal.deliverableId }});
+
+      if (!deliverable) {
+        logger.debug(`mergeProposal() has no deliverable on database`);
+        return eventsProcessed;
+      }
+    
+      deliverable.accepted = true
+      await deliverable.save();
     }
 
   } catch (error) {
@@ -138,10 +114,12 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   await updateLeaderboardNfts()
   await updateLeaderboardBounties("closed");
   await updateLeaderboardProposals("accepted");
+
   await updateBountiesHeader();
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+
   };
 
   return eventsProcessed;

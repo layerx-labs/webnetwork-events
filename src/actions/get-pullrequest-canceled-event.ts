@@ -6,7 +6,7 @@ import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
-import {BOUNTY_STATE_CHANGED, PULL_REQUEST_CANCELED} from "../integrations/telegram/messages";
+import {BOUNTY_STATE_CHANGED, DELIVERABLE_CANCELED} from "../integrations/telegram/messages";
 
 export const name = "getBountyPullRequestCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -39,22 +39,19 @@ export async function action(block: DecodedLog<BountyPullRequestCanceledEvent['r
 
   const pullRequest = bounty.pullRequests[pullRequestId];
 
-  const dbPullRequest = await db.pull_requests.findOne({
+  const dbDeliverable = await db.deliverables.findOne({
     where: {
-      issueId: dbBounty.id,
-      githubId: pullRequest.cid.toString(),
-      contractId: pullRequest.id,
-      network_id: network?.id
+      id: pullRequest.cid
     }
   });
 
-  if (!dbPullRequest) {
-    logger.warn(`${name} Pull request ${pullRequest.cid} not found in database`, bounty)
+  if (!dbDeliverable) {
+    logger.warn(`${name} Deliverable ${pullRequest.cid} not found in database`, bounty)
     return eventsProcessed;
   }
 
-  dbPullRequest.status = "canceled";
-  await dbPullRequest.save();
+  dbDeliverable.canceled = true
+  await dbDeliverable.save();
 
   if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
     if (bounty.pullRequests.some(({ready, canceled}) => ready && !canceled))
@@ -64,7 +61,7 @@ export async function action(block: DecodedLog<BountyPullRequestCanceledEvent['r
 
       await dbBounty.save();
       sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
-      sendMessageToTelegramChannels(PULL_REQUEST_CANCELED(dbBounty, dbPullRequest, pullRequestId))
+      sendMessageToTelegramChannels(DELIVERABLE_CANCELED(dbBounty, dbDeliverable, dbDeliverable.id))
   }
 
   eventsProcessed[network.name!] = {

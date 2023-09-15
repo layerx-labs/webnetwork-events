@@ -9,7 +9,6 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
-import {pull_requests} from "src/db/models/pull_requests";
 import { updateBountiesHeader } from "src/modules/handle-header-information";
 
 export const name = "getBountyCanceledEvents";
@@ -35,8 +34,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     where: {contractId: block.returnValues.id, network_id: network.id,},
     include: [
       {association: "benefactors"},
-      {association: "network"},
-      {association: "pull_requests", required: false},
+      {association: "network"}
     ],
   });
 
@@ -51,9 +49,9 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   const isHardCancel = ['open', 'ready'].includes(dbBounty?.state || '') && (dbBounty.fundingAmount === ('0' || undefined) || isFunded)
 
   if(isHardCancel) {
-    if(dbBounty?.pull_requests.length > 0) 
-      for (const pr of dbBounty?.pull_requests) {
-        await pr.destroy()
+    if(dbBounty?.deliverables.length > 0) 
+      for (const dr of dbBounty?.deliverables) {
+        await dr.destroy()
       }
       
   }

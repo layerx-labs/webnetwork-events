@@ -2,8 +2,8 @@ import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { issues, issuesId } from './issues';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
-import type { pull_requests, pull_requestsId } from './pull_requests';
 import type { users, usersId } from './users';
+import { deliverableId, deliverables } from './deliverables';
 
 export interface commentsAttributes {
   id: number;
@@ -54,11 +54,11 @@ export class comments extends Model<commentsAttributes, commentsCreationAttribut
   getProposal!: Sequelize.BelongsToGetAssociationMixin<merge_proposals>;
   setProposal!: Sequelize.BelongsToSetAssociationMixin<merge_proposals, merge_proposalsId>;
   createProposal!: Sequelize.BelongsToCreateAssociationMixin<merge_proposals>;
-  // comments belongsTo pull_requests via deliverableId
-  deliverable!: pull_requests;
-  getDeliverable!: Sequelize.BelongsToGetAssociationMixin<pull_requests>;
-  setDeliverable!: Sequelize.BelongsToSetAssociationMixin<pull_requests, pull_requestsId>;
-  createDeliverable!: Sequelize.BelongsToCreateAssociationMixin<pull_requests>;
+  // comments belongsTo deliverables via deliverableId
+  deliverable!: deliverables;
+  getDeliverable!: Sequelize.BelongsToGetAssociationMixin<deliverables>;
+  setDeliverable!: Sequelize.BelongsToSetAssociationMixin<deliverables, deliverableId>;
+  createDeliverable!: Sequelize.BelongsToCreateAssociationMixin<deliverables>;
   // comments belongsTo users via userId
   user!: users;
   getUser!: Sequelize.BelongsToGetAssociationMixin<users>;

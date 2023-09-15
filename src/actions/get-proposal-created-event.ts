@@ -20,6 +20,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
   const eventsProcessed: EventsProcessed = {};
   const {returnValues: {bountyId, prId, proposalId}, connection, address, chainId} = block;
 
+
   const bounty = await getBountyFromChain(connection, address, bountyId, name);
   if (!bounty)
     return eventsProcessed;
@@ -31,16 +32,17 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
   }
 
   const values = await validateProposal(bounty, prId, proposalId, network.id, false);
-  if (!values?.proposal || !values?.dbBounty || !values?.dbPullRequest)
+  if (!values?.proposal || !values?.dbBounty || !values?.dbDeliverable)
     return eventsProcessed;
 
-  const {proposal, dbBounty, dbUser, dbPullRequest} = values;
+  const {proposal, dbBounty, dbUser, dbDeliverable} = values;
 
   const dbIssue = await db.issues.findOne({where: {contractId: bounty.id, network_id: network.id}});
   if (!dbIssue) {
     logger.warn(`${name} Issue ${bounty.cid} not found`);
     return eventsProcessed;
   }
+
 
   const dbProposal = await db.merge_proposals.findOne({
     where: {
@@ -60,7 +62,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
     disputeWeight: new BigNumber(proposal.disputeWeight).toFixed(),
     contractCreationDate: proposal.creationDate.toString(),
     issueId: dbBounty.id,
-    pullRequestId: dbPullRequest.id,
+    deliverableId: dbDeliverable.id,
     githubLogin: dbUser?.githubLogin,
     creator: proposal.creator,
     isDisputed: false,
@@ -87,7 +89,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
   await updateLeaderboardProposals();
 
   eventsProcessed[network.name!] = {
-    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
 

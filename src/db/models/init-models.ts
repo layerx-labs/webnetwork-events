@@ -33,8 +33,6 @@ import { networks as _networks } from "./networks";
 import type { networksAttributes, networksCreationAttributes } from "./networks";
 import { proposal_distributions as _proposal_distributions } from "./proposal_distributions";
 import type { proposal_distributionsAttributes, proposal_distributionsCreationAttributes } from "./proposal_distributions";
-import { pull_requests as _pull_requests } from "./pull_requests";
-import type { pull_requestsAttributes, pull_requestsCreationAttributes } from "./pull_requests";
 import { repositories as _repositories } from "./repositories";
 import type { repositoriesAttributes, repositoriesCreationAttributes } from "./repositories";
 import { settings as _settings } from "./settings";
@@ -45,6 +43,8 @@ import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
+import { deliverables as _deliverables } from "./deliverables";
+import type { deliverableAttributes, deliverableCreationAttributes } from "./deliverables";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -64,12 +64,12 @@ export {
   _network_tokens as network_tokens,
   _networks as networks,
   _proposal_distributions as proposal_distributions,
-  _pull_requests as pull_requests,
   _repositories as repositories,
   _settings as settings,
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
+  _deliverables as deliverables
 };
 
 export type {
@@ -107,8 +107,6 @@ export type {
   networksCreationAttributes,
   proposal_distributionsAttributes,
   proposal_distributionsCreationAttributes,
-  pull_requestsAttributes,
-  pull_requestsCreationAttributes,
   repositoriesAttributes,
   repositoriesCreationAttributes,
   settingsAttributes,
@@ -119,6 +117,8 @@ export type {
   usersCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
+  deliverableAttributes,
+  deliverableCreationAttributes,
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -139,12 +139,12 @@ export function initModels(sequelize: Sequelize) {
   const network_tokens = _network_tokens.initModel(sequelize);
   const networks = _networks.initModel(sequelize);
   const proposal_distributions = _proposal_distributions.initModel(sequelize);
-  const pull_requests = _pull_requests.initModel(sequelize);
   const repositories = _repositories.initModel(sequelize);
   const settings = _settings.initModel(sequelize);
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
+  const deliverables = _deliverables.initModel(sequelize);
 
   delegations.belongsTo(chains, { as: "chain", foreignKey: "chainId"});
   chains.hasMany(delegations, { as: "delegations", foreignKey: "chainId"});
@@ -168,8 +168,6 @@ export function initModels(sequelize: Sequelize) {
   issues.hasMany(disputes, { as: "disputes", foreignKey: "issueId"});
   merge_proposals.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "issueId"});
-  pull_requests.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
-  issues.hasMany(pull_requests, { as: "pull_requests", foreignKey: "issueId"});
   users_payments.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
   issues.hasMany(users_payments, { as: "users_payments", foreignKey: "issueId"});
   comments.belongsTo(merge_proposals, { as: "proposal", foreignKey: "proposalId"});
@@ -188,14 +186,10 @@ export function initModels(sequelize: Sequelize) {
   networks.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "network_id"});
   network_tokens.belongsTo(networks, { as: "network", foreignKey: "networkId"});
   networks.hasMany(network_tokens, { as: "network_tokens", foreignKey: "networkId"});
-  pull_requests.belongsTo(networks, { as: "network", foreignKey: "network_id"});
-  networks.hasMany(pull_requests, { as: "pull_requests", foreignKey: "network_id"});
   repositories.belongsTo(networks, { as: "network", foreignKey: "network_id"});
   networks.hasMany(repositories, { as: "repositories", foreignKey: "network_id"});
-  comments.belongsTo(pull_requests, { as: "deliverable", foreignKey: "deliverableId"});
-  pull_requests.hasMany(comments, { as: "comments", foreignKey: "deliverableId"});
-  merge_proposals.belongsTo(pull_requests, { as: "pullRequest", foreignKey: "pullRequestId"});
-  pull_requests.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "pullRequestId"});
+  comments.belongsTo(deliverables, { as: "deliverable", foreignKey: "deliverableId"});
+  deliverables.hasMany(comments, { as: "comments", foreignKey: "deliverableId"});
   issues.belongsTo(repositories, { as: "repository", foreignKey: "repository_id"});
   repositories.hasMany(issues, { as: "issues", foreignKey: "repository_id"});
   issues.belongsTo(tokens, { as: "rewardToken", foreignKey: "rewardTokenId"});
@@ -212,6 +206,10 @@ export function initModels(sequelize: Sequelize) {
   users.hasMany(issues, { as: "issues", foreignKey: "userId"});
   kyc_sessions.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(kyc_sessions, { as: "kyc_sessions", foreignKey: "user_id"});
+  deliverables.belongsTo(issues, { as: "issue", foreignKey: "issueId"});
+  deliverables.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "deliverableId"});
+  merge_proposals.belongsTo(deliverables, { as: "deliverable", foreignKey: "deliverableId"});
+  issues.hasMany(deliverables, { as: "deliverables", foreignKey: "issueId"});
 
   return {
     SequelizeMeta: SequelizeMeta,
@@ -231,11 +229,11 @@ export function initModels(sequelize: Sequelize) {
     network_tokens: network_tokens,
     networks: networks,
     proposal_distributions: proposal_distributions,
-    pull_requests: pull_requests,
     repositories: repositories,
     settings: settings,
     tokens: tokens,
     users: users,
     users_payments: users_payments,
+    deliverables: deliverables
   };
 }
