@@ -59,7 +59,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         for (const dbBounty of pendingBounties) {
           const isBountyOnNetwork = await _network.cidBountyId(dbBounty.ipfsUrl!)
 
-          if (isBountyOnNetwork.toString() === '0' && dbBounty?.githubId) {
+          if (isBountyOnNetwork.toString() === '0') {
             logger.info(`${name} Removing pending bounty ${dbBounty.id}`);
 
               await dbBounty.destroy();
