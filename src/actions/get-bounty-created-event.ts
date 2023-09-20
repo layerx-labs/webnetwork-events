@@ -13,11 +13,12 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {BountyCreatedEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 
-import { Sequelize, WhereOptions } from "sequelize";
+import {Sequelize, WhereOptions} from "sequelize";
 import generateCard from "src/modules/generate-bounty-cards";
 import ipfsService from "src/services/ipfs-service";
-import { tokens } from "src/db/models/tokens";
-import { isIpfsEnvs } from "src/utils/ipfs-envs-verify";
+import {tokens} from "src/db/models/tokens";
+import {isIpfsEnvs} from "src/utils/ipfs-envs-verify";
+import {Push} from "../services/analytics/push";
 
 
 export const name = "getBountyCreatedEvents";
@@ -131,6 +132,17 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
     ...eventsProcessed[network.name!],
     [dbBounty.id.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
+
+  const {tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional} = bounty;
+
+  Push.event("BOUNTY_CREATED", {
+    chainId, network: {name: network.name, id: network.id},
+    tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
+    currency: dbBounty.transactionalToken?.name,
+    reward: dbBounty.rewardToken?.name,
+    creator: block.returnValues.creator,
+    username: dbBounty.user?.githubLogin,
+  })
 
   return eventsProcessed;
 }

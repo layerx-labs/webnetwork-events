@@ -1,6 +1,6 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { merge_proposals, merge_proposalsId } from './merge_proposals';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {merge_proposals, merge_proposalsId} from './merge_proposals';
 
 export interface proposal_distributionsAttributes {
   id: number;

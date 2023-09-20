@@ -1,7 +1,7 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { issues, issuesId } from './issues';
-import type { networks, networksId } from './networks';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {issues, issuesId} from './issues';
+import type {networks, networksId} from './networks';
 
 export interface repositoriesAttributes {
   id: number;

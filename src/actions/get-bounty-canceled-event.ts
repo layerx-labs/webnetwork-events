@@ -9,7 +9,8 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
-import { updateBountiesHeader } from "src/modules/handle-header-information";
+import {updateBountiesHeader} from "src/modules/handle-header-information";
+import {Push} from "../services/analytics/push";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -72,6 +73,11 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
+
+  Push.event("BOUNTY_CANCELED", {
+    chainId, network: {name: network.name, id: network.id},
+    bountyId: dbBounty.id, bountyContractId: bounty.id
+  })
 
   return eventsProcessed;
 }

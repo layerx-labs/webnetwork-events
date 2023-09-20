@@ -6,6 +6,7 @@ import {updateNumberOfNetworkHeader} from "src/modules/handle-header-information
 import {findOrCreateToken} from "src/modules/tokens";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {Network_v2} from "@taikai/dappkit";
+import {Push} from "../services/analytics/push";
 
 export const name = "getNetworkRegisteredEvents";
 export const schedule = "*/10 * * * *";
@@ -14,7 +15,7 @@ export const author = "vhcsilva";
 
 export async function action(block: DecodedLog<NetworkCreatedEvent['returnValues']>, query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
-  const {returnValues: {network: createdNetworkAddress}, connection, chainId} = block;
+  const {returnValues: {network: createdNetworkAddress, creator}, connection, chainId} = block;
 
   const network = await db.networks.findOne({where: {networkAddress: createdNetworkAddress, chain_id: chainId}});
 
@@ -51,6 +52,8 @@ export async function action(block: DecodedLog<NetworkCreatedEvent['returnValues
 
   logger.warn(`${name} Registered ${createdNetworkAddress}`);
   eventsProcessed[network.name!] = [network.networkAddress!];
+
+  Push.event("BOUNTY_NETWORK_CREATED", {chainId, network: {name: network.name, id: network.id}, creator})
 
   return eventsProcessed;
 }

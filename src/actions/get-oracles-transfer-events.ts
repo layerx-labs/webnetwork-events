@@ -1,10 +1,12 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
-import {Network_v2} from "@taikai/dappkit";
+import {fromSmartContractDecimals, Network_v2} from "@taikai/dappkit";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {OraclesTransferEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 import {handleCurators} from "src/modules/handle-curators";
 import {DecodedLog} from "../interfaces/block-sniffer";
+import {Push} from "../services/analytics/push";
+import BigNumber from "bignumber.js";
 
 export const name = "getOraclesTransferEvents";
 export const schedule = "*/30 * * * *";
@@ -40,6 +42,10 @@ export async function action(block: DecodedLog<OraclesTransferEvent['returnValue
 
   eventsProcessed[dbNetwork.name!] = curators.filter(e => e).length === 2 ? [fromAddress, toAddress] : []
 
+  Push.event("DELEGATE_UNDELEGATE", {
+    chainId, network: {network: dbNetwork.name, id: dbNetwork.id}, currency: service.networkToken.symbol(),
+    amount: BigNumber(fromSmartContractDecimals(amount, service.networkToken.decimals)), fromAddress, toAddress,
+  })
 
   return eventsProcessed;
 }

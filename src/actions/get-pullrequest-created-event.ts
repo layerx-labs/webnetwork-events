@@ -8,6 +8,7 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {DELIVERABLE_OPEN} from "../integrations/telegram/messages";
+import {Push} from "../services/analytics/push";
 
 export const name = "getBountyPullRequestCreatedEvents";
 export const schedule = "*/10 * * * *";
@@ -63,6 +64,13 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
+
+  Push.event("PULL_REQUEST_OPEN", {
+    chainId, network: {name: network.name, id: network.id},
+    bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+    deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
+    actor: pullRequest.creator,
+  })
 
   return eventsProcessed;
 }

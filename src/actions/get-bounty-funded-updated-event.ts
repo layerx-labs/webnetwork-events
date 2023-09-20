@@ -9,6 +9,7 @@ import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/bloc
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_FUNDED} from "../integrations/telegram/messages";
+import {Push} from "../services/analytics/push";
 
 export const name = "getBountyFundedEvents";
 export const schedule = "*/14 * * * *";
@@ -54,6 +55,13 @@ export async function action(block: DecodedLog<BountyFunded['returnValues']>, qu
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
+
+  Push.event("BOUNTY_CREATED", {
+    chainId, network: {name: network.name, id: network.id},
+    currency: dbBounty.transactionalToken?.name,
+    reward: dbBounty.rewardToken?.name,
+    funded: bounty.funded,
+  })
 
   return eventsProcessed;
 }

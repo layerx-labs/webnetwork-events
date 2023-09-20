@@ -41,11 +41,11 @@ export class BlockSniffer {
   constructor(readonly web3Host: string,
               readonly mappedEventActions: MappedEventActions,
               readonly startBlock: number = 0,
-              readonly targetBlock = 0,
+              readonly targetBlock: number = 0,
               readonly query: EventsQuery | null = null,
               readonly interval: number = 60 * 1000, // 60s
               readonly pagesPerRequest: number = 1500,
-              autoStart = true) {
+              autoStart: boolean = true) {
 
     this.#currentBlock = startBlock;
     this.#connection = new Web3Connection({web3Host});

@@ -10,6 +10,7 @@ import {handleIsDisputed} from "src/modules/handle-isDisputed";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {getNetwork} from "../utils/block-process";
 import {NETWORK_NOT_FOUND} from "../utils/messages.const";
+import {Push} from "../services/analytics/push";
 
 export const name = "getOraclesChangedEvents";
 export const schedule = "*/30 * * * *";
@@ -18,7 +19,7 @@ export const author = "clarkjoao";
 
 export async function action(block: DecodedLog<OraclesChangedEvent['returnValues']>, query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
-  const {returnValues: {newLockedTotal, actor}, connection, address, chainId} = block;
+  const {returnValues: {newLockedTotal, actionAmount, actor}, connection, address, chainId} = block;
 
   let councilAmount
   let decimals;
@@ -70,6 +71,11 @@ export async function action(block: DecodedLog<OraclesChangedEvent['returnValues
   await updatePriceHeader();
 
   eventsProcessed[network.name!] = dbNetwork.councilMembers || [];
+
+  Push.event("LOCK_UNLOCK_NETWORK", {
+    chainId, network: {network: network.name, id: network.id}, actor,
+    amount: BigNumber(fromSmartContractDecimals(actionAmount, decimals)), newTotal: actorsNewTotal,
+  })
 
 
   return eventsProcessed;
