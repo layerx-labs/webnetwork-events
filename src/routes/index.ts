@@ -1,6 +1,4 @@
 import {Router} from "express";
-
-import {eventsRouter} from "./events.routes";
 import {seoRoutes} from "./seo.routes";
 import readRouter from "./read.router";
 import {getChainsRegistryAndNetworks} from "../utils/block-process";
@@ -8,8 +6,6 @@ import {getChainsRegistryAndNetworks} from "../utils/block-process";
 const router = Router();
 
 router.use("/seo", seoRoutes);
-
-router.use("/past-events", eventsRouter);
 
 router.use(`/read/`, readRouter);
 
