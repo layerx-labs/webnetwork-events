@@ -1,9 +1,10 @@
 import {AnalyticsEvents} from "./events";
 import {getCollector} from "./collector-type";
-import {AnalyticEvents, AnalyticType} from "./types/analytics";
+import {AnalyticEvents} from "./types/analytics";
 import {error} from "../../utils/logger-handler";
 import {ErrorMessages} from "../../types/error-messages";
 import {AnalyticEventName} from "./types/events";
+import {AnalyticTypes} from "./types/analytic-types";
 
 export class Push {
 
@@ -35,7 +36,7 @@ export class Push {
     try {
       await Promise.all(
         Object.entries(events)
-          .map(([type, events_1]) => getCollector({type: type as AnalyticType})?.collect(events_1)));
+          .map(([type, events_1]) => getCollector({type: type as AnalyticTypes})?.collect(events_1)));
     } catch (e) {
       error(ErrorMessages.FailedToCollectLog, e?.toString());
     }

@@ -1,3 +1,4 @@
-import {Analytic, AnalyticType} from "./types/analytics";
+import {Analytic} from "./types/analytics";
+import {AnalyticTypes} from "./types/analytic-types";
 
-export const analytic = (type: AnalyticType): Analytic => ({type});
+export const analytic = (type: AnalyticTypes): Analytic => ({type});

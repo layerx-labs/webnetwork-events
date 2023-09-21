@@ -1,13 +1,14 @@
 import {Collector} from "../collector";
 import axios, {AxiosInstance} from "axios";
 import process from "process";
-import {AnalyticType, CollectEventPayload} from "../types/analytics";
+import {CollectEventPayload} from "../types/analytics";
 import {ErrorMessages} from "../../../types/error-messages";
+import {AnalyticTypes} from "../types/analytic-types";
 
 const {GA_MEASURE_ID, GA_API_SECRET, GA_BASEURL} = process.env;
 
 export class GoogleAnalyticsCollector implements Collector {
-  readonly type: AnalyticType = "ga4";
+  readonly type: AnalyticTypes = AnalyticTypes.GA4;
   readonly collector: AxiosInstance =
     axios.create({
       baseURL: GA_BASEURL || "https://www.google-analytics.com/mp/collect",

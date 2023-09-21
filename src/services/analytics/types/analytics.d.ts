@@ -1,7 +1,8 @@
 import {AnalyticEventName} from "./events";
+import {AnalyticTypes} from "./analytic-types";
 
 export type CollectEventPayload = { name: string; params: any };
-export type AnalyticType = "ga4";
-export type Analytic = { type: AnalyticType };
+export type Analytic = { type: AnalyticTypes };
 export type AnalyticEvent = { name: AnalyticEventName, params: any }
 export type AnalyticEvents = AnalyticEvent[];
+export type AnalyticEventPool = { [K: AnalyticEventName]: Analytic[] }
