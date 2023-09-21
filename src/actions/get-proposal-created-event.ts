@@ -95,7 +95,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
   Push.event("MERGE_PROPOSAL_OPEN", {
     chainId, network: {name: network.name, id: network.id},
     bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
-    deliverableId: dbDeliverable.id, deliverableContractId: dbDeliverable.contractId,
+    deliverableId: dbDeliverable.id, deliverableContractId: dbDeliverable.prContractId,
     proposalId: createProposal.id, proposalContractId: createProposal.contractId,
     actor: proposal.creator,
   })
