@@ -3,6 +3,7 @@ import { DataTypes, Model, Optional } from 'sequelize';
 import type { benefactors, benefactorsId } from './benefactors';
 import type { chains, chainsId } from './chains';
 import type { comments, commentsId } from './comments';
+import type { deliverables, deliverablesId } from './deliverables';
 import type { developers, developersId } from './developers';
 import type { disputes, disputesId } from './disputes';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
@@ -11,7 +12,6 @@ import type { repositories, repositoriesId } from './repositories';
 import type { tokens, tokensId } from './tokens';
 import type { users, usersId } from './users';
 import type { users_payments, users_paymentsId } from './users_payments';
-import { deliverableId, deliverables } from './deliverables';
 
 export interface issuesAttributes {
   id: number;
@@ -122,6 +122,18 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   hasComment!: Sequelize.HasManyHasAssociationMixin<comments, commentsId>;
   hasComments!: Sequelize.HasManyHasAssociationsMixin<comments, commentsId>;
   countComments!: Sequelize.HasManyCountAssociationsMixin;
+  // issues hasMany deliverables via issueId
+  deliverables!: deliverables[];
+  getDeliverables!: Sequelize.HasManyGetAssociationsMixin<deliverables>;
+  setDeliverables!: Sequelize.HasManySetAssociationsMixin<deliverables, deliverablesId>;
+  addDeliverable!: Sequelize.HasManyAddAssociationMixin<deliverables, deliverablesId>;
+  addDeliverables!: Sequelize.HasManyAddAssociationsMixin<deliverables, deliverablesId>;
+  createDeliverable!: Sequelize.HasManyCreateAssociationMixin<deliverables>;
+  removeDeliverable!: Sequelize.HasManyRemoveAssociationMixin<deliverables, deliverablesId>;
+  removeDeliverables!: Sequelize.HasManyRemoveAssociationsMixin<deliverables, deliverablesId>;
+  hasDeliverable!: Sequelize.HasManyHasAssociationMixin<deliverables, deliverablesId>;
+  hasDeliverables!: Sequelize.HasManyHasAssociationsMixin<deliverables, deliverablesId>;
+  countDeliverables!: Sequelize.HasManyCountAssociationsMixin;
   // issues hasMany developers via issueId
   developers!: developers[];
   getDevelopers!: Sequelize.HasManyGetAssociationsMixin<developers>;
@@ -158,18 +170,6 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   hasMerge_proposal!: Sequelize.HasManyHasAssociationMixin<merge_proposals, merge_proposalsId>;
   hasMerge_proposals!: Sequelize.HasManyHasAssociationsMixin<merge_proposals, merge_proposalsId>;
   countMerge_proposals!: Sequelize.HasManyCountAssociationsMixin;
-  // issues hasMany deliverables via issueId
-  deliverables!: deliverables[]; 
-  getDeliverables!: Sequelize.HasManyGetAssociationsMixin<deliverables>;
-  setDeliverables!: Sequelize.HasManySetAssociationsMixin<deliverables, deliverableId>;
-  addDeliverable!: Sequelize.HasManyAddAssociationMixin<deliverables, deliverableId>;
-  addDeliverables!: Sequelize.HasManyAddAssociationsMixin<deliverables, deliverableId>;
-  createDeliverable!: Sequelize.HasManyCreateAssociationMixin<deliverables>;
-  removeDeliverable!: Sequelize.HasManyRemoveAssociationMixin<deliverables, deliverableId>;
-  removeDeliverables!: Sequelize.HasManyRemoveAssociationsMixin<deliverables, deliverableId>;
-  hasDeliverable!: Sequelize.HasManyHasAssociationMixin<deliverables, deliverableId>;
-  hasDeliverables!: Sequelize.HasManyHasAssociationsMixin<deliverables, deliverableId>;
-  countDeliverables!: Sequelize.HasManyCountAssociationsMixin;
   // issues hasMany users_payments via issueId
   users_payments!: users_payments[];
   getUsers_payments!: Sequelize.HasManyGetAssociationsMixin<users_payments>;

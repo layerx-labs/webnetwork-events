@@ -1,6 +1,7 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { comments, commentsId } from './comments';
+import type { deliverables, deliverablesId } from './deliverables';
 import type { issues, issuesId } from './issues';
 import type { kyc_sessions, kyc_sessionsId } from './kyc_sessions';
 
@@ -46,6 +47,18 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   hasComment!: Sequelize.HasManyHasAssociationMixin<comments, commentsId>;
   hasComments!: Sequelize.HasManyHasAssociationsMixin<comments, commentsId>;
   countComments!: Sequelize.HasManyCountAssociationsMixin;
+  // users hasMany deliverables via userId
+  deliverables!: deliverables[];
+  getDeliverables!: Sequelize.HasManyGetAssociationsMixin<deliverables>;
+  setDeliverables!: Sequelize.HasManySetAssociationsMixin<deliverables, deliverablesId>;
+  addDeliverable!: Sequelize.HasManyAddAssociationMixin<deliverables, deliverablesId>;
+  addDeliverables!: Sequelize.HasManyAddAssociationsMixin<deliverables, deliverablesId>;
+  createDeliverable!: Sequelize.HasManyCreateAssociationMixin<deliverables>;
+  removeDeliverable!: Sequelize.HasManyRemoveAssociationMixin<deliverables, deliverablesId>;
+  removeDeliverables!: Sequelize.HasManyRemoveAssociationsMixin<deliverables, deliverablesId>;
+  hasDeliverable!: Sequelize.HasManyHasAssociationMixin<deliverables, deliverablesId>;
+  hasDeliverables!: Sequelize.HasManyHasAssociationsMixin<deliverables, deliverablesId>;
+  countDeliverables!: Sequelize.HasManyCountAssociationsMixin;
   // users hasMany issues via userId
   issues!: issues[];
   getIssues!: Sequelize.HasManyGetAssociationsMixin<issues>;

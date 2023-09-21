@@ -1,9 +1,9 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { deliverables, deliverablesId } from './deliverables';
 import type { issues, issuesId } from './issues';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 import type { users, usersId } from './users';
-import { deliverableId, deliverables } from './deliverables';
 
 export interface commentsAttributes {
   id: number;
@@ -12,17 +12,17 @@ export interface commentsAttributes {
   type: string;
   issueId: number;
   proposalId?: number;
-  deliverableId?: number;
   userId: number;
   userAddress: string;
   replyId?: number;
   createdAt: Date;
   updatedAt: Date;
+  deliverableId?: number;
 }
 
 export type commentsPk = "id";
 export type commentsId = comments[commentsPk];
-export type commentsOptionalAttributes = "id" | "hidden" | "proposalId" | "deliverableId" | "replyId" | "createdAt" | "updatedAt";
+export type commentsOptionalAttributes = "id" | "hidden" | "proposalId" | "replyId" | "createdAt" | "updatedAt" | "deliverableId";
 export type commentsCreationAttributes = Optional<commentsAttributes, commentsOptionalAttributes>;
 
 export class comments extends Model<commentsAttributes, commentsCreationAttributes> implements commentsAttributes {
@@ -32,18 +32,23 @@ export class comments extends Model<commentsAttributes, commentsCreationAttribut
   type!: string;
   issueId!: number;
   proposalId?: number;
-  deliverableId?: number;
   userId!: number;
   userAddress!: string;
   replyId?: number;
   createdAt!: Date;
   updatedAt!: Date;
+  deliverableId?: number;
 
   // comments belongsTo comments via replyId
   reply!: comments;
   getReply!: Sequelize.BelongsToGetAssociationMixin<comments>;
   setReply!: Sequelize.BelongsToSetAssociationMixin<comments, commentsId>;
   createReply!: Sequelize.BelongsToCreateAssociationMixin<comments>;
+  // comments belongsTo deliverables via deliverableId
+  deliverable!: deliverables;
+  getDeliverable!: Sequelize.BelongsToGetAssociationMixin<deliverables>;
+  setDeliverable!: Sequelize.BelongsToSetAssociationMixin<deliverables, deliverablesId>;
+  createDeliverable!: Sequelize.BelongsToCreateAssociationMixin<deliverables>;
   // comments belongsTo issues via issueId
   issue!: issues;
   getIssue!: Sequelize.BelongsToGetAssociationMixin<issues>;
@@ -54,11 +59,6 @@ export class comments extends Model<commentsAttributes, commentsCreationAttribut
   getProposal!: Sequelize.BelongsToGetAssociationMixin<merge_proposals>;
   setProposal!: Sequelize.BelongsToSetAssociationMixin<merge_proposals, merge_proposalsId>;
   createProposal!: Sequelize.BelongsToCreateAssociationMixin<merge_proposals>;
-  // comments belongsTo deliverables via deliverableId
-  deliverable!: deliverables;
-  getDeliverable!: Sequelize.BelongsToGetAssociationMixin<deliverables>;
-  setDeliverable!: Sequelize.BelongsToSetAssociationMixin<deliverables, deliverableId>;
-  createDeliverable!: Sequelize.BelongsToCreateAssociationMixin<deliverables>;
   // comments belongsTo users via userId
   user!: users;
   getUser!: Sequelize.BelongsToGetAssociationMixin<users>;
@@ -102,14 +102,6 @@ export class comments extends Model<commentsAttributes, commentsCreationAttribut
         key: 'id'
       }
     },
-    deliverableId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'pull_requests',
-        key: 'id'
-      }
-    },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -127,6 +119,14 @@ export class comments extends Model<commentsAttributes, commentsCreationAttribut
       allowNull: true,
       references: {
         model: 'comments',
+        key: 'id'
+      }
+    },
+    deliverableId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'deliverables',
         key: 'id'
       }
     }

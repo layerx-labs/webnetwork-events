@@ -79,10 +79,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
           eventsProcessed[networkName!] = {
             ...eventsProcessed[networkName!],
-            [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: null}
+            [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: null}
           };
 
-          logger.info(`${name} Parsed bounty ${dbBounty.issueId}`);
+          logger.info(`${name} Parsed bounty ${dbBounty.id}`);
         }
       }
 

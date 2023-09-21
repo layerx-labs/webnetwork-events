@@ -11,7 +11,6 @@ import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_CLOSED} from "../integrations/telegram/messages";
 import { updateBountiesHeader } from "src/modules/handle-header-information";
 
-
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
 export const description = "Move to 'Closed' status the bounty";
@@ -40,9 +39,6 @@ async function updateCuratorProposal(address: string, networkId: number) {
 }
 
 export async function action(block: DecodedLog, query?: EventsQuery): Promise<EventsProcessed> {
-
-  const service = new EventService(name, query);
-
   const eventsProcessed: EventsProcessed = {};
   const {returnValues: {id, proposalId}, connection, address, chainId} = block;
 
@@ -59,7 +55,6 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   const dbBounty = await db.issues.findOne({
     where: {contractId: id, network_id: network?.id,},
     include: [
-      {association: "repository",},
       {association: "merge_proposals"},
       {association: "network"},
     ],
@@ -83,38 +78,26 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     return eventsProcessed;
   }
 
-
-  try {
-    if (network.allowMerge) {
-      const deliverable = await db.deliverables.findOne({ where: { id: dbProposal.deliverableId }});
-
-      if (!deliverable) {
-        logger.debug(`mergeProposal() has no deliverable on database`);
-        return eventsProcessed;
-      }
-    
-      deliverable.accepted = true
-      await deliverable.save();
-    }
-
-  } catch (error) {
-    logger.error(`${name} proposal ${proposalId} was not is not mergeable`, error?.toString());
+  const deliverable = await db.deliverables.findOne({ where: { id: dbProposal.deliverableId }});
+  if (!deliverable) {
+    logger.debug(`mergeProposal() has no deliverable on database`);
+    return eventsProcessed;
   }
 
+  deliverable.accepted = true;
+  await deliverable.save();
 
   dbBounty.merged = dbProposal?.contractId as any;
   dbBounty.state = "closed";
   await dbBounty.save();
-  
+
   sendMessageToTelegramChannels(BOUNTY_CLOSED(dbBounty, dbProposal, proposalId));
 
   await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
-
   await updateCuratorProposal(bounty.proposals[+proposalId].creator, network?.id)
   await updateLeaderboardNfts()
   await updateLeaderboardBounties("closed");
   await updateLeaderboardProposals("accepted");
-
   await updateBountiesHeader();
 
   eventsProcessed[network.name!] = {
