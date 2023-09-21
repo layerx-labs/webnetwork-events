@@ -1,4 +1,4 @@
-import {Analytic,} from "../../types/analytics";
+import {Analytic,} from "./types/analytics";
 import {GoogleAnalyticsCollector} from "./collectors/google-analytics-collector";
 import {error, warn} from "../../utils/logger-handler";
 import {ErrorMessages} from "../../types/error-messages";

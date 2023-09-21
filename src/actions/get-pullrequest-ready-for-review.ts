@@ -8,6 +8,7 @@ import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/bloc
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 export const name = "getBountyPullRequestReadyForReviewEvents";
 export const schedule = "*/12 * * * *";
@@ -67,7 +68,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
-  Push.event("PULL_REQUEST_READY", {
+  Push.event(AnalyticEventName.PULL_REQUEST_READY, {
     chainId, network: {name: network.name, id: network.id},
     bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
     deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,

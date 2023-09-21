@@ -1,7 +1,7 @@
 import {Collector} from "../collector";
 import axios, {AxiosInstance} from "axios";
 import process from "process";
-import {AnalyticType, CollectEventPayload} from "../../../types/analytics";
+import {AnalyticType, CollectEventPayload} from "../types/analytics";
 import {ErrorMessages} from "../../../types/error-messages";
 
 const {GA_MEASURE_ID, GA_API_SECRET, GA_BASEURL} = process.env;

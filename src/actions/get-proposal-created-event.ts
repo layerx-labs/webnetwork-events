@@ -11,6 +11,7 @@ import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events.d";
 
 export const name = "getBountyProposalCreatedEvents";
 export const schedule = "*/13 * * * *";
@@ -92,7 +93,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
-  Push.event("MERGE_PROPOSAL_OPEN", {
+  Push.event(AnalyticEventName.MERGE_PROPOSAL_OPEN, {
     chainId, network: {name: network.name, id: network.id},
     bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
     deliverableId: dbDeliverable.id, deliverableContractId: dbDeliverable.prContractId,

@@ -1,8 +1,9 @@
 import {AnalyticsEvents} from "./events";
 import {getCollector} from "./collector-type";
-import {AnalyticEventName, AnalyticEvents, AnalyticType} from "../../types/analytics";
+import {AnalyticEvents, AnalyticType} from "./types/analytics";
 import {error} from "../../utils/logger-handler";
 import {ErrorMessages} from "../../types/error-messages";
+import {AnalyticEventName} from "./types/events";
 
 export class Push {
 

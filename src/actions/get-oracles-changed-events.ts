@@ -11,6 +11,7 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getNetwork} from "../utils/block-process";
 import {NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 export const name = "getOraclesChangedEvents";
 export const schedule = "*/30 * * * *";
@@ -72,7 +73,7 @@ export async function action(block: DecodedLog<OraclesChangedEvent['returnValues
 
   eventsProcessed[network.name!] = dbNetwork.councilMembers || [];
 
-  Push.event("LOCK_UNLOCK_NETWORK", {
+  Push.event(AnalyticEventName.LOCK_UNLOCK_NETWORK, {
     chainId, network: {network: network.name, id: network.id}, actor,
     amount: BigNumber(fromSmartContractDecimals(actionAmount, decimals)), newTotal: actorsNewTotal,
   })

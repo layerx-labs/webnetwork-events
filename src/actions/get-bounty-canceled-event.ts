@@ -11,6 +11,7 @@ import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {updateBountiesHeader} from "src/modules/handle-header-information";
 import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -74,7 +75,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
-  Push.event("BOUNTY_CANCELED", {
+  Push.event(AnalyticEventName.BOUNTY_CANCELED, {
     chainId, network: {name: network.name, id: network.id},
     bountyId: dbBounty.id, bountyContractId: bounty.id
   })

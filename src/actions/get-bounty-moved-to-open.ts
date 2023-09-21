@@ -8,6 +8,7 @@ import {getChainsRegistryAndNetworks} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 export const name = "get-bounty-moved-to-open";
 export const schedule = "*/1 * * * *";
@@ -83,7 +84,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           logger.info(`${name} Parsed bounty ${dbBounty.id}`);
 
 
-          Push.event("BOUNTY_ACTIVE", {
+          Push.event(AnalyticEventName.BOUNTY_ACTIVE, {
             chainId: chain_id, network: {name: networkName, id: network_id},
             bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
           })

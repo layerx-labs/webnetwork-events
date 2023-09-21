@@ -1,6 +1,6 @@
 import axios, {type AxiosInstance} from "axios";
 import * as process from "process";
-import {CollectEventPayload} from "../types/analytics";
+import {CollectEventPayload} from "./analytics/types/analytics";
 import {type networks} from "../db/models/networks";
 
 const {GA_MEASURE_ID, GA_API_SECRET, GA_BASEURL} = process.env;

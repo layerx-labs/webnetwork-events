@@ -19,6 +19,7 @@ import ipfsService from "src/services/ipfs-service";
 import {tokens} from "src/db/models/tokens";
 import {isIpfsEnvs} from "src/utils/ipfs-envs-verify";
 import {Push} from "../services/analytics/push";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 
 export const name = "getBountyCreatedEvents";
@@ -135,7 +136,7 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
 
   const {tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional} = bounty;
 
-  Push.event("BOUNTY_CREATED", {
+  Push.event(AnalyticEventName.BOUNTY_CREATED, {
     chainId, network: {name: network.name, id: network.id},
     tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
     currency: dbBounty.transactionalToken?.name,
