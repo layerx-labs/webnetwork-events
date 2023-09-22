@@ -89,7 +89,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
   await updateLeaderboardProposals();
 
   eventsProcessed[network.name!] = {
-    [dbBounty.issueId!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
+    [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
 
