@@ -16,7 +16,9 @@ async function updateLeaderboardRow(address: string, property: string, value: nu
 
   if(address) {
     const userLeaderboard = await db.leaderboard.findOne({
-      where: { address }
+      where: { 
+        address: address?.toLowerCase()
+      }
     });
   
     if(userLeaderboard) {
@@ -25,7 +27,7 @@ async function updateLeaderboardRow(address: string, property: string, value: nu
       await userLeaderboard.save();
     } else
       await db.leaderboard.create({
-        address,
+        address: address?.toLowerCase(),
         [property]: value,
       });
   } else {
@@ -91,9 +93,8 @@ async function updateLeaderboardBounties(state: "opened" | "canceled" | "closed"
 
   try {
     const bountiesOfCreators = await db.issues.findAll({
-      group: ["creatorAddress"],
-      attributes: ["creatorAddress", [Sequelize.fn("COUNT", "creatorAddress"), "id"]],
-      raw: true,
+      group: [`"user"."id"`],
+      attributes: ["user.address", [Sequelize.fn("COUNT", "user.address"), "id"]],
       ...state !== "opened" ? {
         where: {
           state: {
@@ -101,7 +102,10 @@ async function updateLeaderboardBounties(state: "opened" | "canceled" | "closed"
           },
           chain_id: chainId
         }
-      } : {}
+      } : {},
+      include: [
+        { association: "user", attributes: ["address"] }
+      ]
     });
 
     if (!bountiesOfCreators.length) {
@@ -116,7 +120,7 @@ async function updateLeaderboardBounties(state: "opened" | "canceled" | "closed"
     } 
 
     for (const creator of bountiesOfCreators) {
-      const { creatorAddress, id: count } = creator;
+      const { user: { address: creatorAddress }, id: count } = creator;
 
       if (await updateLeaderboardRow(String(creatorAddress), leaderBoardColumnsByState[state], count))
         logger.info(name, `updated ${creatorAddress} to ${count}`);
