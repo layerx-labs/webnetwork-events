@@ -6,7 +6,6 @@ import {OraclesTransferEvent} from "@taikai/dappkit/dist/src/interfaces/events/n
 import {handleCurators} from "src/modules/handle-curators";
 import {DecodedLog} from "../interfaces/block-sniffer";
 import {Push} from "../services/analytics/push";
-import BigNumber from "bignumber.js";
 import {AnalyticEventName} from "../services/analytics/types/events";
 
 export const name = "getOraclesTransferEvents";
@@ -45,7 +44,7 @@ export async function action(block: DecodedLog<OraclesTransferEvent['returnValue
 
   Push.event(AnalyticEventName.DELEGATE_UNDELEGATE, {
     chainId, network: {network: dbNetwork.name, id: dbNetwork.id}, currency: service.networkToken.symbol(),
-    amount: BigNumber(fromSmartContractDecimals(amount, service.networkToken.decimals)), fromAddress, toAddress,
+    amount: fromSmartContractDecimals(amount, service.networkToken.decimals), fromAddress, toAddress,
   })
 
   return eventsProcessed;

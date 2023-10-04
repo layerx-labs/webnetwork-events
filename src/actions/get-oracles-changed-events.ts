@@ -75,7 +75,7 @@ export async function action(block: DecodedLog<OraclesChangedEvent['returnValues
 
   Push.event(AnalyticEventName.LOCK_UNLOCK_NETWORK, {
     chainId, network: {network: network.name, id: network.id}, actor,
-    amount: BigNumber(fromSmartContractDecimals(actionAmount, decimals)), newTotal: actorsNewTotal,
+    amount: fromSmartContractDecimals(actionAmount, decimals), newTotal: actorsNewTotal.toString(),
   })
 
 
