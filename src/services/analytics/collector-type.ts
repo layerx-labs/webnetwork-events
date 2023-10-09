@@ -3,6 +3,7 @@ import {GoogleAnalyticsCollector} from "./collectors/google-analytics-collector"
 import {error, warn} from "../../utils/logger-handler";
 import {ErrorMessages} from "../../types/error-messages";
 import {type Collector} from "./collector";
+import {ElasticSearchScribal} from "./collectors/elastic-search-scribal";
 
 /**
  *
@@ -14,6 +15,8 @@ export function getCollector({type}: Analytic): Collector | null {
     switch (type) {
       case "ga4":
         return new GoogleAnalyticsCollector();
+      case "elastic-search":
+        return new ElasticSearchScribal();
       default:
         warn(ErrorMessages.CollectorUnknown, {type});
         return null;
