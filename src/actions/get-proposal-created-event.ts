@@ -11,7 +11,7 @@ import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {Push} from "../services/analytics/push";
-import {AnalyticEventName} from "../services/analytics/types/events.d";
+import {AnalyticEventName} from "../services/analytics/types/events";
 
 export const name = "getBountyProposalCreatedEvents";
 export const schedule = "*/13 * * * *";

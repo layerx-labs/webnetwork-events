@@ -24,7 +24,7 @@ See example on [GoogleAnalyticsCollector](./collectors/google-analytics-collecto
 
 1. import the base-collector
 2. implement needed functionality and provide a `collect` function
-3. add new type to `types/analytic-types.d.ts`
+3. add new type to `types/analytic-types.ts`
 4. add the return in `collector-type.ts`
 5. add new value to enum on `types/events.d`
 6. add the new event collector in the `events.ts` constant

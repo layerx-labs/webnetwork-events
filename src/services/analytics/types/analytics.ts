@@ -5,4 +5,4 @@ export type CollectEventPayload = { name: string; params: any };
 export type Analytic = { type: AnalyticTypes };
 export type AnalyticEvent = { name: AnalyticEventName, params: any }
 export type AnalyticEvents = AnalyticEvent[];
-export type AnalyticEventPool = { [K: AnalyticEventName]: Analytic[] }
+export type AnalyticEventPool = { [k: string]: Analytic[] }
