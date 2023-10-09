@@ -30,7 +30,5 @@ export default (() => {
   const scribal = new Scribal([]);
   scribal.init({appName, hostname, version: '*', ...ScribalConfig.logService});
 
-  // scribal.addLogger(elasticLoggerMaker, ScribalConfig.logService.elastic);
-
   return scribal;
 })()
