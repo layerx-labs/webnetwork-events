@@ -9,10 +9,10 @@ const {
   NEXT_ELASTIC_SEARCH_URL: node,
   NEXT_ELASTIC_SEARCH_USERNAME: username,
   NEXT_ELASTIC_SEARCH_PASSWORD: password,
-  LOG_APP_NAME: index = "bepro-business-events"
+  LOG_APP_NAME: index = "bepro-events"
 } = process.env;
 
-export class ElasticSearchScribal implements Collector {
+export class ElasticSearch implements Collector {
   readonly type = AnalyticTypes.ElasticSearch;
   readonly collector = new Client({node, auth: {username: username!, password: password!}});
 
@@ -23,7 +23,7 @@ export class ElasticSearchScribal implements Collector {
 
   public async collect(events: CollectEventPayload[]): Promise<any> {
     const _collect = (document: CollectEventPayload) =>
-      this.collector.index({index, document})
+      this.collector.index({index: `bepro-business-events-${index}`, document})
 
     try {
       return await Promise.all(events.map(_collect));
