@@ -49,7 +49,7 @@ export async function action(block: DecodedLog<NetworkCreatedEvent['returnValues
 
   await network.save();
 
-  await updateNumberOfNetworkHeader();
+  updateNumberOfNetworkHeader();
 
   logger.warn(`${name} Registered ${createdNetworkAddress}`);
   eventsProcessed[network.name!] = [network.networkAddress!];

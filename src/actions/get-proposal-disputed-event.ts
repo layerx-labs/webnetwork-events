@@ -15,7 +15,7 @@ export async function action(block: DecodedLog<BountyProposalDisputedEvent['retu
 
   await disputeProcessor(block);
   eventsProcessed = await proposalStateProcessor(block, eventsProcessed);
-  await updateLeaderboardProposals("rejected");
+  updateLeaderboardProposals("rejected");
 
   return eventsProcessed;
 }

@@ -13,7 +13,7 @@ export async function action(block: DecodedLog<BountyProposalRefusedEvent['retur
   let eventsProcessed: EventsProcessed = {};
 
   eventsProcessed = await proposalStateProcessor(block, eventsProcessed);
-  await updateLeaderboardProposals("rejected");
+  updateLeaderboardProposals("rejected");
 
   return eventsProcessed;
 }

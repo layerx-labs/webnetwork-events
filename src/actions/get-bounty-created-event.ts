@@ -124,8 +124,8 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
 
   await dbBounty.save();
 
-  await updateLeaderboardBounties();
-  await updateBountiesHeader();
+  updateLeaderboardBounties();
+  updateBountiesHeader();
 
   sendMessageToTelegramChannels(NEW_BOUNTY_OPEN(dbBounty!));
 
