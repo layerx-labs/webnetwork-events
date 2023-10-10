@@ -22,8 +22,11 @@ export class ElasticSearch implements Collector {
   }
 
   public async collect(events: CollectEventPayload[]): Promise<any> {
-    const _collect = (document: CollectEventPayload) =>
-      this.collector.index({index: `bepro-business-events-${index}`, document})
+    const _collect = (event: CollectEventPayload) =>
+      this.collector.index({
+          index: `bepro-business-events-${index}`,
+          document: {...event, timestamp: new Date().toISOString()},
+        })
         .catch(e => {
           error(ErrorMessages.FailedToCollectElasticSearchLog, document, e?.toString());
         })

@@ -4,7 +4,9 @@ import {ERC20, NetworkRegistry,} from "@taikai/dappkit";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
 import {ChangeAllowedTokensEvent} from "@taikai/dappkit/dist/src/interfaces/events/network-registry";
 import {DecodedLog} from "../interfaces/block-sniffer";
-import { Sequelize, WhereOptions } from "sequelize";
+import {Sequelize, WhereOptions} from "sequelize";
+import {AnalyticEventName} from "../services/analytics/types/events";
+import {Push} from "../services/analytics/push";
 
 export const name = "getChangeAllowedTokensEvents";
 export const schedule = "*/60 * * * *";
@@ -107,6 +109,10 @@ export async function action(block: DecodedLog<ChangeAllowedTokensEvent['returnV
           return removed > 0;
         })
     )
+
+  Push.event(AnalyticEventName.REGISTRY_UPDATED, {
+    actor: address, operation, kind, tokens, chainId
+  })
 
   eventsProcessed[address] = result.map(n => n.toString());
   return eventsProcessed;

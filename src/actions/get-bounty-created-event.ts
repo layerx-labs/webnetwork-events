@@ -136,7 +136,7 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
 
   const {tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional} = bounty;
 
-  Push.event(AnalyticEventName.BOUNTY_CREATED, {
+  Push.event(+bounty.fundingAmount > 0 ? AnalyticEventName.FUNDING_REQUEST_CREATED : AnalyticEventName.BOUNTY_CREATED, {
     chainId, network: {name: network.name, id: network.id},
     tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
     currency: dbBounty.transactionalToken?.symbol,

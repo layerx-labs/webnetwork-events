@@ -57,7 +57,7 @@ export async function action(block: DecodedLog<NetworkCreatedEvent['returnValues
   Push.event(AnalyticEventName.BOUNTY_NETWORK_CREATED, {
     chainId,
     network: {name: network.name, id: network.id},
-    creator
+    actor: creator
   })
 
   return eventsProcessed;
