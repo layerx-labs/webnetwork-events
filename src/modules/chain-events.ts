@@ -18,7 +18,6 @@ import {action as UpdateBountiesToDraft} from "../actions/update-bounties-to-dra
 import {action as DeletePendingNetworks} from "../actions/delete-pending-networks";
 import {action as DeletePendingBounties} from "../actions/delete-pending-bounties";
 import {action as UpdateNetworkParams} from "../actions/update-network-parameters";
-import {action as SeoGenerateCards} from "../actions/seo-generate-cards";
 import {action as BountyWithdrawReward} from "../actions/get-bounty-reward-withdraw";
 import {action as UpdateHeaders} from "../actions/get-prices-header-information";
 import {action as GenerateNftImage} from "../actions/generate-nft-images";
@@ -52,7 +51,6 @@ export const MIDNIGHT_ACTIONS = {
   DeletePendingNetworks,
   DeletePendingBounties,
   UpdateNetworkParams,
-  SeoGenerateCards,
 }
 
 export const MINUTE_ACTIONS = {
