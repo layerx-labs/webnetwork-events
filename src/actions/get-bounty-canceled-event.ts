@@ -12,6 +12,7 @@ import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {updateBountiesHeader} from "src/modules/handle-header-information";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
+import updateSeoCardBounty from "src/modules/handle-seo-card";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -68,8 +69,9 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   await dbBounty.save();
   sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
 
-  await updateLeaderboardBounties("canceled");
-  await updateBountiesHeader();
+  updateLeaderboardBounties("canceled");
+  updateBountiesHeader();
+  updateSeoCardBounty(dbBounty.id, name);
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}

@@ -6,6 +6,7 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {getBountyFromChain, getNetwork, parseLogWithContext} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_AMOUNT_UPDATED} from "../integrations/telegram/messages";
+import updateSeoCardBounty from "src/modules/handle-seo-card";
 
 export const name = "getBountyAmountUpdatedEvents";
 export const schedule = "*/13 * * * *";
@@ -42,6 +43,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   await dbBounty.save();
   
   sendMessageToTelegramChannels(BOUNTY_AMOUNT_UPDATED(dbBounty.amount, dbBounty));
+
+  updateSeoCardBounty(dbBounty.id, name);
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}

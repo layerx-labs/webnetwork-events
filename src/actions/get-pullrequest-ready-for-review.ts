@@ -9,6 +9,7 @@ import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
+import updateSeoCardBounty from "src/modules/handle-seo-card";
 
 export const name = "getBountyPullRequestReadyForReviewEvents";
 export const schedule = "*/12 * * * *";
@@ -62,6 +63,8 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
     dbBounty.state = "ready";
     await dbBounty.save();
     sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(`ready`, dbBounty));
+
+    updateSeoCardBounty(dbBounty.id, name);
   }
 
   eventsProcessed[network.name!] = {
