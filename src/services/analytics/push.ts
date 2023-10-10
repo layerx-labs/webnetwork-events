@@ -14,9 +14,10 @@ export class Push {
 
   static async event(name: AnalyticEventName, params: any) {
     try {
-      await Promise.all(
+      await Promise.allSettled(
         Push.getCollectors(name)
-          .map(collector => collector?.collect([{name, params}])));
+          .map(collector =>
+            collector?.collect([{name, params}])));
     } catch (e) {
       error(ErrorMessages.FailedToCollectLog, e?.toString());
     }
@@ -34,9 +35,10 @@ export class Push {
     }
 
     try {
-      await Promise.all(
+      await Promise.allSettled(
         Object.entries(events)
-          .map(([type, events_1]) => getCollector({type: type as AnalyticTypes})?.collect(events_1)));
+          .map(([type, events_1]) =>
+            getCollector({type: type as AnalyticTypes})?.collect(events_1)));
     } catch (e) {
       error(ErrorMessages.FailedToCollectLog, e?.toString());
     }

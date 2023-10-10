@@ -43,7 +43,7 @@ export async function action(block: DecodedLog<OraclesTransferEvent['returnValue
   eventsProcessed[dbNetwork.name!] = curators.filter(e => e).length === 2 ? [fromAddress, toAddress] : []
 
   Push.event(AnalyticEventName.DELEGATE_UNDELEGATE, {
-    chainId, network: {network: dbNetwork.name, id: dbNetwork.id}, currency: service.networkToken.symbol(),
+    chainId, network: {network: dbNetwork.name, id: dbNetwork.id}, currency: await service.networkToken.symbol(),
     amount: fromSmartContractDecimals(amount, service.networkToken.decimals), fromAddress, toAddress,
   })
 

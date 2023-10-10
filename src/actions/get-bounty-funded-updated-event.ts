@@ -59,9 +59,10 @@ export async function action(block: DecodedLog<BountyFunded['returnValues']>, qu
 
   Push.event(AnalyticEventName.BOUNTY_FUNDED, {
     chainId, network: {name: network.name, id: network.id},
-    currency: dbBounty.transactionalToken?.name,
-    reward: dbBounty.rewardToken?.name,
+    currency: dbBounty.transactionalToken?.symbol,
+    reward: dbBounty.rewardToken?.symbol,
     funded: bounty.funded,
+    actor: address,
   })
 
   return eventsProcessed;

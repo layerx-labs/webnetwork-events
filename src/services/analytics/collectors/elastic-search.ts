@@ -3,6 +3,7 @@ import {AnalyticTypes} from "../types/analytic-types";
 import {CollectEventPayload} from "../types/analytics";
 import {Client} from "@elastic/elasticsearch";
 import {ErrorMessages} from "../../../types/error-messages";
+import {error} from "../../../utils/logger-handler";
 
 const {
   NEXT_ELASTIC_SEARCH_URL: node,
@@ -23,7 +24,10 @@ export class ElasticSearch implements Collector {
   public async collect(events: CollectEventPayload[]): Promise<any> {
     const _collect = (document: CollectEventPayload) =>
       this.collector.index({index: `bepro-business-events-${index}`, document})
+        .catch(e => {
+          error(ErrorMessages.FailedToCollectElasticSearchLog, document, e?.toString());
+        })
 
-    return await Promise.all(events.map(_collect));
+    return await Promise.allSettled(events.map(_collect));
   }
 }

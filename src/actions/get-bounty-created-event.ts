@@ -139,8 +139,8 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
   Push.event(AnalyticEventName.BOUNTY_CREATED, {
     chainId, network: {name: network.name, id: network.id},
     tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
-    currency: dbBounty.transactionalToken?.name,
-    reward: dbBounty.rewardToken?.name,
+    currency: dbBounty.transactionalToken?.symbol,
+    reward: dbBounty.rewardToken?.symbol,
     creator: block.returnValues.creator,
     username: dbBounty.user?.githubLogin,
   })

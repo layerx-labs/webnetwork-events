@@ -1,7 +1,6 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {EventService} from "../services/event-service";
 import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {updateCuratorProposalParams} from "src/modules/handle-curators";
 import {updateLeaderboardBounties, updateLeaderboardNfts, updateLeaderboardProposals} from "src/modules/leaderboard";
@@ -111,8 +110,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   Push.event(AnalyticEventName.BOUNTY_CLOSED, {
     chainId, network: {name: network.name, id: network.id},
     tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
-    currency: dbBounty.transactionalToken?.name,
-    reward: dbBounty.rewardToken?.name,
+    currency: dbBounty.transactionalToken?.symbol,
+    reward: dbBounty.rewardToken?.symbol,
     creator: block.returnValues.creator,
     username: dbBounty.user?.githubLogin
   })
