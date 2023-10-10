@@ -113,7 +113,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     currency: dbBounty.transactionalToken?.symbol,
     reward: dbBounty.rewardToken?.symbol,
     creator: block.returnValues.creator,
-    username: dbBounty.user?.githubLogin
+    username: dbBounty.user?.githubLogin,
+    actor: address
   })
 
   return eventsProcessed;
