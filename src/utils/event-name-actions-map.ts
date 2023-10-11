@@ -6,6 +6,7 @@ export const EventNameActionsMap = {
   getBountyFundedEvents: 'BountyFunded',
   getChangeAllowedTokensEvents: 'ChangeAllowedTokens',
   getNetworkRegisteredEvents: 'NetworkRegistered',
+  getUserLockedAmountChangedEvents: 'UserLockedAmountChanged',
   getOraclesChangedEvents: 'OraclesChanged',
   getOraclesTransferEvents: 'OraclesTransfer',
   getBountyProposalCreatedEvents: 'BountyProposalCreated',
