@@ -45,6 +45,8 @@ import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
+import { users_locked_registry as _users_locked_registry } from "./user_locked_registry";
+import type { users_locked_registryAttributes, users_locked_registryCreationAttributes } from "./user_locked_registry";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -70,6 +72,7 @@ export {
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
+  _users_locked_registry as user_locked_registry,
 };
 
 export type {
@@ -119,6 +122,8 @@ export type {
   usersCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
+  users_locked_registryAttributes,
+  users_locked_registryCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -145,6 +150,7 @@ export function initModels(sequelize: Sequelize) {
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
+  const users_locked_registry = _users_locked_registry.initModel(sequelize);
 
   delegations.belongsTo(chains, { as: "chain", foreignKey: "chainId"});
   chains.hasMany(delegations, { as: "delegations", foreignKey: "chainId"});
@@ -212,6 +218,9 @@ export function initModels(sequelize: Sequelize) {
   users.hasMany(issues, { as: "issues", foreignKey: "userId"});
   kyc_sessions.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(kyc_sessions, { as: "kyc_sessions", foreignKey: "user_id"});
+  users_locked_registry.belongsTo(tokens, { as: "token", foreignKey: "tokenId"});
+  users_locked_registry.belongsTo(users, { as: "user", foreignKey: "userId"});
+  users_locked_registry.belongsTo(chains, { as: "chain", foreignKey: "chain_id"});
 
   return {
     SequelizeMeta: SequelizeMeta,
@@ -237,5 +246,6 @@ export function initModels(sequelize: Sequelize) {
     tokens: tokens,
     users: users,
     users_payments: users_payments,
+    users_locked_registry: users_locked_registry
   };
 }
