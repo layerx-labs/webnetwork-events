@@ -220,7 +220,7 @@ export function initModels(sequelize: Sequelize) {
   users.hasMany(kyc_sessions, { as: "kyc_sessions", foreignKey: "user_id"});
   users_locked_registry.belongsTo(tokens, { as: "token", foreignKey: "tokenId"});
   users_locked_registry.belongsTo(users, { as: "user", foreignKey: "userId"});
-  users_locked_registry.belongsTo(chains, { as: "chain", foreignKey: "chain_id"});
+  users_locked_registry.belongsTo(chains, { as: "chain", foreignKey: "chainId"});
 
   return {
     SequelizeMeta: SequelizeMeta,
