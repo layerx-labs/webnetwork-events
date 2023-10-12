@@ -39,7 +39,7 @@ export async function action(block: DecodedLog<UserLockedAmountChangedEvent['ret
   })
 
   if(!token){
-    logger.warn(`${name} Token not found in database`);
+    logger.warn(`${name} Token not found in database - tokenAddress:${contractToken.contractAddress}`);
     return eventsProcessed
   }
 
