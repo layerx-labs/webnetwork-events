@@ -21,7 +21,6 @@ export async function action(block: DecodedLog<UserLockedAmountChangedEvent['ret
 
   const contractToken = registry.token
   const newUserAmount = BigNumber(fromSmartContractDecimals(newAmount, registry.token.decimals));
-  const contractUserLocked = BigNumber(await registry.lockedTokensOfAddress(userAddress))
 
  const dbUser = await db.users.findOne({
     where: {
@@ -53,7 +52,7 @@ export async function action(block: DecodedLog<UserLockedAmountChangedEvent['ret
     } as WhereOptions,
     defaults: {
       address: userAddress,
-      chainId,
+      chainId: chainId,
       userId: dbUser?.id,
       amountLocked: newUserAmount?.toFixed(),
       tokenId: token?.id
@@ -61,23 +60,14 @@ export async function action(block: DecodedLog<UserLockedAmountChangedEvent['ret
   });
 
   if(user_locked_registry && !created){
-    const dbUserAmount = BigNumber(user_locked_registry.amountLocked); 
-
-    if(dbUserAmount.eq(contractUserLocked)){
-      logger.warn(`${name} This event has already been processed previously`);
-      return eventsProcessed
-    }
-
-    if(contractUserLocked.lt(dbUserAmount)){
-      user_locked_registry.amountLocked = dbUserAmount.minus(newUserAmount)?.toFixed()
-    } else user_locked_registry.amountLocked = dbUserAmount.plus(newUserAmount)?.toFixed()
+    user_locked_registry.amountLocked = newUserAmount?.toFixed(),
     
     await user_locked_registry.save()
   }
 
   logger.warn(`${name} Registered locked amount changed - address:${userAddress} - chainId:${chainId}`);
 
-  eventsProcessed[userAddress!] = [newAmount.toString()]
+  eventsProcessed[userAddress!] = [newUserAmount?.toFixed()]
 
   return eventsProcessed;
 }
