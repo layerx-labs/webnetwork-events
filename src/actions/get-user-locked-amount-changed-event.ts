@@ -34,12 +34,13 @@ export async function action(block: DecodedLog<UserLockedAmountChangedEvent['ret
     where: {
       address: Sequelize.where(Sequelize.fn("LOWER", Sequelize.col("tokens.address")), 
       "=",
-      contractToken.contractAddress?.toLowerCase())
+      contractToken.contractAddress?.toLowerCase()),
+      chain_id: chainId
     } as WhereOptions
   })
 
   if(!token){
-    logger.warn(`${name} Token not found in database - tokenAddress:${contractToken.contractAddress}`);
+    logger.warn(`${name} Token not found in database - tokenAddress:${contractToken.contractAddress} - chainId:${chainId}`);
     return eventsProcessed
   }
 
