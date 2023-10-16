@@ -16,7 +16,6 @@ export const schedule = "*/10 * * * *";
 export const description = "Sync pull-request created events";
 export const author = "clarkjoao";
 
-
 export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['returnValues']>, query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
   const {returnValues: {bountyId, pullRequestId}, connection, address, chainId} = block;
