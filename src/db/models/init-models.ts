@@ -41,6 +41,8 @@ import { tokens as _tokens } from "./tokens";
 import type { tokensAttributes, tokensCreationAttributes } from "./tokens";
 import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
+import { users_locked_registry as _users_locked_registry } from "./users_locked_registry";
+import type { users_locked_registryAttributes, users_locked_registryCreationAttributes } from "./users_locked_registry";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
 
@@ -66,6 +68,7 @@ export {
   _settings as settings,
   _tokens as tokens,
   _users as users,
+  _users_locked_registry as users_locked_registry,
   _users_payments as users_payments,
 };
 
@@ -112,6 +115,8 @@ export type {
   tokensCreationAttributes,
   usersAttributes,
   usersCreationAttributes,
+  users_locked_registryAttributes,
+  users_locked_registryCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
 };
@@ -138,6 +143,7 @@ export function initModels(sequelize: Sequelize) {
   const settings = _settings.initModel(sequelize);
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
+  const users_locked_registry = _users_locked_registry.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
 
   delegations.belongsTo(chains, { as: "chain", foreignKey: "chainId"});
@@ -148,6 +154,8 @@ export function initModels(sequelize: Sequelize) {
   chains.hasMany(networks, { as: "networks", foreignKey: "chain_id"});
   tokens.belongsTo(chains, { as: "chain", foreignKey: "chain_id"});
   chains.hasMany(tokens, { as: "tokens", foreignKey: "chain_id"});
+  users_locked_registry.belongsTo(chains, { as: "chain", foreignKey: "chainId"});
+  chains.hasMany(users_locked_registry, { as: "users_locked_registries", foreignKey: "chainId"});
   comments.belongsTo(comments, { as: "reply", foreignKey: "replyId"});
   comments.hasMany(comments, { as: "comments", foreignKey: "replyId"});
   delegations.belongsTo(curators, { as: "curator", foreignKey: "curatorId"});
@@ -194,6 +202,8 @@ export function initModels(sequelize: Sequelize) {
   tokens.hasMany(network_tokens, { as: "network_tokens", foreignKey: "tokenId"});
   networks.belongsTo(tokens, { as: "network_token_token", foreignKey: "network_token_id"});
   tokens.hasMany(networks, { as: "networks", foreignKey: "network_token_id"});
+  users_locked_registry.belongsTo(tokens, { as: "token", foreignKey: "tokenId"});
+  tokens.hasMany(users_locked_registry, { as: "users_locked_registries", foreignKey: "tokenId"});
   comments.belongsTo(users, { as: "user", foreignKey: "userId"});
   users.hasMany(comments, { as: "comments", foreignKey: "userId"});
   deliverables.belongsTo(users, { as: "user", foreignKey: "userId"});
@@ -202,6 +212,8 @@ export function initModels(sequelize: Sequelize) {
   users.hasMany(issues, { as: "issues", foreignKey: "userId"});
   kyc_sessions.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(kyc_sessions, { as: "kyc_sessions", foreignKey: "user_id"});
+  users_locked_registry.belongsTo(users, { as: "user", foreignKey: "userId"});
+  users.hasMany(users_locked_registry, { as: "users_locked_registries", foreignKey: "userId"});
 
   return {
     SequelizeMeta: SequelizeMeta,
@@ -225,6 +237,7 @@ export function initModels(sequelize: Sequelize) {
     settings: settings,
     tokens: tokens,
     users: users,
+    users_locked_registry: users_locked_registry,
     users_payments: users_payments,
   };
 }

@@ -4,6 +4,7 @@ import type { delegations, delegationsId } from './delegations';
 import type { issues, issuesId } from './issues';
 import type { networks, networksId } from './networks';
 import type { tokens, tokensId } from './tokens';
+import type { users_locked_registry, users_locked_registryId } from './users_locked_registry';
 
 export interface chainsAttributes {
   id: number;
@@ -95,6 +96,18 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
   hasToken!: Sequelize.HasManyHasAssociationMixin<tokens, tokensId>;
   hasTokens!: Sequelize.HasManyHasAssociationsMixin<tokens, tokensId>;
   countTokens!: Sequelize.HasManyCountAssociationsMixin;
+  // chains hasMany users_locked_registry via chainId
+  users_locked_registries!: users_locked_registry[];
+  getUsers_locked_registries!: Sequelize.HasManyGetAssociationsMixin<users_locked_registry>;
+  setUsers_locked_registries!: Sequelize.HasManySetAssociationsMixin<users_locked_registry, users_locked_registryId>;
+  addUsers_locked_registry!: Sequelize.HasManyAddAssociationMixin<users_locked_registry, users_locked_registryId>;
+  addUsers_locked_registries!: Sequelize.HasManyAddAssociationsMixin<users_locked_registry, users_locked_registryId>;
+  createUsers_locked_registry!: Sequelize.HasManyCreateAssociationMixin<users_locked_registry>;
+  removeUsers_locked_registry!: Sequelize.HasManyRemoveAssociationMixin<users_locked_registry, users_locked_registryId>;
+  removeUsers_locked_registries!: Sequelize.HasManyRemoveAssociationsMixin<users_locked_registry, users_locked_registryId>;
+  hasUsers_locked_registry!: Sequelize.HasManyHasAssociationMixin<users_locked_registry, users_locked_registryId>;
+  hasUsers_locked_registries!: Sequelize.HasManyHasAssociationsMixin<users_locked_registry, users_locked_registryId>;
+  countUsers_locked_registries!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof chains {
     return sequelize.define('chains', {

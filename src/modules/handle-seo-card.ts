@@ -23,7 +23,7 @@ export default async function updateSeoCardBounty(bountyId: number, action: stri
 
       const { hash } = await ipfsService.add(card);
       if (!hash) {
-        logger.warn(`${action} Failed to get hash from IPFS for ${dbBounty.issueId}`);
+        logger.warn(`${action} Failed to get hash from IPFS for ${dbBounty.id}`);
       }
 
       await dbBounty.update({ seoImage: hash });
