@@ -4,6 +4,7 @@ import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service"
 import {Network_v2, Web3Connection} from "@taikai/dappkit";
 import {Op} from "sequelize";
 import {getChainsRegistryAndNetworks} from "../utils/block-process";
+import { updateIsCurrentlyCurator } from "src/modules/handle-curators";
 
 export const name = "updateNetworkParameters";
 export const schedule = "0 0 * * *";
@@ -24,7 +25,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       ...query?.networkName ? {name: {[Op.iLike]: query.networkName}} : {},
     }
 
-    const networks = await db.networks.findAll({where});
+    const networks = await db.networks.findAll({
+      where,
+      include: [{ association: "curators", required: false }],
+    });
 
     try {
 
@@ -41,7 +45,15 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           const networkContract = new Network_v2(web3Connection, network.networkAddress);
           await networkContract.loadContract();
 
-          network.councilAmount = await networkContract.councilAmount();
+          const contractCouncilAmount = await networkContract.councilAmount()
+          
+          if(network.councilAmount !== contractCouncilAmount){
+            for(const curator of network.curators){
+              updateIsCurrentlyCurator(curator, contractCouncilAmount, name)
+            }
+          }
+
+          network.councilAmount = contractCouncilAmount;
           network.disputableTime = await networkContract.disputableTime();
           network.draftTime = await networkContract.draftTime();
           network.oracleExchangeRate = await networkContract.oracleExchangeRate();
