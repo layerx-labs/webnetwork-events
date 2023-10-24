@@ -35,8 +35,6 @@ import { networks as _networks } from "./networks";
 import type { networksAttributes, networksCreationAttributes } from "./networks";
 import { proposal_distributions as _proposal_distributions } from "./proposal_distributions";
 import type { proposal_distributionsAttributes, proposal_distributionsCreationAttributes } from "./proposal_distributions";
-import { repositories as _repositories } from "./repositories";
-import type { repositoriesAttributes, repositoriesCreationAttributes } from "./repositories";
 import { settings as _settings } from "./settings";
 import type { settingsAttributes, settingsCreationAttributes } from "./settings";
 import { tokens as _tokens } from "./tokens";
@@ -45,8 +43,6 @@ import { users as _users } from "./users";
 import type { usersAttributes, usersCreationAttributes } from "./users";
 import { users_payments as _users_payments } from "./users_payments";
 import type { users_paymentsAttributes, users_paymentsCreationAttributes } from "./users_payments";
-import { users_locked_registry as _users_locked_registry } from "./user_locked_registry";
-import type { users_locked_registryAttributes, users_locked_registryCreationAttributes } from "./user_locked_registry";
 
 export {
   _SequelizeMeta as SequelizeMeta,
@@ -67,12 +63,10 @@ export {
   _network_tokens as network_tokens,
   _networks as networks,
   _proposal_distributions as proposal_distributions,
-  _repositories as repositories,
   _settings as settings,
   _tokens as tokens,
   _users as users,
   _users_payments as users_payments,
-  _users_locked_registry as user_locked_registry,
 };
 
 export type {
@@ -112,8 +106,6 @@ export type {
   networksCreationAttributes,
   proposal_distributionsAttributes,
   proposal_distributionsCreationAttributes,
-  repositoriesAttributes,
-  repositoriesCreationAttributes,
   settingsAttributes,
   settingsCreationAttributes,
   tokensAttributes,
@@ -122,8 +114,6 @@ export type {
   usersCreationAttributes,
   users_paymentsAttributes,
   users_paymentsCreationAttributes,
-  users_locked_registryAttributes,
-  users_locked_registryCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -145,18 +135,16 @@ export function initModels(sequelize: Sequelize) {
   const network_tokens = _network_tokens.initModel(sequelize);
   const networks = _networks.initModel(sequelize);
   const proposal_distributions = _proposal_distributions.initModel(sequelize);
-  const repositories = _repositories.initModel(sequelize);
   const settings = _settings.initModel(sequelize);
   const tokens = _tokens.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
-  const users_locked_registry = _users_locked_registry.initModel(sequelize);
 
   delegations.belongsTo(chains, { as: "chain", foreignKey: "chainId"});
   chains.hasMany(delegations, { as: "delegations", foreignKey: "chainId"});
   issues.belongsTo(chains, { as: "chain", foreignKey: "chain_id"});
   chains.hasMany(issues, { as: "issues", foreignKey: "chain_id"});
-  networks.belongsTo(chains, { as: "chain", foreignKey: "chain_id", targetKey: "chainId"});
+  networks.belongsTo(chains, { as: "chain", foreignKey: "chain_id"});
   chains.hasMany(networks, { as: "networks", foreignKey: "chain_id"});
   tokens.belongsTo(chains, { as: "chain", foreignKey: "chain_id"});
   chains.hasMany(tokens, { as: "tokens", foreignKey: "chain_id"});
@@ -198,10 +186,6 @@ export function initModels(sequelize: Sequelize) {
   networks.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "network_id"});
   network_tokens.belongsTo(networks, { as: "network", foreignKey: "networkId"});
   networks.hasMany(network_tokens, { as: "network_tokens", foreignKey: "networkId"});
-  repositories.belongsTo(networks, { as: "network", foreignKey: "network_id"});
-  networks.hasMany(repositories, { as: "repositories", foreignKey: "network_id"});
-  issues.belongsTo(repositories, { as: "repository", foreignKey: "repository_id"});
-  repositories.hasMany(issues, { as: "issues", foreignKey: "repository_id"});
   issues.belongsTo(tokens, { as: "rewardToken", foreignKey: "rewardTokenId"});
   tokens.hasMany(issues, { as: "issues", foreignKey: "rewardTokenId"});
   issues.belongsTo(tokens, { as: "transactionalToken", foreignKey: "transactionalTokenId"});
@@ -218,9 +202,6 @@ export function initModels(sequelize: Sequelize) {
   users.hasMany(issues, { as: "issues", foreignKey: "userId"});
   kyc_sessions.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(kyc_sessions, { as: "kyc_sessions", foreignKey: "user_id"});
-  users_locked_registry.belongsTo(tokens, { as: "token", foreignKey: "tokenId"});
-  users_locked_registry.belongsTo(users, { as: "user", foreignKey: "userId"});
-  users_locked_registry.belongsTo(chains, { as: "chain", foreignKey: "chainId"});
 
   return {
     SequelizeMeta: SequelizeMeta,
@@ -241,11 +222,9 @@ export function initModels(sequelize: Sequelize) {
     network_tokens: network_tokens,
     networks: networks,
     proposal_distributions: proposal_distributions,
-    repositories: repositories,
     settings: settings,
     tokens: tokens,
     users: users,
     users_payments: users_payments,
-    users_locked_registry: users_locked_registry
   };
 }

@@ -1,7 +1,7 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {issues, issuesId} from './issues';
-import type {merge_proposals, merge_proposalsId} from './merge_proposals';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { issues, issuesId } from './issues';
+import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 
 export interface disputesAttributes {
   id: number;
