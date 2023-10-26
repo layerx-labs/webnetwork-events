@@ -22,6 +22,7 @@ import {action as BountyWithdrawReward} from "../actions/get-bounty-reward-withd
 import {action as UpdateHeaders} from "../actions/get-prices-header-information";
 import {action as GenerateNftImage} from "../actions/generate-nft-images";
 import {action as UserLockedAmountChanged} from "../actions/get-user-locked-amount-changed-event";
+import {action as ChangedFee} from "../actions/get-changed-fee";
 
 /**
  * These events rely on parsed-logs to function and can/will rely on Database information, as well as update it
@@ -34,7 +35,8 @@ import {action as UserLockedAmountChanged} from "../actions/get-user-locked-amou
 export const REGISTRY_EVENTS = {
   NetworkRegistered,
   ChangeAllowedTokens,
-  UserLockedAmountChanged
+  UserLockedAmountChanged,
+  ChangedFee
 }
 
 export const NETWORK_EVENTS = {
