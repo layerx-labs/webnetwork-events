@@ -8,28 +8,21 @@ import type { developers, developersId } from './developers';
 import type { disputes, disputesId } from './disputes';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 import type { networks, networksId } from './networks';
-import type { repositories, repositoriesId } from './repositories';
 import type { tokens, tokensId } from './tokens';
 import type { users, usersId } from './users';
 import type { users_payments, users_paymentsId } from './users_payments';
 
 export interface issuesAttributes {
   id: number;
-  issueId?: string;
-  githubId?: string;
   state?: string;
   createdAt: Date;
   updatedAt: Date;
-  creatorAddress?: string;
-  creatorGithub?: string;
   amount?: string;
-  repository_id?: number;
   working?: string[];
   merged?: string;
   title?: string;
   body?: string;
   seoImage?: string;
-  branch?: string;
   network_id?: number;
   contractId?: number;
   transactionalTokenId?: number;
@@ -53,26 +46,20 @@ export interface issuesAttributes {
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "issueId" | "githubId" | "state" | "createdAt" | "updatedAt" | "creatorAddress" | "creatorGithub" | "amount" | "repository_id" | "working" | "merged" | "title" | "body" | "seoImage" | "branch" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId" | "visible" | "contractCreationDate" | "nftImage" | "ipfsUrl" | "type" | "origin" | "userId";
+export type issuesOptionalAttributes = "id" | "state" | "createdAt" | "updatedAt" | "amount" | "working" | "merged" | "title" | "body" | "seoImage" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId" | "visible" | "contractCreationDate" | "nftImage" | "ipfsUrl" | "type" | "origin" | "userId";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
   id!: number;
-  issueId?: string;
-  githubId?: string;
   state?: string;
   createdAt!: Date;
   updatedAt!: Date;
-  creatorAddress?: string;
-  creatorGithub?: string;
   amount?: string;
-  repository_id?: number;
   working?: string[];
   merged?: string;
   title?: string;
   body?: string;
   seoImage?: string;
-  branch?: string;
   network_id?: number;
   contractId?: number;
   transactionalTokenId?: number;
@@ -187,11 +174,6 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   getNetwork!: Sequelize.BelongsToGetAssociationMixin<networks>;
   setNetwork!: Sequelize.BelongsToSetAssociationMixin<networks, networksId>;
   createNetwork!: Sequelize.BelongsToCreateAssociationMixin<networks>;
-  // issues belongsTo repositories via repository_id
-  repository!: repositories;
-  getRepository!: Sequelize.BelongsToGetAssociationMixin<repositories>;
-  setRepository!: Sequelize.BelongsToSetAssociationMixin<repositories, repositoriesId>;
-  createRepository!: Sequelize.BelongsToCreateAssociationMixin<repositories>;
   // issues belongsTo tokens via rewardTokenId
   rewardToken!: tokens;
   getRewardToken!: Sequelize.BelongsToGetAssociationMixin<tokens>;
@@ -216,37 +198,13 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       allowNull: false,
       primaryKey: true
     },
-    issueId: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    githubId: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
     state: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    creatorAddress: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    creatorGithub: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
     amount: {
       type: DataTypes.STRING(255),
       allowNull: true
-    },
-    repository_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'repositories',
-        key: 'id'
-      }
     },
     working: {
       type: DataTypes.ARRAY(DataTypes.STRING),
@@ -266,10 +224,6 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       allowNull: true
     },
     seoImage: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    branch: {
       type: DataTypes.STRING(255),
       allowNull: true
     },

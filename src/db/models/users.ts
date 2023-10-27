@@ -4,6 +4,7 @@ import type { comments, commentsId } from './comments';
 import type { deliverables, deliverablesId } from './deliverables';
 import type { issues, issuesId } from './issues';
 import type { kyc_sessions, kyc_sessionsId } from './kyc_sessions';
+import type { users_locked_registry, users_locked_registryId } from './users_locked_registry';
 
 export interface usersAttributes {
   id: number;
@@ -83,6 +84,18 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   hasKyc_session!: Sequelize.HasManyHasAssociationMixin<kyc_sessions, kyc_sessionsId>;
   hasKyc_sessions!: Sequelize.HasManyHasAssociationsMixin<kyc_sessions, kyc_sessionsId>;
   countKyc_sessions!: Sequelize.HasManyCountAssociationsMixin;
+  // users hasMany users_locked_registry via userId
+  users_locked_registries!: users_locked_registry[];
+  getUsers_locked_registries!: Sequelize.HasManyGetAssociationsMixin<users_locked_registry>;
+  setUsers_locked_registries!: Sequelize.HasManySetAssociationsMixin<users_locked_registry, users_locked_registryId>;
+  addUsers_locked_registry!: Sequelize.HasManyAddAssociationMixin<users_locked_registry, users_locked_registryId>;
+  addUsers_locked_registries!: Sequelize.HasManyAddAssociationsMixin<users_locked_registry, users_locked_registryId>;
+  createUsers_locked_registry!: Sequelize.HasManyCreateAssociationMixin<users_locked_registry>;
+  removeUsers_locked_registry!: Sequelize.HasManyRemoveAssociationMixin<users_locked_registry, users_locked_registryId>;
+  removeUsers_locked_registries!: Sequelize.HasManyRemoveAssociationsMixin<users_locked_registry, users_locked_registryId>;
+  hasUsers_locked_registry!: Sequelize.HasManyHasAssociationMixin<users_locked_registry, users_locked_registryId>;
+  hasUsers_locked_registries!: Sequelize.HasManyHasAssociationsMixin<users_locked_registry, users_locked_registryId>;
+  countUsers_locked_registries!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof users {
     return sequelize.define('users', {

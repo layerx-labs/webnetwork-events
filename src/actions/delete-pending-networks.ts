@@ -33,13 +33,11 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         const now = new Date().getTime();
 
         if ((now - createdAt) / DAY >= 7) {
-          await db.repositories.destroy({where: {network_id: network.id}});
-
           await db.networks.destroy({where: {networkAddress: network.networkAddress}});
 
           eventsProcessed[network.name!] = [network.networkAddress!];
 
-          logger.info(`${name} Network ${network.networkAddress} and it's repositories were deleted`);
+          logger.info(`${name} Network ${network.networkAddress} was deleted`);
         }
       }
     } catch (err: any) {

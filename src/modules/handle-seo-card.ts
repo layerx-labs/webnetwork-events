@@ -2,6 +2,7 @@ import generateBountyCards from "./generate-bounty-cards";
 import ipfsService from "src/services/ipfs-service";
 import logger from "src/utils/logger-handler";
 import db from "src/db";
+import { getDeveloperAmount } from "./calculate-distributed-amounts";
 
 export default async function updateSeoCardBounty(bountyId: number, action: string) {
   try {
@@ -19,11 +20,21 @@ export default async function updateSeoCardBounty(bountyId: number, action: stri
     })
 
     if(dbBounty){
-      const card = await generateBountyCards(dbBounty);
+      const chain = await db.chains.findOne({ 
+          where: {
+          chainId: dbBounty.chain_id
+        }
+      });
+
+      const workerAmount = await getDeveloperAmount(dbBounty, chain?.chainRpc!);
+      dbBounty.amount = workerAmount;
+      const card = await generateBountyCards({
+        issue: dbBounty
+      });
 
       const { hash } = await ipfsService.add(card);
       if (!hash) {
-        logger.warn(`${action} Failed to get hash from IPFS for ${dbBounty.issueId}`);
+        logger.warn(`${action} Failed to get hash from IPFS for ${dbBounty.id}`);
       }
 
       await dbBounty.update({ seoImage: hash });

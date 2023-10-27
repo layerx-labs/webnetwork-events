@@ -3,6 +3,7 @@ import nodeHtmlToImage from "node-html-to-image";
 import path from "path";
 import BigNumber from "bignumber.js";
 import { formatNumberToNScale } from "src/utils/formatNumber";
+import { issuesAttributes } from "src/db/models/issues";
 
 export const lessThenWei = (number: number | string) => number!== 0 && BigNumber(number).isLessThan(0.0001) ? '< 0.0001' : number;
 
@@ -77,10 +78,21 @@ async function generateImage(issue, symbol, logoName, template) {
   return Buffer.from(card);
 }
 
-export default async function generateBountyCards(issue, symbol = "") {
+interface GenerateImageProps {
+  issue: issuesAttributes;
+  symbol?: string;
+}
+
+export default async function generateBountyCards({
+  issue,
+  symbol = "",
+}: GenerateImageProps) {
   return generateImage(issue, symbol, "bepro-icon.png", "seo-bounty-cards.hbs");
 }
 
-export async function generateNftImage(issue, symbol = "") {
+export async function generateNftImage({
+  issue,
+  symbol = "",
+}: GenerateImageProps) {
   return generateImage(issue, symbol, "bepro-logo.png", "nft.hbs");
 }
