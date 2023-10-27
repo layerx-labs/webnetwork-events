@@ -45,21 +45,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           const networkContract = new Network_v2(web3Connection, network.networkAddress);
           await networkContract.loadContract();
 
-          const contractCouncilAmount = await networkContract.councilAmount()
-          
-          if(network.councilAmount !== contractCouncilAmount){
-            for(const curator of network.curators){
-              updateIsCurrentlyCurator(curator, contractCouncilAmount, name)
-            }
-          }
-
-          network.councilAmount = contractCouncilAmount;
-          network.disputableTime = await networkContract.disputableTime();
-          network.draftTime = await networkContract.draftTime();
+          network.councilAmount = await networkContract.councilAmount();
+          network.disputableTime = (await networkContract.disputableTime()) / 1000;
+          network.draftTime = (await networkContract.draftTime()) / 1000;
           network.oracleExchangeRate = await networkContract.oracleExchangeRate();
           network.mergeCreatorFeeShare = await networkContract.mergeCreatorFeeShare();
           network.percentageNeededForDispute = await networkContract.percentageNeededForDispute();
-          network.cancelableTime = await networkContract.cancelableTime();
+          network.cancelableTime = (await networkContract.cancelableTime()) / 1000;
           network.proposerFeeShare = await networkContract.proposerFeeShare();
 
           await network.save();
