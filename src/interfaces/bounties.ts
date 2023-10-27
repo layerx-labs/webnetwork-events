@@ -15,3 +15,20 @@ export interface Bounty extends issuesAttributes {
 interface Network extends networksAttributes {
   chain?: chainsAttributes;
 }
+
+type amount  = {
+  value: string;
+  percentage: string;
+}
+
+export interface DistributedAmounts {
+  treasuryAmount: amount;
+  mergerAmount: amount;
+  proposerAmount: amount;
+  proposals: {
+    value: string;
+    percentage: string;
+    recipient: string;
+    githubLogin?: string;
+  }[];
+}

@@ -29,7 +29,10 @@ export async function getNetwork(chain_id, address) {
                                       "=",
                                       address.toString().toLowerCase()),
       chain_id
-    } as WhereOptions
+    } as WhereOptions,
+    include: [
+      { association: "chain" }
+    ]
   });
 
 

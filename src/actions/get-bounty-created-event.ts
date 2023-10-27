@@ -20,6 +20,7 @@ import {tokens} from "src/db/models/tokens";
 import {isIpfsEnvs} from "src/utils/ipfs-envs-verify";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
+import { getDeveloperAmount } from "src/modules/calculate-distributed-amounts";
 
 
 export const name = "getBountyCreatedEvents";
@@ -68,6 +69,16 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
     return eventsProcessed;
   }
 
+  const chain = await db.chains.findOne({
+    where: {
+      chainId: network.chain_id
+    }
+  });
+  if (!chain) {
+    logger.warn("Chain not found", network.chain_id)
+    return eventsProcessed;
+  }
+
   const dbBounty = await db.issues.findOne({
     where: {
       ipfsUrl: cid,
@@ -98,10 +109,17 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
 
   await validateToken(connection, bounty.transactional, true, chainId)
     .then(async ({id, symbol}) => {
-      if (isIpfsEnvs) {
+      if (isIpfsEnvs && !!chain.registryAddress) {
         try {
           logger.debug(`${name} Creating card to bounty ${dbBounty.id}`);
-          const card = await generateCard(dbBounty, symbol);
+          const workerAmount = await getDeveloperAmount(dbBounty, chain.chainRpc);
+          const card = await generateCard({
+            issue: {
+              ...dbBounty,
+              amount: workerAmount
+            },
+            symbol,
+          });
           const {hash} = await ipfsService.add(card);
             
           if(hash){

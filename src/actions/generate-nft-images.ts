@@ -9,6 +9,7 @@ import { isIpfsEnvs } from "src/utils/ipfs-envs-verify";
 import logger from "src/utils/logger-handler";
 
 import ipfsService from "src/services/ipfs-service";
+import { getDeveloperAmount } from "src/modules/calculate-distributed-amounts";
 
 export const name = "generate-nft-images";
 export const schedule = "*/10 * * * *";
@@ -24,7 +25,7 @@ export async function action(issueId?: string) {
   }
 
   const entries = await getChainsRegistryAndNetworks();
-  for (const [, {chainId: chain_id,}] of entries) {
+  for (const [web3Host, { chainId: chain_id, registryAddress }] of entries) {
     try {
       logger.info(`${name} start`);
 
@@ -72,7 +73,11 @@ export async function action(issueId?: string) {
       for (const bounty of bounties) {
         try {
           logger.debug(`${name} Creating NFT to bounty ${bounty.id}`);
-          const card = await generateNftImage(bounty);
+          const workerAmount = await getDeveloperAmount(bounty, web3Host);
+          bounty.amount = workerAmount;
+          const card = await generateNftImage({
+            issue: bounty
+          });
 
           const {hash} = await ipfsService.add(card);
           if (!hash) {
