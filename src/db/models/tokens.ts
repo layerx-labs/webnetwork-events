@@ -16,12 +16,13 @@ export interface tokensAttributes {
   chain_id?: number;
   minimum?: string;
   last_price_used?: object;
+  icon?: string;
   isReward: boolean;
 }
 
 export type tokensPk = "id";
 export type tokensId = tokens[tokensPk];
-export type tokensOptionalAttributes = "id" | "isAllowed" | "chain_id" | "minimum" | "last_price_used";
+export type tokensOptionalAttributes = "id" | "isAllowed" | "chain_id" | "minimum" | "last_price_used" | "icon";
 export type tokensCreationAttributes = Optional<tokensAttributes, tokensOptionalAttributes>;
 
 export class tokens extends Model<tokensAttributes, tokensCreationAttributes> implements tokensAttributes {
@@ -34,6 +35,7 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
   chain_id?: number;
   minimum?: string;
   last_price_used?: object;
+  icon?: string;
   isReward!: boolean;
 
   // tokens belongsTo chains via chain_id
@@ -152,7 +154,11 @@ export class tokens extends Model<tokensAttributes, tokensCreationAttributes> im
     last_price_used: {
       type: DataTypes.JSON,
       allowNull: true
-    }
+    },
+    icon: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
   }, {
     tableName: 'tokens',
     schema: 'public',
