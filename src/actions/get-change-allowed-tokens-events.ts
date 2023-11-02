@@ -7,6 +7,7 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {Sequelize, WhereOptions} from "sequelize";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import {Push} from "../services/analytics/push";
+import { getCoinIconByChainAndContractAddress } from "src/services/coingecko";
 
 export const name = "getChangeAllowedTokensEvents";
 export const schedule = "*/60 * * * *";
@@ -54,6 +55,8 @@ export async function action(block: DecodedLog<ChangeAllowedTokensEvent['returnV
               chain_id: chainId,
             };
 
+            const icon = await getCoinIconByChainAndContractAddress(tokenAddress, chainId) || undefined
+
             const [token, created] = await db.tokens.findOrCreate({
               where: whereCondition,
               defaults: {
@@ -62,7 +65,8 @@ export async function action(block: DecodedLog<ChangeAllowedTokensEvent['returnV
                 isAllowed: true,
                 address: tokenAddress,
                 isTransactional,
-                isReward: !isTransactional
+                isReward: !isTransactional,
+                icon
               }
             });
 

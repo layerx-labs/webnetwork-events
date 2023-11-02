@@ -39,7 +39,7 @@ export async function action(block: DecodedLog<NetworkCreatedEvent['returnValues
     const name = await _network.networkToken.name();
     const symbol = await _network.networkToken.symbol();
 
-    const networkToken = await findOrCreateToken(address, name, symbol);
+    const networkToken = await findOrCreateToken(address, name, symbol, chainId);
 
     if (networkToken)
       network.network_token_id = networkToken.id;

@@ -21,6 +21,7 @@ import {isIpfsEnvs} from "src/utils/ipfs-envs-verify";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import { getDeveloperAmount } from "src/modules/calculate-distributed-amounts";
+import { getCoinIconByChainAndContractAddress } from "src/services/coingecko";
 
 
 export const name = "getBountyCreatedEvents";
@@ -43,12 +44,15 @@ async function validateToken(connection: Web3Connection, address, isTransactiona
 
     await erc20.loadContract();
 
+    const icon = await getCoinIconByChainAndContractAddress(address, +chainId) || undefined
+
     token = await db.tokens.create({
       name: await erc20.name(),
       symbol: await erc20.symbol(),
       address,
       isTransactional,
-      isReward: !isTransactional
+      isReward: !isTransactional,
+      icon
     });
   }
 
