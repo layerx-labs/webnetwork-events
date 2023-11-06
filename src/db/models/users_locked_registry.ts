@@ -7,24 +7,28 @@ import type { users, usersId } from './users';
 export interface users_locked_registryAttributes {
   id: number;
   address: string;
-  amountLocked: string;
-  tokenId: number;
-  chainId: number;
   userId?: number;
+  amountLocked: string;
+  chainId: number;
+  tokenId: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type users_locked_registryPk = "id";
 export type users_locked_registryId = users_locked_registry[users_locked_registryPk];
-export type users_locked_registryOptionalAttributes = "id" | "userId";
+export type users_locked_registryOptionalAttributes = "id" | "userId" | "createdAt" | "updatedAt";
 export type users_locked_registryCreationAttributes = Optional<users_locked_registryAttributes, users_locked_registryOptionalAttributes>;
 
 export class users_locked_registry extends Model<users_locked_registryAttributes, users_locked_registryCreationAttributes> implements users_locked_registryAttributes {
   id!: number;
   address!: string;
-  amountLocked!: string;
-  tokenId!: number;
-  chainId!: number;
   userId?: number;
+  amountLocked!: string;
+  chainId!: number;
+  tokenId!: number;
+  createdAt!: Date;
+  updatedAt!: Date;
 
   // users_locked_registry belongsTo chains via chainId
   chain!: chains;
@@ -54,17 +58,17 @@ export class users_locked_registry extends Model<users_locked_registryAttributes
       type: DataTypes.STRING(255),
       allowNull: false
     },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
+    },
     amountLocked: {
       type: DataTypes.STRING(255),
       allowNull: false
-    },
-    tokenId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'tokens',
-        key: 'id'
-      }
     },
     chainId: {
       type: DataTypes.INTEGER,
@@ -74,18 +78,18 @@ export class users_locked_registry extends Model<users_locked_registryAttributes
         key: 'chainId'
       }
     },
-    userId: {
+    tokenId: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: {
-        model: 'users',
+        model: 'tokens',
         key: 'id'
       }
     }
   }, {
     tableName: 'users_locked_registry',
     schema: 'public',
-    timestamps: false,
+    timestamps: true,
     indexes: [
       {
         name: "users_locked_registry_pkey",
