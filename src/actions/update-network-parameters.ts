@@ -4,6 +4,7 @@ import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service"
 import {Network_v2, Web3Connection} from "@taikai/dappkit";
 import {Op} from "sequelize";
 import {getChainsRegistryAndNetworks} from "../utils/block-process";
+import { updateIsCurrentlyCurator } from "src/modules/handle-curators";
 
 export const name = "updateNetworkParameters";
 export const schedule = "0 0 * * *";
@@ -24,7 +25,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       ...query?.networkName ? {name: {[Op.iLike]: query.networkName}} : {},
     }
 
-    const networks = await db.networks.findAll({where});
+    const networks = await db.networks.findAll({
+      where,
+      include: [{ association: "curators", required: false }],
+    });
 
     try {
 
@@ -42,12 +46,12 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           await networkContract.loadContract();
 
           network.councilAmount = await networkContract.councilAmount();
-          network.disputableTime = await networkContract.disputableTime();
-          network.draftTime = await networkContract.draftTime();
+          network.disputableTime = (await networkContract.disputableTime()) / 1000;
+          network.draftTime = (await networkContract.draftTime()) / 1000;
           network.oracleExchangeRate = await networkContract.oracleExchangeRate();
           network.mergeCreatorFeeShare = await networkContract.mergeCreatorFeeShare();
           network.percentageNeededForDispute = await networkContract.percentageNeededForDispute();
-          network.cancelableTime = await networkContract.cancelableTime();
+          network.cancelableTime = (await networkContract.cancelableTime()) / 1000;
           network.proposerFeeShare = await networkContract.proposerFeeShare();
 
           await network.save();

@@ -23,11 +23,15 @@ export interface chainsAttributes {
   createdAt: Date;
   updatedAt: Date;
   icon?: string;
+  lockAmountForNetworkCreation?: string;
+  networkCreationFeePercentage?: number;
+  closeFeePercentage?: number;
+  cancelFeePercentage?: number;
 }
 
 export type chainsPk = "id";
 export type chainsId = chains[chainsPk];
-export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "color" | "createdAt" | "updatedAt" | "icon";
+export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "color" | "createdAt" | "updatedAt" | "icon" | "lockAmountForNetworkCreation" | "networkCreationFeePercentage" | "closeFeePercentage" | "cancelFeePercentage";
 export type chainsCreationAttributes = Optional<chainsAttributes, chainsOptionalAttributes>;
 
 export class chains extends Model<chainsAttributes, chainsCreationAttributes> implements chainsAttributes {
@@ -47,6 +51,10 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
   createdAt!: Date;
   updatedAt!: Date;
   icon?: string;
+  lockAmountForNetworkCreation?: string;
+  networkCreationFeePercentage?: number;
+  closeFeePercentage?: number;
+  cancelFeePercentage?: number;
 
   // chains hasMany delegations via chainId
   delegations!: delegations[];
@@ -169,6 +177,22 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
     },
     icon: {
       type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    lockAmountForNetworkCreation: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    networkCreationFeePercentage: {
+      type: DataTypes.DOUBLE,
+      allowNull: true
+    },
+    closeFeePercentage: {
+      type: DataTypes.DOUBLE,
+      allowNull: true
+    },
+    cancelFeePercentage: {
+      type: DataTypes.DOUBLE,
       allowNull: true
     }
   }, {

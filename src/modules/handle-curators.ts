@@ -96,3 +96,20 @@ export async function updateCuratorProposalParams(curator: curators, param: "acc
   
   return curator.save()
 }
+
+export async function updateIsCurrentlyCurator(curator: curators, councilAmount: string, eventName: string) {
+  try {
+    const allTokensLocked = BigNumber(curator.tokensLocked || 0).plus(BigNumber(curator.delegatedToMe || 0));
+    const isCurator = allTokensLocked.gte(BigNumber(councilAmount));
+  
+    curator.isCurrentlyCurator = isCurator;
+    return curator.save();
+  } catch (err: any) {
+    loggerHandler.error(
+      `${eventName}: Update IsCurrentlyCurator Error - curatorId:${curator.id}`,
+      err?.message || err.toString()
+    );  
+    
+    return null
+  }
+}
