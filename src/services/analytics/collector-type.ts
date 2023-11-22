@@ -4,6 +4,7 @@ import {error, warn} from "../../utils/logger-handler";
 import {ErrorMessages} from "../../types/error-messages";
 import {type Collector} from "./collector";
 import {ElasticSearch} from "./collectors/elastic-search";
+import {NotificationCollector} from "./collectors/send-grid-notification";
 
 /**
  *
@@ -17,6 +18,8 @@ export function getCollector({type}: Analytic): Collector | null {
         return new GoogleAnalyticsCollector();
       case "elastic-search":
         return new ElasticSearch();
+      case "send-grid-email-notif":
+        return new NotificationCollector();
       default:
         warn(ErrorMessages.CollectorUnknown, {type});
         return null;

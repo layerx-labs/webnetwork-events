@@ -19,9 +19,9 @@ export class EmailNotification<Payload> {
       ).map(u => u.email);
 
     return EmailService.sendEmail(
-      EmailNotificationSubjects[this.templateName],
+      EmailNotificationSubjects[this.templateName]!,
       recipients,
-      new Templater(Templates[this.templateName]).compile(this.payload)
+      new Templater(Templates[this.templateName]!).compile(this.payload)
     );
   }
 }

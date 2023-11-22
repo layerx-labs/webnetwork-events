@@ -18,6 +18,7 @@ class EmailServiceFactory {
 
   async sendEmail(subject: string, bcc: string | string[], html: string): Promise<ClientResponse> {
     return new Promise((p, f) => {
+      loggerHandler.debug(`Sending email (${subject})`);
 
       const sendCallback = (error: Error, [result,]: [ClientResponse, {}]) => {
         if (error) {
@@ -25,7 +26,7 @@ class EmailServiceFactory {
           loggerHandler.error(`Failed to send email (${subject})`, error?.toString());
         } else {
           p(result);
-          loggerHandler.info(`Sent email (${subject})`);
+          loggerHandler.debug(`Sent email (${subject})`);
         }
       }
 

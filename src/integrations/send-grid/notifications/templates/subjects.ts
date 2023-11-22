@@ -1,9 +1,8 @@
 import {Templates} from "./index";
 
-export const EmailNotificationSubjects: Record<keyof typeof Templates, string> = {
-  newTask: "New task available!",
-  newFunding: "New funding request available!",
-  newDeliverable: "New deliverable!",
-  readyForDispute: "Proposal is ready for dispute!",
-  readyForMerge: "Deliverable is ready to be accepted",
+export const EmailNotificationSubjects: { [k in keyof typeof Templates]: string } = {
+  BOUNTY_CREATED: "New task available!",
+  PULL_REQUEST_OPEN: "New deliverable!",
+  DISPUTE_READY: "Proposal is ready for dispute!",
+  MERGE_PROPOSAL_READY: "Deliverable is ready to be accepted",
 }
