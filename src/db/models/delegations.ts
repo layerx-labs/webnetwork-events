@@ -1,8 +1,8 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { chains, chainsId } from './chains';
-import type { curators, curatorsId } from './curators';
-import type { networks, networksId } from './networks';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {chains, chainsId} from './chains';
+import type {curators, curatorsId} from './curators';
+import type {networks, networksId} from './networks';
 
 export interface delegationsAttributes {
   id: number;

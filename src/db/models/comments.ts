@@ -1,9 +1,9 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { deliverables, deliverablesId } from './deliverables';
-import type { issues, issuesId } from './issues';
-import type { merge_proposals, merge_proposalsId } from './merge_proposals';
-import type { users, usersId } from './users';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {deliverables, deliverablesId} from './deliverables';
+import type {issues, issuesId} from './issues';
+import type {merge_proposals, merge_proposalsId} from './merge_proposals';
+import type {users, usersId} from './users';
 
 export interface commentsAttributes {
   id: number;

@@ -1,7 +1,8 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { delegations, delegationsId } from './delegations';
-import type { networks, networksId } from './networks';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {delegations, delegationsId} from './delegations';
+import type {networks, networksId} from './networks';
+import type {users, usersId} from './users';
 
 export interface curatorsAttributes {
   id: number;
@@ -14,11 +15,20 @@ export interface curatorsAttributes {
   createdAt: Date;
   updatedAt: Date;
   delegatedToMe?: string;
+  userId?: number;
 }
 
 export type curatorsPk = "id";
 export type curatorsId = curators[curatorsPk];
-export type curatorsOptionalAttributes = "id" | "acceptedProposals" | "disputedProposals" | "tokensLocked" | "createdAt" | "updatedAt" | "delegatedToMe";
+export type curatorsOptionalAttributes =
+  "id"
+  | "acceptedProposals"
+  | "disputedProposals"
+  | "tokensLocked"
+  | "createdAt"
+  | "updatedAt"
+  | "delegatedToMe"
+  | "userId";
 export type curatorsCreationAttributes = Optional<curatorsAttributes, curatorsOptionalAttributes>;
 
 export class curators extends Model<curatorsAttributes, curatorsCreationAttributes> implements curatorsAttributes {
@@ -32,6 +42,7 @@ export class curators extends Model<curatorsAttributes, curatorsCreationAttribut
   createdAt!: Date;
   updatedAt!: Date;
   delegatedToMe?: string;
+  userId?: number;
 
   // curators hasMany delegations via curatorId
   delegations!: delegations[];
@@ -50,6 +61,11 @@ export class curators extends Model<curatorsAttributes, curatorsCreationAttribut
   getNetwork!: Sequelize.BelongsToGetAssociationMixin<networks>;
   setNetwork!: Sequelize.BelongsToSetAssociationMixin<networks, networksId>;
   createNetwork!: Sequelize.BelongsToCreateAssociationMixin<networks>;
+  // curators belongsTo users via userId
+  user!: users;
+  getUser!: Sequelize.BelongsToGetAssociationMixin<users>;
+  setUser!: Sequelize.BelongsToSetAssociationMixin<users, usersId>;
+  createUser!: Sequelize.BelongsToCreateAssociationMixin<users>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof curators {
     return sequelize.define('curators', {
@@ -92,6 +108,14 @@ export class curators extends Model<curatorsAttributes, curatorsCreationAttribut
       type: DataTypes.STRING(255),
       allowNull: true,
       defaultValue: "0"
+    },
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'users',
+          key: 'id'
+        }
     }
   }, {
     tableName: 'curators',

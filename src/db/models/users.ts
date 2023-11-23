@@ -1,10 +1,11 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { comments, commentsId } from './comments';
-import type { deliverables, deliverablesId } from './deliverables';
-import type { issues, issuesId } from './issues';
-import type { kyc_sessions, kyc_sessionsId } from './kyc_sessions';
-import type { users_locked_registry, users_locked_registryId } from './users_locked_registry';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {comments, commentsId} from './comments';
+import type {curators, curatorsId} from './curators';
+import type {deliverables, deliverablesId} from './deliverables';
+import type {issues, issuesId} from './issues';
+import type {kyc_sessions, kyc_sessionsId} from './kyc_sessions';
+import type {users_locked_registry, users_locked_registryId} from './users_locked_registry';
 
 export interface usersAttributes {
   id: number;
@@ -48,6 +49,18 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   hasComment!: Sequelize.HasManyHasAssociationMixin<comments, commentsId>;
   hasComments!: Sequelize.HasManyHasAssociationsMixin<comments, commentsId>;
   countComments!: Sequelize.HasManyCountAssociationsMixin;
+  // users hasMany curators via userId
+  curators!: curators[];
+  getCurators!: Sequelize.HasManyGetAssociationsMixin<curators>;
+  setCurators!: Sequelize.HasManySetAssociationsMixin<curators, curatorsId>;
+  addCurator!: Sequelize.HasManyAddAssociationMixin<curators, curatorsId>;
+  addCurators!: Sequelize.HasManyAddAssociationsMixin<curators, curatorsId>;
+  createCurator!: Sequelize.HasManyCreateAssociationMixin<curators>;
+  removeCurator!: Sequelize.HasManyRemoveAssociationMixin<curators, curatorsId>;
+  removeCurators!: Sequelize.HasManyRemoveAssociationsMixin<curators, curatorsId>;
+  hasCurator!: Sequelize.HasManyHasAssociationMixin<curators, curatorsId>;
+  hasCurators!: Sequelize.HasManyHasAssociationsMixin<curators, curatorsId>;
+  countCurators!: Sequelize.HasManyCountAssociationsMixin;
   // users hasMany deliverables via userId
   deliverables!: deliverables[];
   getDeliverables!: Sequelize.HasManyGetAssociationsMixin<deliverables>;

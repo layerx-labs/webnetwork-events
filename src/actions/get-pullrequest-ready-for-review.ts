@@ -71,12 +71,22 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
-  Push.event(AnalyticEventName.PULL_REQUEST_READY, {
-    chainId, network: {name: network.name, id: network.id},
-    bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
-    deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
-    actor: pullRequest.creator,
-  })
+  /** Create a non-blocking scope, so that we can await for targets but let the fn end */
+  (async () => {
+    const owner = await dbBounty!.getUser({attributes: ["email"], raw: true});
+    const targets =
+      (await dbBounty!.network.getCurators({include: [{association: "user", attributes: ["email"]}]}))
+        .filter(c => c.user?.email)
+        .map((c) => c.user.email);
+
+    Push.event(AnalyticEventName.PULL_REQUEST_READY, {
+      chainId, network: {name: network.name, id: network.id},
+      bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+      deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
+      actor: pullRequest.creator,
+      targets: [...new Set([...targets, owner?.email])]
+    })
+  })()
 
 
   return eventsProcessed;

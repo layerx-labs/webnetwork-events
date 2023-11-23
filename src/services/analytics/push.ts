@@ -9,7 +9,7 @@ import {AnalyticTypes} from "./types/analytic-types";
 export class Push {
 
   static getCollectors(name: AnalyticEventName) {
-    return (name in AnalyticsEvents) ? AnalyticsEvents[name].map(getCollector) : [];
+    return (name in AnalyticsEvents) ? (AnalyticsEvents[name] || []).map(getCollector) : [];
   }
 
   static async event(name: AnalyticEventName, params: any) {

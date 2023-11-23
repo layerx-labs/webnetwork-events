@@ -1,16 +1,16 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { benefactors, benefactorsId } from './benefactors';
-import type { chains, chainsId } from './chains';
-import type { comments, commentsId } from './comments';
-import type { deliverables, deliverablesId } from './deliverables';
-import type { developers, developersId } from './developers';
-import type { disputes, disputesId } from './disputes';
-import type { merge_proposals, merge_proposalsId } from './merge_proposals';
-import type { networks, networksId } from './networks';
-import type { tokens, tokensId } from './tokens';
-import type { users, usersId } from './users';
-import type { users_payments, users_paymentsId } from './users_payments';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {benefactors, benefactorsId} from './benefactors';
+import type {chains, chainsId} from './chains';
+import type {comments, commentsId} from './comments';
+import type {deliverables, deliverablesId} from './deliverables';
+import type {developers, developersId} from './developers';
+import type {disputes, disputesId} from './disputes';
+import type {merge_proposals, merge_proposalsId} from './merge_proposals';
+import type {networks, networksId} from './networks';
+import type {tokens, tokensId} from './tokens';
+import type {users, usersId} from './users';
+import type {users_payments, users_paymentsId} from './users_payments';
 
 export interface issuesAttributes {
   id: number;
