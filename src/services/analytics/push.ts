@@ -17,7 +17,7 @@ export class Push {
       await Promise.allSettled(
         Push.getCollectors(name)
           .map(collector =>
-            collector?.collect([{name, params}])));
+            collector?.collect(JSON.parse(JSON.stringify([{name, params}])))));
     } catch (e) {
       error(ErrorMessages.FailedToCollectLog, e?.toString());
     }
@@ -38,7 +38,7 @@ export class Push {
       await Promise.allSettled(
         Object.entries(events)
           .map(([type, events_1]) =>
-            getCollector({type: type as AnalyticTypes})?.collect(events_1)));
+            getCollector({type: type as AnalyticTypes})?.collect(JSON.parse(JSON.stringify(events_1)))));
     } catch (e) {
       error(ErrorMessages.FailedToCollectLog, e?.toString());
     }
