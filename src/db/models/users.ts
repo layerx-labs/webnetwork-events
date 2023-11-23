@@ -5,6 +5,8 @@ import type {curators, curatorsId} from './curators';
 import type {deliverables, deliverablesId} from './deliverables';
 import type {issues, issuesId} from './issues';
 import type {kyc_sessions, kyc_sessionsId} from './kyc_sessions';
+import type {notifications, notificationsId} from './notifications';
+import type {user_settings, user_settingsId} from './user_settings';
 import type {users_locked_registry, users_locked_registryId} from './users_locked_registry';
 
 export interface usersAttributes {
@@ -97,6 +99,30 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   hasKyc_session!: Sequelize.HasManyHasAssociationMixin<kyc_sessions, kyc_sessionsId>;
   hasKyc_sessions!: Sequelize.HasManyHasAssociationsMixin<kyc_sessions, kyc_sessionsId>;
   countKyc_sessions!: Sequelize.HasManyCountAssociationsMixin;
+  // users hasMany notifications via userId
+  notifications!: notifications[];
+  getNotifications!: Sequelize.HasManyGetAssociationsMixin<notifications>;
+  setNotifications!: Sequelize.HasManySetAssociationsMixin<notifications, notificationsId>;
+  addNotification!: Sequelize.HasManyAddAssociationMixin<notifications, notificationsId>;
+  addNotifications!: Sequelize.HasManyAddAssociationsMixin<notifications, notificationsId>;
+  createNotification!: Sequelize.HasManyCreateAssociationMixin<notifications>;
+  removeNotification!: Sequelize.HasManyRemoveAssociationMixin<notifications, notificationsId>;
+  removeNotifications!: Sequelize.HasManyRemoveAssociationsMixin<notifications, notificationsId>;
+  hasNotification!: Sequelize.HasManyHasAssociationMixin<notifications, notificationsId>;
+  hasNotifications!: Sequelize.HasManyHasAssociationsMixin<notifications, notificationsId>;
+  countNotifications!: Sequelize.HasManyCountAssociationsMixin;
+  // users hasMany user_settings via userId
+  user_settings!: user_settings[];
+  getUser_settings!: Sequelize.HasManyGetAssociationsMixin<user_settings>;
+  setUser_settings!: Sequelize.HasManySetAssociationsMixin<user_settings, user_settingsId>;
+  addUser_setting!: Sequelize.HasManyAddAssociationMixin<user_settings, user_settingsId>;
+  addUser_settings!: Sequelize.HasManyAddAssociationsMixin<user_settings, user_settingsId>;
+  createUser_setting!: Sequelize.HasManyCreateAssociationMixin<user_settings>;
+  removeUser_setting!: Sequelize.HasManyRemoveAssociationMixin<user_settings, user_settingsId>;
+  removeUser_settings!: Sequelize.HasManyRemoveAssociationsMixin<user_settings, user_settingsId>;
+  hasUser_setting!: Sequelize.HasManyHasAssociationMixin<user_settings, user_settingsId>;
+  hasUser_settings!: Sequelize.HasManyHasAssociationsMixin<user_settings, user_settingsId>;
+  countUser_settings!: Sequelize.HasManyCountAssociationsMixin;
   // users hasMany users_locked_registry via userId
   users_locked_registries!: users_locked_registry[];
   getUsers_locked_registries!: Sequelize.HasManyGetAssociationsMixin<users_locked_registry>;

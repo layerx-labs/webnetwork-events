@@ -17,7 +17,11 @@ export class EmailNotification<Payload> {
     const targets =
       (this.targets?.length
           ? this.targets
-          : (await db.users.findAll({where: {email: {[Op.not]: ""}}, raw: true}))
+          : (await db.users.findAll({
+            where: {email: {[Op.not]: ""}},
+            include: [{association: "settings", where: {notifications: true}, required: true}],
+            raw: true
+          }))
             .filter(u => u.email)
       );
 

@@ -44,6 +44,8 @@ import type {settingsAttributes, settingsCreationAttributes} from "./settings";
 import {settings as _settings} from "./settings";
 import type {tokensAttributes, tokensCreationAttributes} from "./tokens";
 import {tokens as _tokens} from "./tokens";
+import type {user_settingsAttributes, user_settingsCreationAttributes} from "./user_settings";
+import {user_settings as _user_settings} from "./user_settings";
 import type {usersAttributes, usersCreationAttributes} from "./users";
 import {users as _users} from "./users";
 import type {users_locked_registryAttributes, users_locked_registryCreationAttributes} from "./users_locked_registry";
@@ -73,6 +75,7 @@ export {
   _proposal_distributions as proposal_distributions,
   _settings as settings,
   _tokens as tokens,
+  _user_settings as user_settings,
   _users as users,
   _users_locked_registry as users_locked_registry,
   _users_payments as users_payments,
@@ -121,6 +124,8 @@ export type {
   settingsCreationAttributes,
   tokensAttributes,
   tokensCreationAttributes,
+  user_settingsAttributes,
+  user_settingsCreationAttributes,
   usersAttributes,
   usersCreationAttributes,
   users_locked_registryAttributes,
@@ -151,6 +156,7 @@ export function initModels(sequelize: Sequelize) {
   const proposal_distributions = _proposal_distributions.initModel(sequelize);
   const settings = _settings.initModel(sequelize);
   const tokens = _tokens.initModel(sequelize);
+  const user_settings = _user_settings.initModel(sequelize);
   const users = _users.initModel(sequelize);
   const users_locked_registry = _users_locked_registry.initModel(sequelize);
   const users_payments = _users_payments.initModel(sequelize);
@@ -223,6 +229,10 @@ export function initModels(sequelize: Sequelize) {
   users.hasMany(issues, { as: "issues", foreignKey: "userId"});
   kyc_sessions.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(kyc_sessions, { as: "kyc_sessions", foreignKey: "user_id"});
+  notifications.belongsTo(users, {as: "user", foreignKey: "userId"});
+  users.hasMany(notifications, {as: "notifications", foreignKey: "userId"});
+  user_settings.belongsTo(users, {as: "user", foreignKey: "userId"});
+  users.hasMany(user_settings, {as: "user_settings", foreignKey: "userId"});
   users_locked_registry.belongsTo(users, { as: "user", foreignKey: "userId"});
   users.hasMany(users_locked_registry, { as: "users_locked_registries", foreignKey: "userId"});
 
@@ -248,6 +258,7 @@ export function initModels(sequelize: Sequelize) {
     proposal_distributions: proposal_distributions,
     settings: settings,
     tokens: tokens,
+    user_settings: user_settings,
     users: users,
     users_locked_registry: users_locked_registry,
     users_payments: users_payments,
