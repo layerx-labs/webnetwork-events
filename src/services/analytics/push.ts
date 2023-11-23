@@ -29,7 +29,7 @@ export class Push {
               {
                 ...(collectedEvents[collector.type] || {}),
                 collector,
-                events: [...collectedEvents[collector.type]?.events, event]
+                events: [...(collectedEvents[collector.type]?.events || []), event]
               }
         }
       }
