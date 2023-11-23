@@ -13,7 +13,7 @@ export const AnalyticsEvents: AnalyticEventPool = {
   [AnalyticEventName.DELEGATE_UNDELEGATE]: [analytic(AnalyticTypes.ElasticSearch)],
   [AnalyticEventName.LOCK_UNLOCK_REGISTRY]: [analytic(AnalyticTypes.ElasticSearch)],
   [AnalyticEventName.PULL_REQUEST_OPEN]: [analytic(AnalyticTypes.ElasticSearch), analytic(AnalyticTypes.EmailNotification)],
-  [AnalyticEventName.PULL_REQUEST_READY]: [analytic(AnalyticTypes.ElasticSearch)],
+  [AnalyticEventName.PULL_REQUEST_READY]: [analytic(AnalyticTypes.ElasticSearch), analytic(AnalyticTypes.EmailNotification)],
   [AnalyticEventName.PULL_REQUEST_CANCELED]: [analytic(AnalyticTypes.ElasticSearch)],
   [AnalyticEventName.PULL_REQUEST_MERGED]: [analytic(AnalyticTypes.ElasticSearch)],
   [AnalyticEventName.MERGE_PROPOSAL_OPEN]: [analytic(AnalyticTypes.ElasticSearch), analytic(AnalyticTypes.EmailNotification)],

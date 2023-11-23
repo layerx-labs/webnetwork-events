@@ -33,6 +33,8 @@ import type {network_tokensAttributes, network_tokensCreationAttributes} from ".
 import {network_tokens as _network_tokens} from "./network_tokens";
 import type {networksAttributes, networksCreationAttributes} from "./networks";
 import {networks as _networks} from "./networks";
+import type {notificationsAttributes, notificationsCreationAttributes} from "./notifications";
+import {notifications as _notifications} from "./notifications";
 import type {
   proposal_distributionsAttributes,
   proposal_distributionsCreationAttributes
@@ -67,6 +69,7 @@ export {
   _merge_proposals as merge_proposals,
   _network_tokens as network_tokens,
   _networks as networks,
+  _notifications as notifications,
   _proposal_distributions as proposal_distributions,
   _settings as settings,
   _tokens as tokens,
@@ -110,6 +113,8 @@ export type {
   network_tokensCreationAttributes,
   networksAttributes,
   networksCreationAttributes,
+  notificationsAttributes,
+  notificationsCreationAttributes,
   proposal_distributionsAttributes,
   proposal_distributionsCreationAttributes,
   settingsAttributes,
@@ -142,6 +147,7 @@ export function initModels(sequelize: Sequelize) {
   const merge_proposals = _merge_proposals.initModel(sequelize);
   const network_tokens = _network_tokens.initModel(sequelize);
   const networks = _networks.initModel(sequelize);
+  const notifications = _notifications.initModel(sequelize);
   const proposal_distributions = _proposal_distributions.initModel(sequelize);
   const settings = _settings.initModel(sequelize);
   const tokens = _tokens.initModel(sequelize);
@@ -238,6 +244,7 @@ export function initModels(sequelize: Sequelize) {
     merge_proposals: merge_proposals,
     network_tokens: network_tokens,
     networks: networks,
+    notifications: notifications,
     proposal_distributions: proposal_distributions,
     settings: settings,
     tokens: tokens,

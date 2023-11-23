@@ -10,6 +10,7 @@ import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import updateSeoCardBounty from "src/modules/handle-seo-card";
+import {Op} from "sequelize";
 
 export const name = "getBountyPullRequestReadyForReviewEvents";
 export const schedule = "*/12 * * * *";
@@ -73,18 +74,20 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
 
   /** Create a non-blocking scope, so that we can await for targets but let the fn end */
   (async () => {
-    const owner = await dbBounty!.getUser({attributes: ["email"], raw: true});
+    const owner = await dbBounty!.getUser({attributes: ["email", "id"], raw: true});
     const targets =
-      (await dbBounty!.network.getCurators({include: [{association: "user", attributes: ["email"]}]}))
-        .filter(c => c.user?.email)
-        .map((c) => c.user.email);
+      (await dbBounty!.network.getCurators({
+          include: [{association: "user", attributes: ["email", "id"]}],
+          where: {userId: {[Op.not]: owner.id}}
+        })
+      ).filter(c => c.user?.email);
 
     Push.event(AnalyticEventName.PULL_REQUEST_READY, {
       chainId, network: {name: network.name, id: network.id},
       bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
       deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
       actor: pullRequest.creator,
-      targets: [...new Set([...targets, owner?.email])]
+      targets: [...targets, owner]
     })
   })()
 

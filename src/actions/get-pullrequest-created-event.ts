@@ -68,11 +68,13 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
 
   sendMessageToTelegramChannels(DELIVERABLE_OPEN(dbBounty, dbDeliverable, dbDeliverable.id));
 
+  const targets = [(await dbBounty.getUser({attributes: ["emails", "id"], raw: true}))]
+
   Push.event(AnalyticEventName.PULL_REQUEST_OPEN, {
     chainId, network: {name: network.name, id: network.id},
     bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
     deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
-    actor: pullRequest.creator,
+    actor: pullRequest.creator, targets,
   })
 
   return eventsProcessed;
