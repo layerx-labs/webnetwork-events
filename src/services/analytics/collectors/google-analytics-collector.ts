@@ -24,6 +24,12 @@ export class GoogleAnalyticsCollector implements Collector {
   }
 
   public async collect(events: CollectEventPayload[]) {
+
+    events.forEach(e => {
+      if (e.params?.targets)
+        delete e.params.targets;
+    })
+
     return (await this.collector({data: {events},}))?.data;
   }
 }

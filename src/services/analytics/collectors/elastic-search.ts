@@ -31,6 +31,11 @@ export class ElasticSearch implements Collector {
           error(ErrorMessages.FailedToCollectElasticSearchLog, document, e?.toString());
         })
 
+    events.forEach(e => {
+      if (e.params?.targets)
+        delete e.params.targets;
+    })
+
     return await Promise.allSettled(events.map(_collect));
   }
 }
