@@ -23,7 +23,7 @@ class EmailServiceFactory {
       const sendCallback = (error: Error, [result,]: [ClientResponse, {}]) => {
         if (error) {
           f(error);
-          loggerHandler.error(`Failed to send email (${subject})`, error?.toString());
+          loggerHandler.error(`Failed to send email to ${bcc.toString()} (${subject})`, error?.toString());
         } else {
           p(result);
           loggerHandler.debug(`Sent email (${subject})`);

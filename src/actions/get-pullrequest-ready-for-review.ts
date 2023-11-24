@@ -74,13 +74,12 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
 
   /** Create a non-blocking scope, so that we can await for targets but let the fn end */
   (async () => {
-    const owner = await dbBounty!.getUser({attributes: ["email", "id"], raw: true});
+    const owner = await dbBounty!.getUser({attributes: ["email", "id", "user_settings"], raw: true});
     const targets =
-      (await dbBounty!.network.getCurators({
-          include: [{association: "user", attributes: ["email", "id"]}],
+      await dbBounty!.network.getCurators({
+        include: [{association: "user", attributes: ["email", "id", "user_settings"]}],
           where: {userId: {[Op.not]: owner.id}}
-        })
-      ).filter(c => c.user?.email);
+      });
 
     Push.event(AnalyticEventName.PULL_REQUEST_READY, {
       chainId, network: {name: network.name, id: network.id},
