@@ -13,9 +13,6 @@ dist/
 # Built Visual Studio Code Extensions
 *.vsix
 
-# ignore models inside database folder so we can keep the truth on the database
-db/models/
-
 # ignore pem
 *.pem
 
