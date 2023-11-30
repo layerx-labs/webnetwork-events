@@ -67,7 +67,8 @@ export async function action(block: DecodedLog<BountyFunded['returnValues']>, qu
     funded: bounty.funded,
     actor: address,
     bountyId: dbBounty.id,
-    bountyChainId: bounty.id
+    bountyChainId: bounty.id,
+    title: dbBounty.title,
   })
 
   return eventsProcessed;

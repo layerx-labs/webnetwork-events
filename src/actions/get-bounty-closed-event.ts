@@ -117,7 +117,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     reward: dbBounty.rewardToken?.symbol,
     creator: block.returnValues.creator,
     username: dbBounty.user?.handle,
-    actor: address
+    actor: address,
+    title: dbBounty.title
   })
 
   return eventsProcessed;

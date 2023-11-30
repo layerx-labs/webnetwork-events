@@ -1,18 +1,19 @@
 import {EmailService} from "../email-service/email-service";
 import {Templates} from "./templates";
-import {EmailNotificationSubjects} from "./templates/subjects";
+import {EmailNotificationSubjects} from "./templates/email-info";
 import {Op} from "sequelize";
 import {Templater} from "./templater";
 import {users} from "../../../db/models/users";
 import db from "../../../db";
 import {v4 as uuidv4} from "uuid";
 import loggerHandler from "../../../utils/logger-handler";
+import {format} from "node:util"
 
 type EmailNotificationTarget = Pick<users, "email" | "id" | "user_settings">;
 type EmailNotificationTargets = EmailNotificationTarget[];
 type RecipientIds = { recipients: string[], ids: number[] };
 
-export class EmailNotification<Payload> {
+export class EmailNotification<Payload = any> {
   constructor(readonly templateName: keyof typeof Templates,
               readonly payload: Payload,
               readonly targets?: EmailNotificationTargets) {
@@ -49,9 +50,9 @@ export class EmailNotification<Payload> {
         })
 
       await EmailService.sendEmail(
-        EmailNotificationSubjects[this.templateName]!,
+        format(EmailNotificationSubjects[this.templateName]!, (this.payload as any).network.name),
         [to],
-        new Templater(Templates[this.templateName]!).compile({...this.payload, uuid})
+        new Templater(Templates[this.templateName]!).compile({...this.payload, template: this.templateName, uuid})
       );
     }
   }

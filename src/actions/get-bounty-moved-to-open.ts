@@ -90,6 +90,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           Push.event(AnalyticEventName.BOUNTY_ACTIVE, {
             chainId: chain_id, network: {name: networkName, id: network_id},
             bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+            title: dbBounty.title,
           })
         }
       }

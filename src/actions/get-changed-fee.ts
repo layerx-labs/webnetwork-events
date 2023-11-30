@@ -47,7 +47,12 @@ export async function action(block: DecodedLog<ChangedFeeEvent['returnValues']>,
   await chain.save();
 
   Push.event(AnalyticEventName.CHANGED_FEES, {
-    actor: address, lockAmountForNetworkCreation, networkCreationFeePercentage, closeFeePercentage, cancelFeePercentage
+    actor: address,
+    lockAmountForNetworkCreation,
+    networkCreationFeePercentage,
+    closeFeePercentage,
+    cancelFeePercentage,
+    chainId
   });
 
   eventsProcessed[address] = [

@@ -20,8 +20,8 @@ import {tokens} from "src/db/models/tokens";
 import {isIpfsEnvs} from "src/utils/ipfs-envs-verify";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
-import { getDeveloperAmount } from "src/modules/calculate-distributed-amounts";
-import { getCoinIconByChainAndContractAddress } from "src/services/coingecko";
+import {getDeveloperAmount} from "src/modules/calculate-distributed-amounts";
+import {getCoinIconByChainAndContractAddress} from "src/services/coingecko";
 
 
 export const name = "getBountyCreatedEvents";
@@ -166,7 +166,8 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
     creator: block.returnValues.creator,
     username: dbBounty.user?.handle,
     bountyId: dbBounty.id,
-    bountyChainId: bounty.id
+    bountyChainId: bounty.id,
+    title: dbBounty.title,
   })
 
   return eventsProcessed;

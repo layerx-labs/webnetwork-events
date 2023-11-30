@@ -79,7 +79,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
 
   Push.event(AnalyticEventName.BOUNTY_CANCELED, {
     chainId, network: {name: network.name, id: network.id},
-    bountyId: dbBounty.id, bountyContractId: bounty.id
+    bountyId: dbBounty.id, bountyContractId: bounty.id,
+    title: dbBounty.title,
   })
 
   return eventsProcessed;

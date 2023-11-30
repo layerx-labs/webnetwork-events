@@ -101,6 +101,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
     deliverableId: dbDeliverable.id, deliverableContractId: dbDeliverable.prContractId,
     proposalId: createProposal.id, proposalContractId: createProposal.contractId,
     actor: proposal.creator,
+    title: dbBounty.title,
   })
 
 

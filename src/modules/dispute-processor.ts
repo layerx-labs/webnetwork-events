@@ -68,6 +68,7 @@ export async function disputeProcessor(block: DecodedLog<BountyProposalDisputedE
             deliverableId: dbProposal.deliverableId, deliverableContractId: bounty.proposals[proposalId].prId,
             proposalId: dbProposal.id, proposalContractId: dbProposal.contractId,
             actor: actorAddress,
+            title: dbBounty.title,
           })
 
         }
