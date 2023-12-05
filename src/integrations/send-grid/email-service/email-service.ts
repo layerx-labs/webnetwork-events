@@ -1,4 +1,4 @@
-import {send, setApiKey} from "@sendgrid/mail";
+import MailService from "@sendgrid/mail";
 import process from "process";
 import {ClientResponse} from "@sendgrid/client/src/response";
 import loggerHandler from "../../../utils/logger-handler";
@@ -13,7 +13,7 @@ class EmailServiceFactory {
     if (!from)
       throw new Error(`Needs "from" field, NEXT_SENDGRID_MAIL_FROM`);
 
-    setApiKey(apiKey);
+    MailService.setApiKey(apiKey);
   }
 
   async sendEmail(subject: string, bcc: string | string[], html: string): Promise<ClientResponse> {
@@ -30,7 +30,7 @@ class EmailServiceFactory {
         }
       }
 
-      send({subject, text: subject, html, bcc, from: NEXT_SENDGRID_MAIL_FROM!}, false, sendCallback)
+      MailService.send({subject, text: subject, html, bcc, from: NEXT_SENDGRID_MAIL_FROM!}, false, sendCallback)
     });
   }
 }
