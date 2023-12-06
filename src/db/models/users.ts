@@ -14,7 +14,7 @@ export interface usersAttributes {
   address?: string;
   createdAt: Date;
   updatedAt: Date;
-  githubLogin?: string;
+  handle?: string;
   resetedAt?: Date;
   email?: string;
   isEmailConfirmed?: boolean;
@@ -29,7 +29,7 @@ export type usersOptionalAttributes =
   | "address"
   | "createdAt"
   | "updatedAt"
-  | "githubLogin"
+  | "handle"
   | "resetedAt"
   | "email"
   | "isEmailConfirmed"
@@ -42,7 +42,7 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   address?: string;
   createdAt!: Date;
   updatedAt!: Date;
-  githubLogin?: string;
+  handle?: string;
   resetedAt?: Date;
   email?: string;
   isEmailConfirmed?: boolean;
@@ -159,10 +159,10 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
         allowNull: true,
         unique: "users_address_key"
       },
-      githubLogin: {
+      handle: {
         type: DataTypes.STRING(255),
         allowNull: true,
-        unique: "users_githubLogin_key"
+        unique: "users_handle_key"
       },
       resetedAt: {
         type: DataTypes.DATE,
@@ -206,10 +206,10 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
           ]
         },
         {
-          name: "users_githubLogin_key",
+          name: "users_handle_key",
           unique: true,
           fields: [
-            {name: "githubLogin"},
+            {name: "handle"},
           ]
         },
         {
