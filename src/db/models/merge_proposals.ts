@@ -12,7 +12,7 @@ export interface merge_proposalsAttributes {
   issueId?: number;
   createdAt: Date;
   updatedAt: Date;
-  githubLogin?: string;
+  handle?: string;
   contractId?: number;
   creator?: string;
   network_id?: number;
@@ -30,7 +30,7 @@ export type merge_proposalsOptionalAttributes =
   | "issueId"
   | "createdAt"
   | "updatedAt"
-  | "githubLogin"
+  | "handle"
   | "contractId"
   | "creator"
   | "network_id"
@@ -44,7 +44,7 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
   issueId?: number;
   createdAt!: Date;
   updatedAt!: Date;
-  githubLogin?: string;
+  handle?: string;
   contractId?: number;
   creator?: string;
   network_id?: number;
@@ -122,7 +122,7 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
           key: 'id'
         }
       },
-      githubLogin: {
+      handle: {
         type: DataTypes.STRING(255),
         allowNull: true
       },
