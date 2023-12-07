@@ -9,8 +9,6 @@ import { Op } from "sequelize";
 async function clearTakedBackDelegations(curator, delegations: Delegation[]) {
   const currentDelegationsIds = delegations.map(({ id }) => id);
 
-  if (!currentDelegationsIds.length) return;
-
   await db.delegations.destroy({
     where: {
       curatorId: curator.id,
