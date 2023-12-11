@@ -75,7 +75,7 @@ export class notifications extends Model<notificationsAttributes, notificationsC
       uuid: {
         type: DataTypes.STRING(255),
         allowNull: true,
-        unique: "notifications_uuid_key"
+        unique: true
       },
       template: {
         type: DataTypes.TEXT,
