@@ -1,5 +1,6 @@
 export enum AnalyticTypes {
   GA4 = "ga4",
   ElasticSearch = "elastic-search",
-  EmailNotification = "send-grid-email-notif"
+  EmailNotification = "send-grid-email-notif",
+  CreateNotification = "create-notification",
 }

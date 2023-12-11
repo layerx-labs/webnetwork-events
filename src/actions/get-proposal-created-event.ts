@@ -95,14 +95,41 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
-  Push.event(AnalyticEventName.MERGE_PROPOSAL_OPEN, {
-    chainId, network: {name: network.name, id: network.id},
-    bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
-    deliverableId: dbDeliverable.id, deliverableContractId: dbDeliverable.prContractId,
-    proposalId: createProposal.id, proposalContractId: createProposal.contractId,
-    actor: proposal.creator,
-    title: dbBounty.title,
-  })
+  const AnalyticEvent = {
+    name: AnalyticEventName.MERGE_PROPOSAL_OPEN,
+    params: {
+      chainId, network: {name: network.name, id: network.id},
+      bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+      deliverableId: dbDeliverable.id, deliverableContractId: dbDeliverable.prContractId,
+      proposalId: createProposal.id, proposalContractId: createProposal.contractId,
+      actor: proposal.creator
+    }
+  }
+
+  const NotificationEvent = {
+    name: AnalyticEventName.NOTIF_PROPOSAL_OPEN,
+    params: {
+      creator: {
+        address: createProposal.creator,
+        username: createProposal.handle,
+      },
+      task: {
+        id: dbDeliverable.bountyId,
+        title: dbBounty.title,
+      },
+      deliverable: {
+        title: dbDeliverable.title,
+        id: dbDeliverable.id,
+        updatedAt: dbDeliverable.updatedAt
+      },
+      proposal: {
+        id: createProposal.id,
+        distributions: createProposal.proposal_distributions.values()
+      }
+    }
+  }
+
+  Push.events([AnalyticEvent, NotificationEvent])
 
 
   return eventsProcessed;

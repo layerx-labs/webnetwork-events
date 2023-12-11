@@ -81,14 +81,38 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
           where: {userId: {[Op.not]: owner.id}}
       });
 
-    Push.event(AnalyticEventName.PULL_REQUEST_READY, {
-      chainId, network: {name: network.name, id: network.id},
-      bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
-      deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
-      actor: pullRequest.creator,
-      targets: [...targets, owner],
-      title: dbBounty.title,
-    })
+    const AnalyticEvent = {
+      name: AnalyticEventName.PULL_REQUEST_READY,
+      params: {
+        chainId, network: {name: network.name, id: network.id},
+        bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+        deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
+        actor: pullRequest.creator,
+      }
+    }
+
+    const NotificationEvent = {
+      name: AnalyticEventName.NOTIF_DELIVERABLE_READY,
+      params: {
+        targets: [...targets, owner],
+        creator: {
+          address: dbDeliverable.user.address,
+          id: dbDeliverable.user.id,
+          username: dbDeliverable.user.handle,
+        },
+        task: {
+          id: dbDeliverable.bountyId,
+          title: dbBounty.title,
+        },
+        deliverable: {
+          title: dbDeliverable.title,
+          id: dbDeliverable.id,
+          updatedAt: dbDeliverable.updatedAt
+        }
+      }
+    }
+
+    Push.events([AnalyticEvent, NotificationEvent])
   })()
 
 

@@ -1,17 +1,14 @@
 import {EmailService} from "../email-service/email-service";
 import {Templates} from "./templates";
 import {EmailNotificationSubjects} from "./templates/email-info";
-import {Op} from "sequelize";
-import {Templater} from "./templater";
+import {EmailTemplate} from "../../../services/templating/email-template";
 import {users} from "../../../db/models/users";
-import db from "../../../db";
 import {v4 as uuidv4} from "uuid";
-import loggerHandler from "../../../utils/logger-handler";
 import {format} from "node:util"
+import {getEventTargets} from "../../../utils/get-event-targets";
 
 type EmailNotificationTarget = Pick<users, "email" | "id" | "user_settings">;
 type EmailNotificationTargets = EmailNotificationTarget[];
-type RecipientIds = { recipients: string[], ids: number[] };
 
 export class EmailNotification<Payload = any> {
   constructor(readonly templateName: keyof typeof Templates,
@@ -21,38 +18,22 @@ export class EmailNotification<Payload = any> {
 
   async send() {
 
-    const targets =
-      (this.targets?.length
-          ? this.targets.filter(u => u.user_settings?.[0].notifications)
-          : (await db.users.findAll({
-            where: {email: {[Op.not]: ""}},
-            include: [{association: "settings", where: {notifications: true}, required: true}],
-            raw: true
-          }))
-            .filter(u => u.email)
-      );
-
-    const reduceTargetToRecipientIds = (p: { recipients: string[], ids: number[] }, c: EmailNotificationTarget) =>
-      ({recipients: [...p.recipients, c.email], ids: [...p.ids, c.id]}) as RecipientIds;
-
-    const {recipients, ids} = targets
-      .filter(u => u.email)
-      .reduce(reduceTargetToRecipientIds, {recipients: [], ids: []});
+    const {recipients, ids} = await getEventTargets(this.targets);
 
     for (const [index, to] of recipients.entries()) {
       const uuid = uuidv4();
-      await db.notifications.create({uuid, type: this.templateName, read: false, userId: ids[index]})
-        .then(_ => {
-          loggerHandler.debug(`Notification created ${this.templateName}, ${uuid}, userId: ${ids[index]}`)
-        })
-        .catch(e => {
-          loggerHandler.error(`Failed to create notification ${this.templateName}, ${uuid}, userId: ${ids[index]}`, e?.toString());
-        })
+      // await db.notifications.create({uuid, type: this.templateName, read: false, userId: ids[index]})
+      //   .then(_ => {
+      //     loggerHandler.debug(`Notification created ${this.templateName}, ${uuid}, userId: ${ids[index]}`)
+      //   })
+      //   .catch(e => {
+      //     loggerHandler.error(`Failed to create notification ${this.templateName}, ${uuid}, userId: ${ids[index]}`, e?.toString());
+      //   })
 
       await EmailService.sendEmail(
-        format(EmailNotificationSubjects[this.templateName]!, (this.payload as any).network.name),
+        format(EmailNotificationSubjects[this.templateName]!, (this.payload as any)?.network?.name ?? "BEPRO"),
         [to],
-        new Templater(Templates[this.templateName]!).compile({...this.payload, template: this.templateName, uuid})
+        new EmailTemplate().compile({...this.payload, template: this.templateName, uuid})
       );
     }
   }

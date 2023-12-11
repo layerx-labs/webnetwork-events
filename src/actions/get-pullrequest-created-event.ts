@@ -70,13 +70,39 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
 
   const targets = [(await dbBounty.getUser({attributes: ["email", "id", "user_settings"], raw: true}))]
 
-  Push.event(AnalyticEventName.PULL_REQUEST_OPEN, {
-    chainId, network: {name: network.name, id: network.id},
-    bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
-    deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
-    actor: pullRequest.creator, targets,
-    title: dbBounty.title,
-  })
+  const AnalyticEvent = {
+    name: AnalyticEventName.PULL_REQUEST_OPEN,
+    params: {
+      chainId, network: {name: network.name, id: network.id},
+      bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+      deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
+      actor: pullRequest.creator,
+      title: dbBounty.title,
+    }
+  }
+
+  const NotificationEvent = {
+    name: AnalyticEventName.NOTIF_DELIVERABLE_CREATED,
+    params: {
+      targets,
+      creator: {
+        address: dbDeliverable.user.address,
+        id: dbDeliverable.user.id,
+        username: dbDeliverable.user.handle,
+      },
+      task: {
+        id: dbDeliverable.bountyId,
+        title: dbBounty.title,
+      },
+      deliverable: {
+        title: dbDeliverable.title,
+        id: dbDeliverable.id,
+        createdAt: dbDeliverable.createdAt
+      }
+    }
+  }
+
+  Push.events([AnalyticEvent, NotificationEvent])
 
   return eventsProcessed;
 }

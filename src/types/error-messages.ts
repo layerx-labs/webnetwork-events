@@ -4,5 +4,6 @@ export enum ErrorMessages {
   MissingParamsGA = "Missing params for google analytics collector",
   MissingParamsElasticSearch = "missing params for elastic search collector",
   FailedToCollectElasticSearchLog = "Failed to push to elastic search",
-  FailedToCollectEmailNotification = "Failed to collect email notification",
+  FailedToCollectEmailNotification = "Failed to send email notification",
+  FailedToCreateNotification = "Failed to create notification",
 }

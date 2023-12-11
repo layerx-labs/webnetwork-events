@@ -4,7 +4,8 @@ import {error, warn} from "../../utils/logger-handler";
 import {ErrorMessages} from "../../types/error-messages";
 import {type Collector} from "./collector";
 import {ElasticSearch} from "./collectors/elastic-search";
-import {NotificationCollector} from "./collectors/send-grid-notification";
+import {SendGridEmailNotification} from "./collectors/send-grid-email-notification";
+import {CreateNotification} from "./collectors/create-notification";
 
 /**
  *
@@ -19,13 +20,15 @@ export function getCollector({type}: Analytic): Collector | null {
       case "elastic-search":
         return new ElasticSearch();
       case "send-grid-email-notif":
-        return new NotificationCollector();
+        return new SendGridEmailNotification();
+      case "create-notification":
+        return new CreateNotification();
       default:
         warn(ErrorMessages.CollectorUnknown, {type});
         return null;
     }
   } catch (e) {
-    error(`Failed to return collector`, e?.toString());
+    error(`Failed to return collector ${type}`, e?.toString());
     return null;
   }
 }

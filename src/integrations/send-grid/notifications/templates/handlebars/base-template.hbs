@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>{{pageTitle}}</title>
@@ -7,23 +8,33 @@
 
     {{> styles}}
 </head>
-</html>
-<body>
-<div class="container">
-    {{> logo}}
-    <h1>{{notificationTitleHeading}}</h1>
-    <div class="action-card">
-        <p>{{taskTitleParagraph}}</p>
-        <a class="action-button" href="{{actionHref}}">View task</a>
-    </div>
-    <div class="notification-manage">
-        Manage your BEPRO notifications
-    </div>
-    <div class="links">
-        <a href="https://app.bepro.network" class="link-item">App</a>
-        <a href="https://bepro.network" class="link-item">Website</a>
-        <a href="https://discord.gg/layerx" class="link-item">Discord</a>
-        <a href="https://twitter.com/bepronet" class="link-item">Twitter</a>
-    </div>
-</div>
+<body id="body">
+<table id="container" cellspacing="0" cellpadding="0" border="0">
+    <tr>
+        <td>
+            {{> logo}}
+            <h1>{{notificationTitleHeading}}</h1>
+            <table id="action-card" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <td>
+                        <p>{{taskTitleParagraph}}</p>
+                        <a id="action-button" href="{{actionHref}}">View task</a>
+                    </td>
+                </tr>
+            </table>
+            <div id="notification-manage">Manage your BEPRO notifications</div>
+            <table id="links" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <td>
+                        <a href="https://app.bepro.network" class="link-item">App</a>
+                        <a href="https://bepro.network" class="link-item">Website</a>
+                        <a href="https://discord.gg/layerx" class="link-item">Discord</a>
+                        <a href="https://twitter.com/bepronet" class="link-item">Twitter</a>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 </body>
+</html>

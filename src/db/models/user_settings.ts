@@ -7,11 +7,19 @@ export interface user_settingsAttributes {
   userId?: number;
   notifications?: boolean;
   language?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type user_settingsPk = "id";
 export type user_settingsId = user_settings[user_settingsPk];
-export type user_settingsOptionalAttributes = "id" | "userId" | "notifications" | "language";
+export type user_settingsOptionalAttributes =
+  "id"
+  | "userId"
+  | "notifications"
+  | "language"
+  | "createdAt"
+  | "updatedAt";
 export type user_settingsCreationAttributes = Optional<user_settingsAttributes, user_settingsOptionalAttributes>;
 
 export class user_settings extends Model<user_settingsAttributes, user_settingsCreationAttributes> implements user_settingsAttributes {
@@ -19,6 +27,8 @@ export class user_settings extends Model<user_settingsAttributes, user_settingsC
   userId?: number;
   notifications?: boolean;
   language?: string;
+  createdAt!: Date;
+  updatedAt!: Date;
 
   // user_settings belongsTo users via userId
   user!: users;
@@ -53,7 +63,7 @@ export class user_settings extends Model<user_settingsAttributes, user_settingsC
     }, {
       tableName: 'user_settings',
       schema: 'public',
-      timestamps: false,
+      timestamps: true,
       indexes: [
         {
           name: "user_settings_pkey",

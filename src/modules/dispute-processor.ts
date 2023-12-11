@@ -49,29 +49,57 @@ export async function disputeProcessor(block: DecodedLog<BountyProposalDisputedE
         proposalId: dbProposal.id,
         weight: actorTotalVotes.toFixed()
       })
+    } else await dbDispute.update({weight: actorTotalVotes.toFixed()})
 
-        const isDisputed = await Actor.isProposalDisputed(bounty.id, proposalId)
+    const isDisputed = await Actor.isProposalDisputed(bounty.id, proposalId)
 
-        if (isDisputed) {
-          const curator = await db.curators.findOne({
-            where: {
-              address: bounty.proposals[proposalId].creator,
-              networkId: dbProposal.network_id,
-            },
-          });
-          if (curator)
-            await updateCuratorProposalParams(curator, "disputedProposals", "add");
+    if (isDisputed) {
+      const curator = await db.curators.findOne({
+        where: {
+          address: bounty.proposals[proposalId].creator,
+          networkId: dbProposal.network_id,
+        },
+      });
 
-          Push.event(AnalyticEventName.MERGE_PROPOSAL_DISPUTED, {
-            chainId, network: {name: network.name, id: network.id},
-            bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
-            deliverableId: dbProposal.deliverableId, deliverableContractId: bounty.proposals[proposalId].prId,
-            proposalId: dbProposal.id, proposalContractId: dbProposal.contractId,
-            actor: actorAddress,
+      if (curator)
+        await updateCuratorProposalParams(curator, "disputedProposals", "add");
+
+      const AnalyticalEvent = {
+        name: AnalyticEventName.MERGE_PROPOSAL_DISPUTED,
+        params: {
+          chainId, network: {name: network.name, id: network.id},
+          bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+          deliverableId: dbProposal.deliverableId, deliverableContractId: bounty.proposals[proposalId].prId,
+          proposalId: dbProposal.id, proposalContractId: dbProposal.contractId,
+          actor: actorAddress,
+        }
+      };
+
+      const NotificationEvent = {
+        name: AnalyticEventName.NOTIF_PROPOSAL_DISPUTED,
+        params: {
+          creator: {
+            address: actorAddress,
+          },
+          task: {
+            id: dbBounty.id,
             title: dbBounty.title,
-          })
-
+          },
+          deliverable: {
+            title: dbProposal.deliverable.title,
+            id: dbProposal.deliverable.id,
+            updatedAt: dbProposal.deliverable.updatedAt
+          },
+          proposal: {
+            id: dbProposal.id,
+            distributions: dbProposal.proposal_distributions.values(),
+            disputes: dbProposal.disputes.values()
+          }
         }
       }
+
+      Push.events([AnalyticalEvent, NotificationEvent]);
+
     }
   }
+}
