@@ -3,6 +3,7 @@ import {DataTypes, Model, Optional} from 'sequelize';
 import type {users, usersId} from './users';
 
 export interface notificationsAttributes {
+  id: number;
   userId?: number;
   type?: string;
   read?: boolean;
@@ -14,7 +15,8 @@ export interface notificationsAttributes {
 }
 
 export type notificationsOptionalAttributes =
-  "userId"
+  | "id"
+  | "userId"
   | "type"
   | "read"
   | "hide"
@@ -23,8 +25,10 @@ export type notificationsOptionalAttributes =
   | "createdAt"
   | "updatedAt";
 export type notificationsCreationAttributes = Optional<notificationsAttributes, notificationsOptionalAttributes>;
-
+export type notificationsPk = "id";
+export type notificationsId = notifications[notificationsPk];
 export class notifications extends Model<notificationsAttributes, notificationsCreationAttributes> implements notificationsAttributes {
+  id!: number;
   userId?: number;
   type?: string;
   read?: boolean;
@@ -42,6 +46,12 @@ export class notifications extends Model<notificationsAttributes, notificationsC
 
   static initModel(sequelize: Sequelize.Sequelize): typeof notifications {
     return sequelize.define('notifications', {
+      id: {
+        autoIncrement: true,
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true
+      },
       userId: {
         type: DataTypes.INTEGER,
         allowNull: true,
