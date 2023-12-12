@@ -100,14 +100,10 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
           id: dbDeliverable.user.id,
           username: dbDeliverable.user.handle,
         },
-        task: {
-          id: dbDeliverable.bountyId,
-          title: dbBounty.title,
-        },
-        deliverable: {
-          title: dbDeliverable.title,
-          id: dbDeliverable.id,
-          updatedAt: dbDeliverable.updatedAt
+      notification: {
+        id: dbDeliverable.id,
+        title: `Deliverable #${dbDeliverable.id} on task #${dbBounty.id} is ready to be reviewed`,
+        network: dbBounty.network.name
         }
       }
     }

@@ -81,19 +81,10 @@ export async function disputeProcessor(block: DecodedLog<BountyProposalDisputedE
           creator: {
             address: actorAddress,
           },
-          task: {
-            id: dbBounty.id,
-            title: dbBounty.title,
-          },
-          deliverable: {
-            title: dbProposal.deliverable.title,
-            id: dbProposal.deliverable.id,
-            updatedAt: dbProposal.deliverable.updatedAt
-          },
-          proposal: {
+          notification: {
             id: dbProposal.id,
-            distributions: dbProposal.proposal_distributions.values(),
-            disputes: dbProposal.disputes.values()
+            title: `Proposal #${dbProposal.id} on task #${dbBounty.id} has been disputed `,
+            network: dbBounty.network.name
           }
         }
       }
