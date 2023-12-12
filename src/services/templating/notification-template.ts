@@ -8,6 +8,6 @@ export class NotificationTemplate extends Template {
 
   compile(payload: any) {
     Handlebars.registerPartial("avatar", Handlebars.compile(this.getHtmlOf("/partials/avatar.hbs")));
-    return Handlebars.compile(this.getHtmlOf(`/${payload.type.toLowerCase().replaceAll("_", "-")}.hbs`))(payload, {allowProtoPropertiesByDefault: true});
+    return Handlebars.compile(this.getHtmlOf(`/notification-template.hbs`))(payload?.payload, {allowProtoPropertiesByDefault: true});
   }
 }

@@ -1,16 +1,17 @@
 {{> avatar}}
-
-{{creator.username}}
-
-{{task.title}}
-{{task.id}}
-
-{{deliverable.updatedAt}}
-{{deliverable.title}}
-{{deliverable.id}}
-
-{{proposal.id}}
-{{proposal.distributions}}
-{{proposal.disputes}}
-
-disputed
+<div class="d-flex flex-column ms-3">
+   <span class="xs-medium notification-title text-white mb-3">
+      {{notification.title}}
+   </span>
+   {{#if notification.subTitle}}
+      <span class="sm-regular mb-3 text-white-50">
+        {{notification.subTitle}}
+      </span>
+   {{/if}}
+    <div class="d-flex gap-2 text-white-50">
+        <span class="sm-regular">{{notification.network}}</span>
+        <span>•</span>
+        <span class="sm-regular">%DATE%</span>
+        </div>
+    </div>
+ </div>
