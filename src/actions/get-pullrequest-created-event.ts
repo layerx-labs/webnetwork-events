@@ -44,7 +44,8 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   const pullRequest = bounty.pullRequests[pullRequestId];
 
   const dbDeliverable = await db.deliverables.findOne({
-    where: { id: pullRequest.cid }
+    where: { id: pullRequest.cid },
+    include: [{association: 'user'}]
   });
 
   if (!dbDeliverable) {
@@ -67,8 +68,8 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   };
 
   sendMessageToTelegramChannels(DELIVERABLE_OPEN(dbBounty, dbDeliverable, dbDeliverable.id));
-
-  const targets = [(await dbBounty.getUser({attributes: ["email", "id", "user_settings"], raw: true}))]
+  
+  const targets = [(await dbBounty.getUser({attributes: ["email", "id"], include:[{ association: "user_settings" }] })).get()]
 
   const AnalyticEvent = {
     name: AnalyticEventName.PULL_REQUEST_OPEN,

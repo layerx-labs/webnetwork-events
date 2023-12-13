@@ -35,7 +35,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
 
   const dbBounty = await db.issues.findOne({
     where: {contractId: bountyId, network_id: network.id},
-    include: [{association: "network"}]
+    include: [{association: "network", include: [{association: 'curators'}]}, {association: 'user'}]
   })
   if (!dbBounty) {
     logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
@@ -46,7 +46,8 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
   const pullRequest = bounty.pullRequests[pullRequestId];
 
   const dbDeliverable = await db.deliverables.findOne({
-    where: {id: pullRequest.cid}
+    where: {id: pullRequest.cid},
+    include: {association: 'user'}
   })
 
   if (!dbDeliverable) {
@@ -74,12 +75,14 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
 
   /** Create a non-blocking scope, so that we can await for targets but let the fn end */
   (async () => {
-    const owner = await dbBounty!.getUser({attributes: ["email", "id", "user_settings"], raw: true});
-    const targets =
-      await dbBounty!.network.getCurators({
-        include: [{association: "user", attributes: ["email", "id", "user_settings"]}],
-          where: {userId: {[Op.not]: owner.id}}
-      });
+    const owner = await dbBounty!.getUser({attributes: ["email", "id"], include:[{ association: "user_settings" }] });
+
+    const curators = await dbBounty!.network.getCurators({
+      include: [{association: "user", attributes: ["email", "id"], include:[{association: "user_settings"}]}],
+        where: {userId: {[Op.not]: owner.id }, isCurrentlyCurator: true}
+    });
+
+    const targets = curators.map(curators => curators.user.get())
 
     const AnalyticEvent = {
       name: AnalyticEventName.PULL_REQUEST_READY,
@@ -94,7 +97,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
     const NotificationEvent = {
       name: AnalyticEventName.NOTIF_DELIVERABLE_READY,
       params: {
-        targets: [...targets, owner],
+        targets: [...targets, owner.get()],
         creator: {
           address: dbDeliverable.user.address,
           id: dbDeliverable.user.id,
