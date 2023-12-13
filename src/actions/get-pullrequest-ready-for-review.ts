@@ -35,7 +35,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
 
   const dbBounty = await db.issues.findOne({
     where: {contractId: bountyId, network_id: network.id},
-    include: [{association: "network", include: [{association: 'curators'}]}, {association: 'user'}]
+    include: [{association: "network"}]
   })
   if (!dbBounty) {
     logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
@@ -100,7 +100,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
         targets: [...targets, owner.get()],
         creator: {
           address: dbDeliverable.user.address,
-          id: dbDeliverable.user.id,
+          id: owner.id,
           username: dbDeliverable.user.handle,
         },
       notification: {
