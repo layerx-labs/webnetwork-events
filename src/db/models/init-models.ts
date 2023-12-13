@@ -163,7 +163,7 @@ export function initModels(sequelize: Sequelize) {
 
   delegations.belongsTo(chains, {as: "chain", foreignKey: "chainId"});
   chains.hasMany(delegations, {as: "delegations", foreignKey: "chainId"});
-  issues.belongsTo(chains, {as: "chain", foreignKey: "chain_id"});
+  issues.belongsTo(chains, {as: "chain", foreignKey: "chain_id", targetKey: "chainId"});
   chains.hasMany(issues, {as: "issues", foreignKey: "chain_id"});
   networks.belongsTo(chains, {as: "chain", foreignKey: "chain_id"});
   chains.hasMany(networks, {as: "networks", foreignKey: "chain_id"});

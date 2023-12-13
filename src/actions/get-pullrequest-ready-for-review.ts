@@ -35,7 +35,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
 
   const dbBounty = await db.issues.findOne({
     where: {contractId: bountyId, network_id: network.id},
-    include: [{association: "network"}]
+    include: [{association: "network", include: [{association: "chain"}]}]
   })
   if (!dbBounty) {
     logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
@@ -103,10 +103,11 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
           id: owner.id,
           username: dbDeliverable.user.handle,
         },
-      notification: {
-        id: dbDeliverable.id,
-        title: `Deliverable #${dbDeliverable.id} on task #${dbBounty.id} is ready to be reviewed`,
-        network: dbBounty.network.name
+        notification: {
+          id: dbDeliverable.id,
+          title: `Deliverable #${dbDeliverable.id} on task #${dbBounty.id} is ready to be reviewed`,
+          network: dbBounty.network.name,
+          link: `${dbBounty.network.name}/${dbBounty.network.chain.chainShortName}/task/${dbBounty.id}/deliverable/${dbDeliverable.id}`
         }
       }
     }

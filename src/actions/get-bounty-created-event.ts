@@ -90,7 +90,8 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
     },
     include: [
       { association: "network" },
-      { association: "user" }
+      { association: "user" },
+      { association: "chain" }
     ],
   });
 
@@ -188,7 +189,8 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
       notification: {
         id: dbBounty.id,
         title: `Task #${dbBounty.id} has been created on ${dbBounty.network.name}`,
-        network: dbBounty.network.name
+        network: dbBounty.network.name,
+        link: `${dbBounty.network.name}/${dbBounty.chain.chainShortName}/task/${dbBounty.id}`
       }
     }
   }

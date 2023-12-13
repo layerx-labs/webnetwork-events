@@ -84,7 +84,8 @@ export async function disputeProcessor(block: DecodedLog<BountyProposalDisputedE
           notification: {
             id: dbProposal.id,
             title: `Proposal #${dbProposal.id} on task #${dbBounty.id} has been disputed `,
-            network: dbBounty.network.name
+            network: dbBounty.network.name,
+            link: `${dbBounty.network.name}/${dbBounty.chain.chainShortName}/task/${dbBounty.id}/proposal/${dbProposal.id}`
           }
         }
       }

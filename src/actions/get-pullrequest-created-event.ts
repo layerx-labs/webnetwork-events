@@ -33,7 +33,7 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
 
   const dbBounty = await db.issues.findOne({
     where: {contractId: bountyId, network_id: network.id},
-    include: [{association: "network"}]
+    include: [{association: "network"}, {association: "chain"}]
   });
 
   if (!dbBounty) {
@@ -94,7 +94,8 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
       notification: {
         id: dbDeliverable.id,
         title: `Deliverable #${dbDeliverable.id} has been created on task #${dbBounty.id}`,
-        network: dbBounty.network.name
+        network: dbBounty.network.name,
+        link: `${dbBounty.network.name}/${dbBounty.chain.chainShortName}/task/${dbBounty.id}/deliverable/${dbDeliverable.id}`
       }
     }
   }

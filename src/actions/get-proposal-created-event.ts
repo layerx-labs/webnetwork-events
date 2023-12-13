@@ -116,7 +116,8 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
       notification: {
         id: createProposal.id,
         title: `Proposal #${createProposal.id} has been created on task #${dbBounty.id}`,
-        network: dbBounty.network.name
+        network: dbBounty.network.name,
+        link: `${dbBounty.network.name}/${dbBounty.chain.chainShortName}/task/${dbBounty.id}/proposal/${createProposal.id}`
       }
     }
   }
