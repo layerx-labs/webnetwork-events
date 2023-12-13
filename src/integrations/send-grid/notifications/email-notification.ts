@@ -20,7 +20,7 @@ export class EmailNotification<Payload = any> {
 
     const {recipients, ids} = await getEventTargets(this.targets);
 
-    for (const [index, to] of recipients.entries()) {
+    for (const [index, to] of recipients.filter(e => e).entries()) {
       const uuid = uuidv4();
       // await db.notifications.create({uuid, type: this.templateName, read: false, userId: ids[index]})
       //   .then(_ => {
