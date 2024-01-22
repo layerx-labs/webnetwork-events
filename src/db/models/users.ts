@@ -1,16 +1,20 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { comments, commentsId } from './comments';
+import type { curators, curatorsId } from './curators';
 import type { deliverables, deliverablesId } from './deliverables';
 import type { issues, issuesId } from './issues';
 import type { kyc_sessions, kyc_sessionsId } from './kyc_sessions';
+import type { notifications, notificationsId } from './notifications';
+import type { user_settings, user_settingsId } from './user_settings';
+import type { users_locked_registry, users_locked_registryId } from './users_locked_registry';
 
 export interface usersAttributes {
   id: number;
   address?: string;
   createdAt: Date;
   updatedAt: Date;
-  githubLogin?: string;
+  handle?: string;
   resetedAt?: Date;
   email?: string;
   isEmailConfirmed?: boolean;
@@ -20,7 +24,7 @@ export interface usersAttributes {
 
 export type usersPk = "id";
 export type usersId = users[usersPk];
-export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "githubLogin" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt";
+export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "handle" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt";
 export type usersCreationAttributes = Optional<usersAttributes, usersOptionalAttributes>;
 
 export class users extends Model<usersAttributes, usersCreationAttributes> implements usersAttributes {
@@ -28,7 +32,7 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   address?: string;
   createdAt!: Date;
   updatedAt!: Date;
-  githubLogin?: string;
+  handle?: string;
   resetedAt?: Date;
   email?: string;
   isEmailConfirmed?: boolean;
@@ -47,6 +51,18 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   hasComment!: Sequelize.HasManyHasAssociationMixin<comments, commentsId>;
   hasComments!: Sequelize.HasManyHasAssociationsMixin<comments, commentsId>;
   countComments!: Sequelize.HasManyCountAssociationsMixin;
+  // users hasMany curators via userId
+  curators!: curators[];
+  getCurators!: Sequelize.HasManyGetAssociationsMixin<curators>;
+  setCurators!: Sequelize.HasManySetAssociationsMixin<curators, curatorsId>;
+  addCurator!: Sequelize.HasManyAddAssociationMixin<curators, curatorsId>;
+  addCurators!: Sequelize.HasManyAddAssociationsMixin<curators, curatorsId>;
+  createCurator!: Sequelize.HasManyCreateAssociationMixin<curators>;
+  removeCurator!: Sequelize.HasManyRemoveAssociationMixin<curators, curatorsId>;
+  removeCurators!: Sequelize.HasManyRemoveAssociationsMixin<curators, curatorsId>;
+  hasCurator!: Sequelize.HasManyHasAssociationMixin<curators, curatorsId>;
+  hasCurators!: Sequelize.HasManyHasAssociationsMixin<curators, curatorsId>;
+  countCurators!: Sequelize.HasManyCountAssociationsMixin;
   // users hasMany deliverables via userId
   deliverables!: deliverables[];
   getDeliverables!: Sequelize.HasManyGetAssociationsMixin<deliverables>;
@@ -83,6 +99,42 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   hasKyc_session!: Sequelize.HasManyHasAssociationMixin<kyc_sessions, kyc_sessionsId>;
   hasKyc_sessions!: Sequelize.HasManyHasAssociationsMixin<kyc_sessions, kyc_sessionsId>;
   countKyc_sessions!: Sequelize.HasManyCountAssociationsMixin;
+  // users hasMany notifications via userId
+  notifications!: notifications[];
+  getNotifications!: Sequelize.HasManyGetAssociationsMixin<notifications>;
+  setNotifications!: Sequelize.HasManySetAssociationsMixin<notifications, notificationsId>;
+  addNotification!: Sequelize.HasManyAddAssociationMixin<notifications, notificationsId>;
+  addNotifications!: Sequelize.HasManyAddAssociationsMixin<notifications, notificationsId>;
+  createNotification!: Sequelize.HasManyCreateAssociationMixin<notifications>;
+  removeNotification!: Sequelize.HasManyRemoveAssociationMixin<notifications, notificationsId>;
+  removeNotifications!: Sequelize.HasManyRemoveAssociationsMixin<notifications, notificationsId>;
+  hasNotification!: Sequelize.HasManyHasAssociationMixin<notifications, notificationsId>;
+  hasNotifications!: Sequelize.HasManyHasAssociationsMixin<notifications, notificationsId>;
+  countNotifications!: Sequelize.HasManyCountAssociationsMixin;
+  // users hasMany user_settings via userId
+  user_settings!: user_settings[];
+  getUser_settings!: Sequelize.HasManyGetAssociationsMixin<user_settings>;
+  setUser_settings!: Sequelize.HasManySetAssociationsMixin<user_settings, user_settingsId>;
+  addUser_setting!: Sequelize.HasManyAddAssociationMixin<user_settings, user_settingsId>;
+  addUser_settings!: Sequelize.HasManyAddAssociationsMixin<user_settings, user_settingsId>;
+  createUser_setting!: Sequelize.HasManyCreateAssociationMixin<user_settings>;
+  removeUser_setting!: Sequelize.HasManyRemoveAssociationMixin<user_settings, user_settingsId>;
+  removeUser_settings!: Sequelize.HasManyRemoveAssociationsMixin<user_settings, user_settingsId>;
+  hasUser_setting!: Sequelize.HasManyHasAssociationMixin<user_settings, user_settingsId>;
+  hasUser_settings!: Sequelize.HasManyHasAssociationsMixin<user_settings, user_settingsId>;
+  countUser_settings!: Sequelize.HasManyCountAssociationsMixin;
+  // users hasMany users_locked_registry via userId
+  users_locked_registries!: users_locked_registry[];
+  getUsers_locked_registries!: Sequelize.HasManyGetAssociationsMixin<users_locked_registry>;
+  setUsers_locked_registries!: Sequelize.HasManySetAssociationsMixin<users_locked_registry, users_locked_registryId>;
+  addUsers_locked_registry!: Sequelize.HasManyAddAssociationMixin<users_locked_registry, users_locked_registryId>;
+  addUsers_locked_registries!: Sequelize.HasManyAddAssociationsMixin<users_locked_registry, users_locked_registryId>;
+  createUsers_locked_registry!: Sequelize.HasManyCreateAssociationMixin<users_locked_registry>;
+  removeUsers_locked_registry!: Sequelize.HasManyRemoveAssociationMixin<users_locked_registry, users_locked_registryId>;
+  removeUsers_locked_registries!: Sequelize.HasManyRemoveAssociationsMixin<users_locked_registry, users_locked_registryId>;
+  hasUsers_locked_registry!: Sequelize.HasManyHasAssociationMixin<users_locked_registry, users_locked_registryId>;
+  hasUsers_locked_registries!: Sequelize.HasManyHasAssociationsMixin<users_locked_registry, users_locked_registryId>;
+  countUsers_locked_registries!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof users {
     return sequelize.define('users', {
@@ -97,7 +149,7 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
       allowNull: true,
       unique: "users_address_key"
     },
-    githubLogin: {
+    handle: {
       type: DataTypes.STRING(255),
       allowNull: true,
       unique: "users_githubLogin_key"
@@ -147,7 +199,7 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
         name: "users_githubLogin_key",
         unique: true,
         fields: [
-          { name: "githubLogin" },
+          { name: "handle" },
         ]
       },
       {

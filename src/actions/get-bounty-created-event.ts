@@ -20,7 +20,8 @@ import {tokens} from "src/db/models/tokens";
 import {isIpfsEnvs} from "src/utils/ipfs-envs-verify";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
-import { getDeveloperAmount } from "src/modules/calculate-distributed-amounts";
+import {getDeveloperAmount} from "src/modules/calculate-distributed-amounts";
+import {getCoinIconByChainAndContractAddress} from "src/services/coingecko";
 
 
 export const name = "getBountyCreatedEvents";
@@ -43,12 +44,15 @@ async function validateToken(connection: Web3Connection, address, isTransactiona
 
     await erc20.loadContract();
 
+    const icon = await getCoinIconByChainAndContractAddress(address, +chainId) || undefined
+
     token = await db.tokens.create({
       name: await erc20.name(),
       symbol: await erc20.symbol(),
       address,
       isTransactional,
-      isReward: !isTransactional
+      isReward: !isTransactional,
+      icon
     });
   }
 
@@ -85,7 +89,9 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
       network_id: network.id
     },
     include: [
-      { association: "network" }
+      { association: "network" },
+      { association: "user" },
+      { association: "chain" }
     ],
   });
 
@@ -142,8 +148,8 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
 
   await dbBounty.save();
 
-  await updateLeaderboardBounties();
-  await updateBountiesHeader();
+  updateLeaderboardBounties();
+  updateBountiesHeader();
 
   sendMessageToTelegramChannels(NEW_BOUNTY_OPEN(dbBounty!));
 
@@ -154,16 +160,42 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
 
   const {tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional} = bounty;
 
-  Push.event(+bounty.fundingAmount > 0 ? AnalyticEventName.FUNDING_REQUEST_CREATED : AnalyticEventName.BOUNTY_CREATED, {
-    chainId, network: {name: network.name, id: network.id},
-    tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
-    currency: dbBounty.transactionalToken?.symbol,
-    reward: dbBounty.rewardToken?.symbol,
-    creator: block.returnValues.creator,
-    username: dbBounty.user?.githubLogin,
-    bountyId: dbBounty.id,
-    bountyChainId: bounty.id
-  })
+  const AnalyticsEvent = {
+    name: +bounty.fundingAmount > 0
+      ? AnalyticEventName.FUNDING_REQUEST_CREATED
+      : AnalyticEventName.BOUNTY_CREATED,
+    params: {
+      chainId, network: {name: network.name, id: network.id},
+      tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
+      currency: dbBounty.transactionalToken?.symbol,
+      reward: dbBounty.rewardToken?.symbol,
+      creator: block.returnValues.creator,
+      username: dbBounty.user?.handle,
+      bountyId: dbBounty.id,
+      bountyChainId: bounty.id,
+      title: dbBounty.title,
+    }
+  }
+
+  const NotificationEvent = {
+    name: +bounty.fundingAmount > 0
+      ? AnalyticEventName.NOTIF_TASK_FUNDING_CREATED
+      : AnalyticEventName.NOTIF_TASK_CREATED,
+    params: {
+      creator: {
+        address: dbBounty.user?.address,
+        username: dbBounty.user?.handle,
+      },
+      notification: {
+        id: dbBounty.id,
+        title: `Task #${dbBounty.id} has been created on ${dbBounty.network.name}`,
+        network: dbBounty.network.name,
+        link: `${dbBounty.network.name}/${dbBounty.chain.chainShortName}/task/${dbBounty.id}`
+      }
+    }
+  }
+
+  Push.events([AnalyticsEvent, NotificationEvent]);
 
   return eventsProcessed;
 }

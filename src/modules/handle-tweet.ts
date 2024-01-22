@@ -2,7 +2,6 @@ import "dotenv/config";
 import db from "src/db";
 import { BountiesProcessed } from "src/interfaces/block-chain-service";
 import { Bounty } from "src/interfaces/bounties";
-import { formatNumberToNScale } from "src/utils/formatNumber";
 import loggerHandler from "src/utils/logger-handler";
 import { TwitterApi, TwitterApiTokens } from "twitter-api-v2";
 
@@ -17,7 +16,7 @@ interface TwitterProps {
   entity: string;
   event: string;
   networkName: string;
-  bountyId: string;
+  bountyId: number;
 }
 
 function handleState(currentState: string) {
@@ -92,7 +91,7 @@ export async function dispatchTweets(bounties: BountiesProcessed, entity: string
         twitterTweet({
           entity,
           event,
-          bountyId: item?.bounty?.issueId as string,
+          bountyId: item?.bounty?.id,
           networkName,
         })
       )
@@ -107,7 +106,7 @@ export default async function twitterTweet({entity, event, bountyId, networkName
     return loggerHandler.warn("Missing Twitter API credentials");
 
   const bounty = await db.issues.findOne({
-    where: { issueId: bountyId },
+    where: { id: bountyId },
     include: [{ association: "transactionalToken" }],
   });
 
@@ -129,7 +128,7 @@ export default async function twitterTweet({entity, event, bountyId, networkName
     ``,
     body,
     ``,
-    `${webAppUrl}/bounty?id=${bounty.githubId}&repoId=${bounty.repository_id}`
+    `${webAppUrl}/bounty/${bounty.id}`
   ].join(`\n`)
 
   if (Tweet.length < 280 && title && body) {

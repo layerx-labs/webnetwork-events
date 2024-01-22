@@ -8,6 +8,7 @@ import {getChainsRegistryAndNetworks} from "../utils/block-process";
 import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import { Op } from "sequelize";
+import updateSeoCardBounty from "src/modules/handle-seo-card";
 
 export const name = "updateBountiesToDraft";
 export const schedule = "0 2 * * *" // every 2 AM
@@ -77,6 +78,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           dbBounty.state = "draft";
           await dbBounty.save();
           sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
+          updateSeoCardBounty(dbBounty.id, name);
+          
           eventsProcessed[networkName!] = {
             ...eventsProcessed[networkName!],
             [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: null}

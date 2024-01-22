@@ -26,6 +26,7 @@
   "homepage": "https://github.com/taikai/webnetwork-events#readme",
   "dependencies": {
     "@elastic/elasticsearch": "^8.2.1",
+    "@sendgrid/mail": "^7.7.0",
     "@taikai/dappkit": "^2.1.11",
     "@taikai/scribal": "^1.0.3",
     "axios": "^0.27.2",

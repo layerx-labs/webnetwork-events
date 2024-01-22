@@ -11,6 +11,7 @@ import {BOUNTY_CLOSED} from "../integrations/telegram/messages";
 import {updateBountiesHeader} from "src/modules/handle-header-information";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
+import updateSeoCardBounty from "src/modules/handle-seo-card";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
@@ -96,10 +97,12 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
 
   await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
   await updateCuratorProposal(bounty.proposals[+proposalId].creator, network?.id)
-  await updateLeaderboardNfts()
-  await updateLeaderboardBounties("closed");
-  await updateLeaderboardProposals("accepted");
-  await updateBountiesHeader();
+  updateLeaderboardNfts()
+  updateLeaderboardBounties("closed");
+  updateLeaderboardProposals("accepted");
+  updateBountiesHeader();
+  updateSeoCardBounty(dbBounty.id, name);
+
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
@@ -113,8 +116,9 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     currency: dbBounty.transactionalToken?.symbol,
     reward: dbBounty.rewardToken?.symbol,
     creator: block.returnValues.creator,
-    username: dbBounty.user?.githubLogin,
-    actor: address
+    username: dbBounty.user?.handle,
+    actor: address,
+    title: dbBounty.title
   })
 
   return eventsProcessed;

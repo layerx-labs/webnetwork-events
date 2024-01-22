@@ -9,6 +9,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 RUN npm install --no-audit
 COPY . .
+#RUN npm run update-models
 RUN npm run build
 
 FROM node:16.16-alpine AS release

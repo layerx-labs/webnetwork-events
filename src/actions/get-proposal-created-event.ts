@@ -12,6 +12,7 @@ import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
+import updateSeoCardBounty from "src/modules/handle-seo-card";
 
 export const name = "getBountyProposalCreatedEvents";
 export const schedule = "*/13 * * * *";
@@ -64,7 +65,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
     contractCreationDate: proposal.creationDate.toString(),
     issueId: dbBounty.id,
     deliverableId: dbDeliverable.id,
-    githubLogin: dbUser?.githubLogin,
+    handle: dbUser?.handle,
     creator: proposal.creator,
     isDisputed: false,
     contractId: proposal.id,
@@ -87,19 +88,41 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
     sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
   }
 
-  await updateLeaderboardProposals();
+  updateLeaderboardProposals();
+  updateSeoCardBounty(dbBounty.id, name);
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
-  Push.event(AnalyticEventName.MERGE_PROPOSAL_OPEN, {
-    chainId, network: {name: network.name, id: network.id},
-    bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
-    deliverableId: dbDeliverable.id, deliverableContractId: dbDeliverable.prContractId,
-    proposalId: createProposal.id, proposalContractId: createProposal.contractId,
-    actor: proposal.creator,
-  })
+  const AnalyticEvent = {
+    name: AnalyticEventName.MERGE_PROPOSAL_OPEN,
+    params: {
+      chainId, network: {name: network.name, id: network.id},
+      bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+      deliverableId: dbDeliverable.id, deliverableContractId: dbDeliverable.prContractId,
+      proposalId: createProposal.id, proposalContractId: createProposal.contractId,
+      actor: proposal.creator
+    }
+  }
+
+  const NotificationEvent = {
+    name: AnalyticEventName.NOTIF_PROPOSAL_OPEN,
+    params: {
+      creator: {
+        address: createProposal.creator,
+        username: createProposal.handle,
+      },
+      notification: {
+        id: createProposal.id,
+        title: `Proposal #${createProposal.id} has been created on task #${dbBounty.id}`,
+        network: dbBounty.network.name,
+        link: `${dbBounty.network.name}/${dbBounty.chain.chainShortName}/task/${dbBounty.id}/proposal/${createProposal.id}`
+      }
+    }
+  }
+
+  Push.events([AnalyticEvent, NotificationEvent])
 
 
   return eventsProcessed;

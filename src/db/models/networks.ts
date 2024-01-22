@@ -6,15 +6,13 @@ import type { delegations, delegationsId } from './delegations';
 import type { issues, issuesId } from './issues';
 import type { merge_proposals, merge_proposalsId } from './merge_proposals';
 import type { network_tokens, network_tokensId } from './network_tokens';
-import type { pull_requests, pull_requestsId } from './pull_requests';
-import type { repositories, repositoriesId } from './repositories';
 import type { tokens, tokensId } from './tokens';
 
 export interface networksAttributes {
   id: number;
   creatorAddress: string;
   name?: string;
-  description: string;
+  description?: string;
   colors?: object;
   networkAddress?: string;
   logoIcon?: string;
@@ -36,21 +34,21 @@ export interface networksAttributes {
   percentageNeededForDispute?: number;
   cancelableTime?: number;
   proposerFeeShare?: number;
-  allowMerge?: boolean;
   banned_domains?: string[];
   allow_list?: string[];
+  close_task_allow_list?: string[];
 }
 
 export type networksPk = "id";
 export type networksId = networks[networksPk];
-export type networksOptionalAttributes = "id" | "name" | "colors" | "networkAddress" | "logoIcon" | "fullLogo" | "createdAt" | "updatedAt" | "isClosed" | "allowCustomTokens" | "councilMembers" | "isRegistered" | "isDefault" | "chain_id" | "network_token_id" | "councilAmount" | "disputableTime" | "draftTime" | "oracleExchangeRate" | "mergeCreatorFeeShare" | "percentageNeededForDispute" | "cancelableTime" | "proposerFeeShare" | "allowMerge" | "banned_domains" | "allow_list";
+export type networksOptionalAttributes = "id" | "name" | "description" | "colors" | "networkAddress" | "logoIcon" | "fullLogo" | "createdAt" | "updatedAt" | "isClosed" | "allowCustomTokens" | "councilMembers" | "isRegistered" | "isDefault" | "chain_id" | "network_token_id" | "councilAmount" | "disputableTime" | "draftTime" | "oracleExchangeRate" | "mergeCreatorFeeShare" | "percentageNeededForDispute" | "cancelableTime" | "proposerFeeShare" | "banned_domains" | "allow_list" | "close_task_allow_list";
 export type networksCreationAttributes = Optional<networksAttributes, networksOptionalAttributes>;
 
 export class networks extends Model<networksAttributes, networksCreationAttributes> implements networksAttributes {
   id!: number;
   creatorAddress!: string;
   name?: string;
-  description!: string;
+  description?: string;
   colors?: object;
   networkAddress?: string;
   logoIcon?: string;
@@ -72,9 +70,9 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
   percentageNeededForDispute?: number;
   cancelableTime?: number;
   proposerFeeShare?: number;
-  allowMerge?: boolean;
   banned_domains?: string[];
   allow_list?: string[];
+  close_task_allow_list?: string[];
 
   // networks belongsTo chains via chain_id
   chain!: chains;
@@ -141,30 +139,6 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
   hasNetwork_token!: Sequelize.HasManyHasAssociationMixin<network_tokens, network_tokensId>;
   hasNetwork_tokens!: Sequelize.HasManyHasAssociationsMixin<network_tokens, network_tokensId>;
   countNetwork_tokens!: Sequelize.HasManyCountAssociationsMixin;
-  // networks hasMany pull_requests via network_id
-  pull_requests!: pull_requests[];
-  getPull_requests!: Sequelize.HasManyGetAssociationsMixin<pull_requests>;
-  setPull_requests!: Sequelize.HasManySetAssociationsMixin<pull_requests, pull_requestsId>;
-  addPull_request!: Sequelize.HasManyAddAssociationMixin<pull_requests, pull_requestsId>;
-  addPull_requests!: Sequelize.HasManyAddAssociationsMixin<pull_requests, pull_requestsId>;
-  createPull_request!: Sequelize.HasManyCreateAssociationMixin<pull_requests>;
-  removePull_request!: Sequelize.HasManyRemoveAssociationMixin<pull_requests, pull_requestsId>;
-  removePull_requests!: Sequelize.HasManyRemoveAssociationsMixin<pull_requests, pull_requestsId>;
-  hasPull_request!: Sequelize.HasManyHasAssociationMixin<pull_requests, pull_requestsId>;
-  hasPull_requests!: Sequelize.HasManyHasAssociationsMixin<pull_requests, pull_requestsId>;
-  countPull_requests!: Sequelize.HasManyCountAssociationsMixin;
-  // networks hasMany repositories via network_id
-  repositories!: repositories[];
-  getRepositories!: Sequelize.HasManyGetAssociationsMixin<repositories>;
-  setRepositories!: Sequelize.HasManySetAssociationsMixin<repositories, repositoriesId>;
-  addRepository!: Sequelize.HasManyAddAssociationMixin<repositories, repositoriesId>;
-  addRepositories!: Sequelize.HasManyAddAssociationsMixin<repositories, repositoriesId>;
-  createRepository!: Sequelize.HasManyCreateAssociationMixin<repositories>;
-  removeRepository!: Sequelize.HasManyRemoveAssociationMixin<repositories, repositoriesId>;
-  removeRepositories!: Sequelize.HasManyRemoveAssociationsMixin<repositories, repositoriesId>;
-  hasRepository!: Sequelize.HasManyHasAssociationMixin<repositories, repositoriesId>;
-  hasRepositories!: Sequelize.HasManyHasAssociationsMixin<repositories, repositoriesId>;
-  countRepositories!: Sequelize.HasManyCountAssociationsMixin;
   // networks belongsTo tokens via network_token_id
   network_token_token!: tokens;
   getNetwork_token_token!: Sequelize.BelongsToGetAssociationMixin<tokens>;
@@ -189,8 +163,8 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
       unique: "network_chain_unique"
     },
     description: {
-      type: DataTypes.STRING(255),
-      allowNull: false
+      type: DataTypes.TEXT,
+      allowNull: true
     },
     colors: {
       type: DataTypes.JSON,
@@ -281,17 +255,17 @@ export class networks extends Model<networksAttributes, networksCreationAttribut
       type: DataTypes.DOUBLE,
       allowNull: true
     },
-    allowMerge: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
-      defaultValue: true
-    },
     banned_domains: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
       defaultValue: ["(ARRAY[]"]
     },
     allow_list: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: ["(ARRAY[]"]
+    },
+    close_task_allow_list: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
       defaultValue: ["(ARRAY[]"]

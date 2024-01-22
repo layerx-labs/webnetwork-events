@@ -12,7 +12,7 @@ export interface merge_proposalsAttributes {
   issueId?: number;
   createdAt: Date;
   updatedAt: Date;
-  githubLogin?: string;
+  handle?: string;
   contractId?: number;
   creator?: string;
   network_id?: number;
@@ -25,7 +25,7 @@ export interface merge_proposalsAttributes {
 
 export type merge_proposalsPk = "id";
 export type merge_proposalsId = merge_proposals[merge_proposalsPk];
-export type merge_proposalsOptionalAttributes = "id" | "issueId" | "createdAt" | "updatedAt" | "githubLogin" | "contractId" | "creator" | "network_id" | "contractCreationDate" | "disputeWeight" | "deliverableId";
+export type merge_proposalsOptionalAttributes = "id" | "issueId" | "createdAt" | "updatedAt" | "handle" | "contractId" | "creator" | "network_id" | "contractCreationDate" | "disputeWeight" | "deliverableId";
 export type merge_proposalsCreationAttributes = Optional<merge_proposalsAttributes, merge_proposalsOptionalAttributes>;
 
 export class merge_proposals extends Model<merge_proposalsAttributes, merge_proposalsCreationAttributes> implements merge_proposalsAttributes {
@@ -33,7 +33,7 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
   issueId?: number;
   createdAt!: Date;
   updatedAt!: Date;
-  githubLogin?: string;
+  handle?: string;
   contractId?: number;
   creator?: string;
   network_id?: number;
@@ -111,7 +111,7 @@ export class merge_proposals extends Model<merge_proposalsAttributes, merge_prop
         key: 'id'
       }
     },
-    githubLogin: {
+    handle: {
       type: DataTypes.STRING(255),
       allowNull: true
     },

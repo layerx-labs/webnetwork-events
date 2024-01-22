@@ -9,6 +9,7 @@ import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
+import updateSeoCardBounty from "src/modules/handle-seo-card";
 
 export const name = "get-bounty-moved-to-open";
 export const schedule = "*/1 * * * *";
@@ -76,6 +77,8 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           await dbBounty.save();
           sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
 
+          updateSeoCardBounty(dbBounty.id, name);
+
           eventsProcessed[networkName!] = {
             ...eventsProcessed[networkName!],
             [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: null}
@@ -87,6 +90,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           Push.event(AnalyticEventName.BOUNTY_ACTIVE, {
             chainId: chain_id, network: {name: networkName, id: network_id},
             bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+            title: dbBounty.title,
           })
         }
       }

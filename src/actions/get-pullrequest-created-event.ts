@@ -10,6 +10,7 @@ import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {DELIVERABLE_OPEN} from "../integrations/telegram/messages";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
+import updateSeoCardBounty from "src/modules/handle-seo-card";
 
 export const name = "getBountyPullRequestCreatedEvents";
 export const schedule = "*/10 * * * *";
@@ -32,7 +33,7 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
 
   const dbBounty = await db.issues.findOne({
     where: {contractId: bountyId, network_id: network.id},
-    include: [{association: "network"}]
+    include: [{association: "network"}, {association: "chain"}]
   });
 
   if (!dbBounty) {
@@ -43,7 +44,8 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   const pullRequest = bounty.pullRequests[pullRequestId];
 
   const dbDeliverable = await db.deliverables.findOne({
-    where: { id: pullRequest.cid }
+    where: { id: pullRequest.cid },
+    include: [{association: 'user'}]
   });
 
   if (!dbDeliverable) {
@@ -59,18 +61,46 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   dbDeliverable.bountyId = bounty.id
   await dbDeliverable.save();
 
-  sendMessageToTelegramChannels(DELIVERABLE_OPEN(dbBounty, dbDeliverable, dbDeliverable.id));
+  updateSeoCardBounty(dbBounty.id, name);
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
 
-  Push.event(AnalyticEventName.PULL_REQUEST_OPEN, {
-    chainId, network: {name: network.name, id: network.id},
-    bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
-    deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
-    actor: pullRequest.creator,
-  })
+  sendMessageToTelegramChannels(DELIVERABLE_OPEN(dbBounty, dbDeliverable, dbDeliverable.id));
+  
+  const targets = [(await dbBounty.getUser({attributes: ["email", "id"], include:[{ association: "user_settings" }] })).get()]
+
+  const AnalyticEvent = {
+    name: AnalyticEventName.PULL_REQUEST_OPEN,
+    params: {
+      chainId, network: {name: network.name, id: network.id},
+      bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
+      deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
+      actor: pullRequest.creator,
+      title: dbBounty.title,
+    }
+  }
+
+  const NotificationEvent = {
+    name: AnalyticEventName.NOTIF_DELIVERABLE_CREATED,
+    params: {
+      targets,
+      creator: {
+        address: dbDeliverable.user.address,
+        id: dbDeliverable.user.id,
+        username: dbDeliverable.user.handle,
+      },
+      notification: {
+        id: dbDeliverable.id,
+        title: `Deliverable #${dbDeliverable.id} has been created on task #${dbBounty.id}`,
+        network: dbBounty.network.name,
+        link: `${dbBounty.network.name}/${dbBounty.chain.chainShortName}/task/${dbBounty.id}/deliverable/${dbDeliverable.id}`
+      }
+    }
+  }
+
+  Push.events([AnalyticEvent, NotificationEvent])
 
   return eventsProcessed;
 }

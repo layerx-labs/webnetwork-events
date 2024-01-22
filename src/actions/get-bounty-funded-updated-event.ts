@@ -11,6 +11,7 @@ import {sendMessageToTelegramChannels} from "../integrations/telegram";
 import {BOUNTY_FUNDED} from "../integrations/telegram/messages";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
+import updateSeoCardBounty from "src/modules/handle-seo-card";
 
 export const name = "getBountyFundedEvents";
 export const schedule = "*/14 * * * *";
@@ -53,6 +54,8 @@ export async function action(block: DecodedLog<BountyFunded['returnValues']>, qu
   
   sendMessageToTelegramChannels(BOUNTY_FUNDED(`${dbBounty.amount}${dbBounty.transactionalToken.symbol}`, `${bounty.fundingAmount}${dbBounty.transactionalToken.symbol}`, dbBounty))
 
+  updateSeoCardBounty(dbBounty.id, name);
+
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
   };
@@ -64,7 +67,8 @@ export async function action(block: DecodedLog<BountyFunded['returnValues']>, qu
     funded: bounty.funded,
     actor: address,
     bountyId: dbBounty.id,
-    bountyChainId: bounty.id
+    bountyChainId: bounty.id,
+    title: dbBounty.title,
   })
 
   return eventsProcessed;
