@@ -1,6 +1,6 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { issues, issuesId } from './issues';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {issues, issuesId} from './issues';
 
 export interface developersAttributes {
   id: number;

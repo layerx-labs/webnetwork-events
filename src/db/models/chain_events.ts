@@ -1,5 +1,5 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
+import {DataTypes, Model, Optional} from 'sequelize';
 
 export interface chain_eventsAttributes {
   id: number;

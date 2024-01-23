@@ -1,10 +1,10 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { chains, chainsId } from './chains';
-import type { issues, issuesId } from './issues';
-import type { network_tokens, network_tokensId } from './network_tokens';
-import type { networks, networksId } from './networks';
-import type { users_locked_registry, users_locked_registryId } from './users_locked_registry';
+import {DataTypes, Model, Optional} from 'sequelize';
+import type {chains, chainsId} from './chains';
+import type {issues, issuesId} from './issues';
+import type {network_tokens, network_tokensId} from './network_tokens';
+import type {networks, networksId} from './networks';
+import type {users_locked_registry, users_locked_registryId} from './users_locked_registry';
 
 export interface tokensAttributes {
   id: number;
