@@ -107,7 +107,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
           id: dbDeliverable.id,
           title: `Deliverable #${dbDeliverable.id} on task #${dbBounty.id} is ready to be reviewed`,
           network: dbBounty.network.name,
-          link: `${dbBounty.network.name}/${dbBounty.network.chain.chainShortName}/task/${dbBounty.id}/deliverable/${dbDeliverable.id}`
+          link: `${dbBounty.network.name}/task/${dbBounty.id}/deliverable/${dbDeliverable.id}`
         }
       }
     }

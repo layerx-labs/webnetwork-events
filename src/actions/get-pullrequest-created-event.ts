@@ -95,7 +95,7 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
         id: dbDeliverable.id,
         title: `Deliverable #${dbDeliverable.id} has been created on task #${dbBounty.id}`,
         network: dbBounty.network.name,
-        link: `${dbBounty.network.name}/${dbBounty.chain.chainShortName}/task/${dbBounty.id}/deliverable/${dbDeliverable.id}`
+        link: `${dbBounty.network.name}/task/${dbBounty.id}/deliverable/${dbDeliverable.id}`
       }
     }
   }
