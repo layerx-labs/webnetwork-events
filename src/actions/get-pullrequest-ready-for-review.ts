@@ -97,16 +97,20 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
     const NotificationEvent = {
       name: AnalyticEventName.NOTIF_DELIVERABLE_READY,
       params: {
-        targets: [...targets, owner.get()],
+        targets: [...targets, owner],
         creator: {
           address: dbDeliverable.user.address,
-          id: owner.id,
+          id: dbDeliverable.user.id,
           username: dbDeliverable.user.handle,
         },
-        notification: {
-          id: dbDeliverable.id,
-          title: `Deliverable #${dbDeliverable.id} on task #${dbBounty.id} is ready to be reviewed`,
+        task: {
+          id: dbDeliverable.bountyId,
+          title: dbBounty.title,
           network: dbBounty.network.name,
+        },
+        deliverable: {
+          title: dbDeliverable.title,
+          id: dbDeliverable.id,
           link: `${dbBounty.network.name}/task/${dbBounty.id}/deliverable/${dbDeliverable.id}`
         }
       }

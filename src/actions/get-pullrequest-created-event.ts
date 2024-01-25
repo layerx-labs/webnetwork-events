@@ -91,10 +91,15 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
         id: dbDeliverable.user.id,
         username: dbDeliverable.user.handle,
       },
-      notification: {
-        id: dbDeliverable.id,
-        title: `Deliverable #${dbDeliverable.id} has been created on task #${dbBounty.id}`,
+      task: {
+        id: dbDeliverable.bountyId,
+        title: dbBounty.title,
         network: dbBounty.network.name,
+      },
+      deliverable: {
+        title: dbDeliverable.title,
+        id: dbDeliverable.id,
+        createdAt: dbDeliverable.createdAt,
         link: `${dbBounty.network.name}/task/${dbBounty.id}/deliverable/${dbDeliverable.id}`
       }
     }

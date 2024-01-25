@@ -22,14 +22,6 @@ export class EmailNotification<Payload = any> {
 
     for (const [index, to] of recipients.filter(e => e).entries()) {
       const uuid = uuidv4();
-      // await db.notifications.create({uuid, type: this.templateName, read: false, userId: ids[index]})
-      //   .then(_ => {
-      //     loggerHandler.debug(`Notification created ${this.templateName}, ${uuid}, userId: ${ids[index]}`)
-      //   })
-      //   .catch(e => {
-      //     loggerHandler.error(`Failed to create notification ${this.templateName}, ${uuid}, userId: ${ids[index]}`, e?.toString());
-      //   })
-
       await EmailService.sendEmail(
         format(EmailNotificationSubjects[this.templateName]!, (this.payload as any)?.network?.name ?? "BEPRO"),
         [to],

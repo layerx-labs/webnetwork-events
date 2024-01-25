@@ -1,13 +1,17 @@
 {{> avatar}}
-
-{{creator.username}}
-
-{{task.title}}
-
-{{task.id}}
-
-{{deliverable.createdAt}}
-{{deliverable.title}}
-{{deliverable.id}}
-
-created a deliverable
+<div id="link">{{deliverable.link}}</div>
+<div class="d-flex flex-column ms-3">
+   <span class="xs-medium title text-white mb-3">
+       Deliverable <a href="{{deliverable.link}}">#{{deliverable.id}}</a> created for task #{{task.id}}
+   </span>
+    {{#if task.title}}
+        <span class="sm-regular mb-3 text-white-50">
+            {{task.title}}
+        </span>
+    {{/if}}
+    <div class="d-flex gap-2 text-white-50">
+        <span class="sm-regular">{{task.network}}</span>
+        <span>•</span>
+        <span class="sm-regular">%DATE%</span>
+    </div>
+</div>

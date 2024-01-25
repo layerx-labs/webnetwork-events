@@ -110,16 +110,49 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
 
   const {tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional} = bounty;
 
-  Push.event(AnalyticEventName.BOUNTY_CLOSED, {
-    chainId, network: {name: network.name, id: network.id},
-    tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
-    currency: dbBounty.transactionalToken?.symbol,
-    reward: dbBounty.rewardToken?.symbol,
-    creator: block.returnValues.creator,
-    username: dbBounty.user?.handle,
-    actor: address,
-    title: dbBounty.title
-  })
+  const targets = [(await dbBounty.getUser({
+    attributes: ["email", "id"],
+    include: [{association: "user_settings"}]
+  })).get()]
+
+  const AnalyticsEvent = {
+    name: AnalyticEventName.BOUNTY_CLOSED,
+    params: {
+      chainId, network: {name: network.name, id: network.id},
+      tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional,
+      currency: dbBounty.transactionalToken?.symbol,
+      reward: dbBounty.rewardToken?.symbol,
+      creator: block.returnValues.creator,
+      username: dbBounty.user?.handle,
+      actor: address,
+      title: dbBounty.title
+    }
+  };
+
+  const NotificationEvent = {
+    name: AnalyticEventName.NOTIF_TASK_CLOSED,
+    params: {
+      targets,
+      task: {
+        title: dbBounty.title,
+        id: dbBounty.id,
+        createdAt: dbBounty.createdAt,
+        network: dbBounty.network.name,
+        link: `${dbBounty.network.name}/task/${dbBounty.id}`
+      },
+      proposal: {
+        id: dbProposal.id,
+        link: `${dbBounty.network.name}/task/${dbBounty.id}/proposal/${dbProposal.id}`,
+      },
+      deliverable: {
+        title: deliverable.title,
+        id: deliverable.id,
+        link: `${dbBounty.network.name}/task/${dbBounty.id}/deliverable/${dbProposal.id}`
+      },
+    }
+  }
+
+  Push.events([AnalyticsEvent, NotificationEvent]);
 
   return eventsProcessed;
 }
