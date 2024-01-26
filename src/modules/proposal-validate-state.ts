@@ -72,7 +72,12 @@ export async function validateProposal(bounty: Bounty, prId: number, proposalId:
     return logger.error(`Could not find proposal for ${prId}`, bounty);
 
   const dbProposal = await db.merge_proposals.findOne({
-    where: {deliverableId: dbDeliverable.id, issueId: dbBounty.id, contractId: +proposalId, network_id}});
+    where: {deliverableId: dbDeliverable.id, issueId: dbBounty.id, contractId: +proposalId, network_id},
+    include: [
+      { association: "proposal_distributions" },
+      { association: "disputes" }
+    ]
+  });
   if (!isProposalRequired && dbProposal)
     return logger.warn(`Proposal ${proposalId} already exists`, bounty);
 

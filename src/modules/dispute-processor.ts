@@ -36,7 +36,7 @@ export async function disputeProcessor(block: DecodedLog<BountyProposalDisputedE
   const actorTotalVotes = BigNumber(await Actor.getOraclesOf(actorAddress));
 
   if (values?.dbBounty && values?.dbProposal && actorAddress && actorTotalVotes.gt(0)) {
-    const {dbBounty, dbProposal} = values
+    const {dbBounty, dbProposal, dbDeliverable} = values
 
     const dbDispute = await db.disputes.findOne({
       where: {address: actorAddress, issueId: dbBounty.id, proposalId: dbProposal.id}
@@ -87,9 +87,9 @@ export async function disputeProcessor(block: DecodedLog<BountyProposalDisputedE
             network: dbBounty.network.name,
           },
           deliverable: {
-            title: dbProposal.deliverable.title,
-            id: dbProposal.deliverable.id,
-            updatedAt: dbProposal.deliverable.updatedAt
+            title: dbDeliverable.title,
+            id: dbDeliverable.id,
+            updatedAt: dbDeliverable.updatedAt
           },
           proposal: {
             id: dbProposal.id,
