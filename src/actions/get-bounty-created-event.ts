@@ -186,9 +186,10 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
         address: dbBounty.user?.address,
         username: dbBounty.user?.handle,
       },
-      notification: {
+      task: {
+        title: dbBounty.title,
         id: dbBounty.id,
-        title: `Task #${dbBounty.id} has been created on ${dbBounty.network.name}`,
+        createdAt: dbBounty.createdAt,
         network: dbBounty.network.name,
         link: `${dbBounty.network.name}/task/${dbBounty.id}`
       }

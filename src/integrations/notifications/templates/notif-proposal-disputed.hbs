@@ -1,16 +1,17 @@
 {{> avatar}}
-
-{{creator.username}}
-
-{{task.title}}
-{{task.id}}
-
-{{deliverable.updatedAt}}
-{{deliverable.title}}
-{{deliverable.id}}
-
-{{proposal.id}}
-{{proposal.distributions}}
-{{proposal.disputes}}
-
-disputed
+<div id="link">{{proposal.link}}</div>
+<div class="d-flex flex-column ms-3">
+   <span class="xs-medium title text-white mb-3">
+       Proposal <a href="{{proposal.link}}">#{{proposal.id}}</a> was disputed with {{proposal.disputes}} votes
+   </span>
+    {{#if deliverable.title}}
+        <span class="sm-regular mb-3 text-white-50">
+            {{deliverable.title}}
+        </span>
+    {{/if}}
+    <div class="d-flex gap-2 text-white-50">
+        <span class="sm-regular">{{task.network}}</span>
+        <span>•</span>
+        <span class="sm-regular">%DATE%</span>
+    </div>
+</div>
