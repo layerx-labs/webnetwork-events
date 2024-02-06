@@ -45,11 +45,11 @@ export async function getNetwork(chain_id, address) {
 export async function getChainsRegistryAndNetworks() {
 
   const chainsReducer = (p, {
-    chainRpc,
+    privateChainRpc,
     registryAddress = nativeZeroAddress,
     chainId
-  }: chainsAttributes): { [chainRpc: string]: { registryAddress: string, chainId: number } } =>
-    ({...p, [chainRpc]: {registryAddress, chainId}})
+  }: chainsAttributes): { [privateChainRpc: string]: { registryAddress: string, chainId: number } } =>
+    ({...p, [privateChainRpc!]: {registryAddress, chainId}})
 
   const where = {
     registryAddress: {[Op.not]: null},

@@ -26,7 +26,7 @@ export default async function updateSeoCardBounty(bountyId: number, action: stri
         }
       });
 
-      const workerAmount = await getDeveloperAmount(dbBounty, chain?.chainRpc!);
+      const workerAmount = await getDeveloperAmount(dbBounty, chain?.privateChainRpc!);
       dbBounty.amount = workerAmount;
       const card = await generateBountyCards({
         issue: dbBounty

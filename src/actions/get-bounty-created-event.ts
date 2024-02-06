@@ -118,7 +118,7 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
       if (isIpfsEnvs && !!chain.registryAddress) {
         try {
           logger.debug(`${name} Creating card to bounty ${dbBounty.id}`);
-          const workerAmount = await getDeveloperAmount(dbBounty, chain.chainRpc);
+          const workerAmount = await getDeveloperAmount(dbBounty, chain.privateChainRpc!);
           const card = await generateCard({
             issue: {
               ...dbBounty.toJSON(),
