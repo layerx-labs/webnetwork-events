@@ -1,10 +1,10 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {delegations, delegationsId} from './delegations';
-import type {issues, issuesId} from './issues';
-import type {networks, networksId} from './networks';
-import type {tokens, tokensId} from './tokens';
-import type {users_locked_registry, users_locked_registryId} from './users_locked_registry';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { delegations, delegationsId } from './delegations';
+import type { issues, issuesId } from './issues';
+import type { networks, networksId } from './networks';
+import type { tokens, tokensId } from './tokens';
+import type { users_locked_registry, users_locked_registryId } from './users_locked_registry';
 
 export interface chainsAttributes {
   id: number;
@@ -27,11 +27,12 @@ export interface chainsAttributes {
   networkCreationFeePercentage?: number;
   closeFeePercentage?: number;
   cancelFeePercentage?: number;
+  startBlock?: number;
 }
 
 export type chainsPk = "id";
 export type chainsId = chains[chainsPk];
-export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "color" | "createdAt" | "updatedAt" | "icon" | "lockAmountForNetworkCreation" | "networkCreationFeePercentage" | "closeFeePercentage" | "cancelFeePercentage";
+export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "color" | "createdAt" | "updatedAt" | "icon" | "lockAmountForNetworkCreation" | "networkCreationFeePercentage" | "closeFeePercentage" | "cancelFeePercentage" | "startBlock";
 export type chainsCreationAttributes = Optional<chainsAttributes, chainsOptionalAttributes>;
 
 export class chains extends Model<chainsAttributes, chainsCreationAttributes> implements chainsAttributes {
@@ -55,6 +56,7 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
   networkCreationFeePercentage?: number;
   closeFeePercentage?: number;
   cancelFeePercentage?: number;
+  startBlock?: number;
 
   // chains hasMany delegations via chainId
   delegations!: delegations[];
@@ -193,6 +195,10 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
     },
     cancelFeePercentage: {
       type: DataTypes.DOUBLE,
+      allowNull: true
+    },
+    startBlock: {
+      type: DataTypes.INTEGER,
       allowNull: true
     }
   }, {

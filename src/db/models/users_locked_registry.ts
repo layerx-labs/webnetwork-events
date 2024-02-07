@@ -1,8 +1,8 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {chains, chainsId} from './chains';
-import type {tokens, tokensId} from './tokens';
-import type {users, usersId} from './users';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { chains, chainsId } from './chains';
+import type { tokens, tokensId } from './tokens';
+import type { users, usersId } from './users';
 
 export interface users_locked_registryAttributes {
   id: number;

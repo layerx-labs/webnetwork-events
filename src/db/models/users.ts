@@ -1,13 +1,13 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {comments, commentsId} from './comments';
-import type {curators, curatorsId} from './curators';
-import type {deliverables, deliverablesId} from './deliverables';
-import type {issues, issuesId} from './issues';
-import type {kyc_sessions, kyc_sessionsId} from './kyc_sessions';
-import type {notifications, notificationsId} from './notifications';
-import type {user_settings, user_settingsId} from './user_settings';
-import type {users_locked_registry, users_locked_registryId} from './users_locked_registry';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { comments, commentsId } from './comments';
+import type { curators, curatorsId } from './curators';
+import type { deliverables, deliverablesId } from './deliverables';
+import type { issues, issuesId } from './issues';
+import type { kyc_sessions, kyc_sessionsId } from './kyc_sessions';
+import type { notifications, notificationsId } from './notifications';
+import type { user_settings, user_settingsId } from './user_settings';
+import type { users_locked_registry, users_locked_registryId } from './users_locked_registry';
 
 export interface usersAttributes {
   id: number;
