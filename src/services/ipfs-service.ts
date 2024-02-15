@@ -14,7 +14,7 @@ const {
 const auth = "Basic " + Buffer.from(id + ":" + secret).toString("base64");
 
 export async function add(file: Buffer | string,
-                          pin = false,
+                          pin = true,
                           originalFilename?: string,
                           ext?: string): Promise<{ hash: string; fileName: string; size: string }> {
 
