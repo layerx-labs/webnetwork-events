@@ -44,7 +44,7 @@ export async function action(block: DecodedLog<ChangeAllowedTokensEvent['returnV
         .map(async (tokenAddress) => {
           try {
             const erc20 = new ERC20(connection, tokenAddress)
-            await erc20.loadContract();
+            await erc20.start();
 
             const whereCondition: WhereOptions = {
               address: Sequelize.where(

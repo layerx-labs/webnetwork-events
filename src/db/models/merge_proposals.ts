@@ -1,11 +1,11 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {comments, commentsId} from './comments';
-import type {deliverables, deliverablesId} from './deliverables';
-import type {disputes, disputesId} from './disputes';
-import type {issues, issuesId} from './issues';
-import type {networks, networksId} from './networks';
-import type {proposal_distributions, proposal_distributionsId} from './proposal_distributions';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { comments, commentsId } from './comments';
+import type { deliverables, deliverablesId } from './deliverables';
+import type { disputes, disputesId } from './disputes';
+import type { issues, issuesId } from './issues';
+import type { networks, networksId } from './networks';
+import type { proposal_distributions, proposal_distributionsId } from './proposal_distributions';
 
 export interface merge_proposalsAttributes {
   id: number;

@@ -27,7 +27,7 @@ export class EventService<E = any> {
   async loadActorWithAddress(address: string) {
     try {
       this.#Actor = new (this.fromRegistry ? NetworkRegistry : Network_v2)(this.web3Connection, address);
-      await this.#Actor.loadContract();
+      await this.#Actor.start();
       loggerHandler.log(`${this.name} loaded contract (${address})`);
     } catch (e) {
       loggerHandler.error(`${this.name} failed to load actor`, {address, isRegistry: this.fromRegistry});

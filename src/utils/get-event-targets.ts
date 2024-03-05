@@ -4,7 +4,7 @@ import db from "../db";
 export async function getEventTargets(targets?: Pick<users, "email" | "id" | "user_settings">[]) {
   targets =
     (targets?.length
-        ? targets.filter(u => u.user_settings?.[0].notifications)
+        ? targets.filter(u => u.user_settings?.[0]?.notifications)
         : (await db.users.findAll({
           include: [{association: "user_settings", where: {notifications: true}, required: true}],
           raw: true

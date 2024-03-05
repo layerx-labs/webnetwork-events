@@ -41,7 +41,7 @@ export default class DAO {
       if (this.networkAddress) {
         this.network = new Network_v2(this.web3Connection, this.networkAddress);
         
-        await this.network.loadContract();
+        await this.network.start();
       }
 
       if (this.registryAddress) {

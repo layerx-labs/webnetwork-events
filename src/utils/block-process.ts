@@ -14,7 +14,7 @@ const {EVENTS_CHAIN_ID} = process.env;
 
 export async function getBountyFromChain(connection: Web3Connection, address, id, name) {
   const actor = new Network_v2(connection, address)
-  await actor.loadContract();
+  await actor.start();
   const bounty = await actor.getBounty(+id);
   if (!bounty)
     logger.warn(NETWORK_BOUNTY_NOT_FOUND(name, id, address));
@@ -45,11 +45,11 @@ export async function getNetwork(chain_id, address) {
 export async function getChainsRegistryAndNetworks() {
 
   const chainsReducer = (p, {
-    chainRpc,
+    privateChainRpc,
     registryAddress = nativeZeroAddress,
     chainId
-  }: chainsAttributes): { [chainRpc: string]: { registryAddress: string, chainId: number } } =>
-    ({...p, [chainRpc]: {registryAddress, chainId}})
+  }: chainsAttributes): { [privateChainRpc: string]: { registryAddress: string, chainId: number } } =>
+    ({...p, [privateChainRpc!]: {registryAddress, chainId}})
 
   const where = {
     registryAddress: {[Op.not]: null},

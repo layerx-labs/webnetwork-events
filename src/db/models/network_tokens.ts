@@ -1,7 +1,7 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {networks, networksId} from './networks';
-import type {tokens, tokensId} from './tokens';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { networks, networksId } from './networks';
+import type { tokens, tokensId } from './tokens';
 
 export interface network_tokensAttributes {
   id: number;

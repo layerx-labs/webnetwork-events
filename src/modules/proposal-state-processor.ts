@@ -41,7 +41,7 @@ export async function proposalStateProcessor(block: DecodedLog<BountyProposalDis
 
   const Actor = new Network_v2(connection, address);
 
-  await Actor.loadContract();
+  await Actor.start();
 
   const oldWeight = dbProposal.disputeWeight || 0;
   const isDisputed = await Actor.isProposalDisputed(bountyId, proposal.id);

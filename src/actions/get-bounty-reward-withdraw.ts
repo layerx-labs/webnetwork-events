@@ -80,7 +80,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       for (const {name, networkAddress, issues} of networks) {
         const network = new Network_v2(web3Connection, networkAddress);
 
-        await network.loadContract();
+        await network.start();
 
         for (const issue of issues) {
           const {id, contractId, benefactors} = issue;

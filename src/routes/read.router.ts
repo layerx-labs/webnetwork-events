@@ -63,7 +63,7 @@ router.get(`/:chainId/:address/:event`, async (req, res) => {
         res.status(200).json([data]).end();
       });
   else
-    (new ApiBlockSniffer(chainIdExists.chainRpc, {[address?.toLowerCase()]: {abi, events}}, from, to))
+    (new ApiBlockSniffer(chainIdExists.privateChainRpc!, {[address?.toLowerCase()]: {abi, events}}, from, to))
       .onParsed()
       .then(data => {
         res.status(200).json(data).end();

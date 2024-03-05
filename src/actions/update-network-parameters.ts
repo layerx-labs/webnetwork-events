@@ -43,7 +43,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
       for (const network of networks) {
         try {
           const networkContract = new Network_v2(web3Connection, network.networkAddress);
-          await networkContract.loadContract();
+          await networkContract.start();
 
           network.councilAmount = await networkContract.councilAmount();
           network.disputableTime = (await networkContract.disputableTime()) / 1000;

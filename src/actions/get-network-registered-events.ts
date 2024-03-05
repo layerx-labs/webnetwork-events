@@ -32,7 +32,6 @@ export async function action(block: DecodedLog<NetworkCreatedEvent['returnValues
 
   const _network = new Network_v2(connection, createdNetworkAddress);
   await _network.start();
-  await _network.loadContract();
 
   if (_network.networkToken?.contractAddress) {
     const address = _network.networkToken.contractAddress!;

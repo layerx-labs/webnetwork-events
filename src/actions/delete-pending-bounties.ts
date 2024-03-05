@@ -41,7 +41,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
       for (const {networkAddress, id: network_id, name: networkName} of networks) {
         const _network = new Network_v2(web3Connection, networkAddress);
-        await _network.loadContract();
+        await _network.start();
         const pendingBounties = await db.issues.findAll({
           where: {
             state: "pending",

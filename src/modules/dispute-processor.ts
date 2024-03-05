@@ -18,7 +18,7 @@ export async function disputeProcessor(block: DecodedLog<BountyProposalDisputedE
 
   const Actor = new Network_v2(connection, address);
 
-  await Actor.loadContract();
+  await Actor.start();
 
   const {from: actorAddress} = await connection.eth.getTransaction(block.transactionHash);
 

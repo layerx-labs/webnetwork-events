@@ -30,7 +30,7 @@ export async function action(block: DecodedLog<OraclesTransferEvent['returnValue
   }
 
   const service = new Network_v2(connection, address);
-  await service.loadContract();
+  await service.start();
 
   const councilAmount = await service.councilAmount();
 
