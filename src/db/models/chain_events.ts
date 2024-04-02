@@ -8,11 +8,12 @@ export interface chain_eventsAttributes {
   createdAt: Date;
   updatedAt: Date;
   chain_id?: number;
+  contract_address?: string;
 }
 
 export type chain_eventsPk = "id";
 export type chain_eventsId = chain_events[chain_eventsPk];
-export type chain_eventsOptionalAttributes = "id" | "name" | "lastBlock" | "createdAt" | "updatedAt" | "chain_id";
+export type chain_eventsOptionalAttributes = "id" | "name" | "lastBlock" | "createdAt" | "updatedAt" | "chain_id" | "contract_address";
 export type chain_eventsCreationAttributes = Optional<chain_eventsAttributes, chain_eventsOptionalAttributes>;
 
 export class chain_events extends Model<chain_eventsAttributes, chain_eventsCreationAttributes> implements chain_eventsAttributes {
@@ -22,6 +23,7 @@ export class chain_events extends Model<chain_eventsAttributes, chain_eventsCrea
   createdAt!: Date;
   updatedAt!: Date;
   chain_id?: number;
+  contract_address?: string;
 
 
   static initModel(sequelize: Sequelize.Sequelize): typeof chain_events {
@@ -43,6 +45,10 @@ export class chain_events extends Model<chain_eventsAttributes, chain_eventsCrea
     },
     chain_id: {
       type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    contract_address: {
+      type: DataTypes.STRING(255),
       allowNull: true
     }
   }, {

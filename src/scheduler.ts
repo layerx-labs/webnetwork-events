@@ -1,56 +1,9 @@
-import NetworkRegistry from "@taikai/dappkit/dist/build/contracts/NetworkRegistry.json";
-import NetworkV2 from "@taikai/dappkit/dist/build/contracts/NetworkV2.json";
-
-import {BlockSniffer} from "./services/block-sniffer";
-import {MIDNIGHT_ACTIONS, MINUTE_ACTIONS, NETWORK_EVENTS, REGISTRY_EVENTS} from "./modules/chain-events";
-import {findOnABI} from "./utils/find-on-abi";
+import {MIDNIGHT_ACTIONS, MINUTE_ACTIONS} from "./modules/chain-events";
 import loggerHandler from "./utils/logger-handler";
 import {differenceInMilliseconds, formatDistance} from "date-fns";
-import {clearTimeout} from "timers";
-import {MappedEventActions} from "./interfaces/block-sniffer";
-import {getChainsRegistryAndNetworks} from "./utils/block-process";
 import {GlobalCatcher} from "./utils/global-catcher";
 
 GlobalCatcher();
-
-let restarter: NodeJS.Timer | null = null;
-
-function startChainListeners() {
-
-  const _registryABIVents = {abi: findOnABI(NetworkRegistry.abi, Object.keys(REGISTRY_EVENTS)), events: REGISTRY_EVENTS}
-  const _networkABIVents = {abi: findOnABI(NetworkV2.abi, Object.keys(NETWORK_EVENTS)), events: NETWORK_EVENTS}
-
-  const networksReducer = (networks: string[]) =>
-    networks.reduce((p, c) => ({...p, [c]: _networkABIVents}), {})
-
-  const entriesChainRegistryNetworksReducer =
-    (p, [rpc, {registryAddress, networks}]): { [rpc: string]: MappedEventActions } =>
-      ({...p, [rpc]: {[registryAddress]: _registryABIVents, ...networksReducer(networks)}})
-
-  getChainsRegistryAndNetworks()
-    .then((array) => array.reduce(entriesChainRegistryNetworksReducer, {}))
-    .then(mappedRpcActions => {
-
-      const sniffers = Object.entries(mappedRpcActions)
-        .map(([rpc, mappedActions]) => new BlockSniffer(rpc, mappedActions))
-
-      loggerHandler.info(`_scheduler started ${sniffers.length} sniffers`);
-
-      if (!sniffers.length) {
-        loggerHandler.info(`_scheduler found no chains, will retry in 10s`)
-        restarter = setTimeout(() => startChainListeners(), 10 * 1000);
-      } else {
-        if (restarter) {
-          clearTimeout(restarter!);
-          restarter = null;
-        }
-      }
-
-    })
-    .catch(e => {
-      loggerHandler.error(`_scheduler chainListener error`, e);
-    })
-}
 
 function startTimedEvents() {
 
@@ -92,7 +45,6 @@ function startTimedEvents() {
 }
 
 (async () => {
-  startChainListeners();
   startTimedEvents();
 })()
   .catch(e => {
