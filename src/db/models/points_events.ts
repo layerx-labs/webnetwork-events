@@ -9,11 +9,13 @@ export interface points_eventsAttributes {
   actionName: string;
   pointsWon: number;
   pointsCounted?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type points_eventsPk = "id";
 export type points_eventsId = points_events[points_eventsPk];
-export type points_eventsOptionalAttributes = "id" | "pointsCounted";
+export type points_eventsOptionalAttributes = "id" | "pointsCounted" | "createdAt" | "updatedAt";
 export type points_eventsCreationAttributes = Optional<points_eventsAttributes, points_eventsOptionalAttributes>;
 
 export class points_events extends Model<points_eventsAttributes, points_eventsCreationAttributes> implements points_eventsAttributes {
@@ -22,6 +24,8 @@ export class points_events extends Model<points_eventsAttributes, points_eventsC
   actionName!: string;
   pointsWon!: number;
   pointsCounted?: boolean;
+  createdAt!: Date;
+  updatedAt!: Date;
 
   // points_events belongsTo points_base via actionName
   actionName_points_base!: points_base;
@@ -70,7 +74,7 @@ export class points_events extends Model<points_eventsAttributes, points_eventsC
   }, {
     tableName: 'points_events',
     schema: 'public',
-    timestamps: false,
+    timestamps: true,
     indexes: [
       {
         name: "points_events_pkey",

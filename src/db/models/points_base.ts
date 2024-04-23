@@ -8,11 +8,13 @@ export interface points_baseAttributes {
   pointsPerAction: number;
   scalingFactor?: number;
   counter: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type points_basePk = "id";
 export type points_baseId = points_base[points_basePk];
-export type points_baseOptionalAttributes = "id" | "scalingFactor";
+export type points_baseOptionalAttributes = "id" | "scalingFactor" | "createdAt" | "updatedAt";
 export type points_baseCreationAttributes = Optional<points_baseAttributes, points_baseOptionalAttributes>;
 
 export class points_base extends Model<points_baseAttributes, points_baseCreationAttributes> implements points_baseAttributes {
@@ -21,6 +23,8 @@ export class points_base extends Model<points_baseAttributes, points_baseCreatio
   pointsPerAction!: number;
   scalingFactor?: number;
   counter!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
 
   // points_base hasMany points_events via actionName
   points_events!: points_events[];
@@ -64,7 +68,7 @@ export class points_base extends Model<points_baseAttributes, points_baseCreatio
   }, {
     tableName: 'points_base',
     schema: 'public',
-    timestamps: false,
+    timestamps: true,
     indexes: [
       {
         name: "points_base_actionName_key",
