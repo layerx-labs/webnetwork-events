@@ -6,6 +6,7 @@ import type { deliverables, deliverablesId } from './deliverables';
 import type { issues, issuesId } from './issues';
 import type { kyc_sessions, kyc_sessionsId } from './kyc_sessions';
 import type { notifications, notificationsId } from './notifications';
+import type { points_events, points_eventsId } from './points_events';
 import type { user_settings, user_settingsId } from './user_settings';
 import type { users_locked_registry, users_locked_registryId } from './users_locked_registry';
 
@@ -22,11 +23,12 @@ export interface usersAttributes {
   emailVerificationSentAt?: Date;
   githubLink?: string;
   linkedInLink?: string;
+  totalPoints?: number;
 }
 
 export type usersPk = "id";
 export type usersId = users[usersPk];
-export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "handle" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt" | "githubLink" | "linkedInLink";
+export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "handle" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt" | "githubLink" | "linkedInLink" | "totalPoints";
 export type usersCreationAttributes = Optional<usersAttributes, usersOptionalAttributes>;
 
 export class users extends Model<usersAttributes, usersCreationAttributes> implements usersAttributes {
@@ -42,6 +44,7 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   emailVerificationSentAt?: Date;
   githubLink?: string;
   linkedInLink?: string;
+  totalPoints?: number;
 
   // users hasMany comments via userId
   comments!: comments[];
@@ -115,6 +118,18 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   hasNotification!: Sequelize.HasManyHasAssociationMixin<notifications, notificationsId>;
   hasNotifications!: Sequelize.HasManyHasAssociationsMixin<notifications, notificationsId>;
   countNotifications!: Sequelize.HasManyCountAssociationsMixin;
+  // users hasMany points_events via userId
+  points_events!: points_events[];
+  getPoints_events!: Sequelize.HasManyGetAssociationsMixin<points_events>;
+  setPoints_events!: Sequelize.HasManySetAssociationsMixin<points_events, points_eventsId>;
+  addPoints_event!: Sequelize.HasManyAddAssociationMixin<points_events, points_eventsId>;
+  addPoints_events!: Sequelize.HasManyAddAssociationsMixin<points_events, points_eventsId>;
+  createPoints_event!: Sequelize.HasManyCreateAssociationMixin<points_events>;
+  removePoints_event!: Sequelize.HasManyRemoveAssociationMixin<points_events, points_eventsId>;
+  removePoints_events!: Sequelize.HasManyRemoveAssociationsMixin<points_events, points_eventsId>;
+  hasPoints_event!: Sequelize.HasManyHasAssociationMixin<points_events, points_eventsId>;
+  hasPoints_events!: Sequelize.HasManyHasAssociationsMixin<points_events, points_eventsId>;
+  countPoints_events!: Sequelize.HasManyCountAssociationsMixin;
   // users hasMany user_settings via userId
   user_settings!: user_settings[];
   getUser_settings!: Sequelize.HasManyGetAssociationsMixin<user_settings>;
@@ -187,6 +202,11 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
     linkedInLink: {
       type: DataTypes.STRING(255),
       allowNull: true
+    },
+    totalPoints: {
+      type: DataTypes.DOUBLE,
+      allowNull: true,
+      defaultValue: 0
     }
   }, {
     tableName: 'users',
