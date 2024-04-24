@@ -4,7 +4,7 @@ import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service"
 import {Network_v2, Web3Connection} from "@taikai/dappkit";
 import {Op} from "sequelize";
 import {getChainsRegistryAndNetworks} from "../utils/block-process";
-import { updateIsCurrentlyCurator } from "src/modules/handle-curators";
+import { handleCurators, updateIsCurrentlyCurator } from "src/modules/handle-curators";
 
 export const name = "updateNetworkParameters";
 export const schedule = "0 0 * * *";
@@ -44,8 +44,10 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
         try {
           const networkContract = new Network_v2(web3Connection, network.networkAddress);
           await networkContract.start();
+          const councilAmount = await networkContract.councilAmount();
+          const needsToUpdateCurators = councilAmount !== network.councilAmount;
 
-          network.councilAmount = await networkContract.councilAmount();
+          network.councilAmount = councilAmount;
           network.disputableTime = (await networkContract.disputableTime()) / 1000;
           network.draftTime = (await networkContract.draftTime()) / 1000;
           network.oracleExchangeRate = await networkContract.oracleExchangeRate();
@@ -55,6 +57,13 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           network.proposerFeeShare = await networkContract.proposerFeeShare();
 
           await network.save();
+
+          if (needsToUpdateCurators) {
+            await Promise.all(network.curators.map(async (curator) => {
+              const actorVotesResume = await networkContract.getOraclesResume(curator.address);
+              await handleCurators(curator.address, actorVotesResume, councilAmount, network.id);
+            }));
+          }
 
           eventsProcessed[network.name!] = ["updated"];
 
