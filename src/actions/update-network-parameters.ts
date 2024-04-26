@@ -63,6 +63,16 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
               const actorVotesResume = await networkContract.getOraclesResume(curator.address);
               await handleCurators(curator.address, actorVotesResume, councilAmount, network.id);
             }));
+
+            const currentCurators = await db.curators.findAll({
+              where: {
+                isCurrentlyCurator: true,
+                networkId: network.id
+              }
+            });
+
+            network.councilMembers = currentCurators.map(({ address }) => address);
+            await network.save();
           }
 
           eventsProcessed[network.name!] = ["updated"];
