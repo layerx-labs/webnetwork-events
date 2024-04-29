@@ -35,6 +35,10 @@ import { networks as _networks } from "./networks";
 import type { networksAttributes, networksCreationAttributes } from "./networks";
 import { notifications as _notifications } from "./notifications";
 import type { notificationsAttributes, notificationsCreationAttributes } from "./notifications";
+import { points_base as _points_base } from "./points_base";
+import type { points_baseAttributes, points_baseCreationAttributes } from "./points_base";
+import { points_events as _points_events } from "./points_events";
+import type { points_eventsAttributes, points_eventsCreationAttributes } from "./points_events";
 import { proposal_distributions as _proposal_distributions } from "./proposal_distributions";
 import type { proposal_distributionsAttributes, proposal_distributionsCreationAttributes } from "./proposal_distributions";
 import { settings as _settings } from "./settings";
@@ -69,6 +73,8 @@ export {
   _network_tokens as network_tokens,
   _networks as networks,
   _notifications as notifications,
+  _points_base as points_base,
+  _points_events as points_events,
   _proposal_distributions as proposal_distributions,
   _settings as settings,
   _tokens as tokens,
@@ -115,6 +121,10 @@ export type {
   networksCreationAttributes,
   notificationsAttributes,
   notificationsCreationAttributes,
+  points_baseAttributes,
+  points_baseCreationAttributes,
+  points_eventsAttributes,
+  points_eventsCreationAttributes,
   proposal_distributionsAttributes,
   proposal_distributionsCreationAttributes,
   settingsAttributes,
@@ -150,6 +160,8 @@ export function initModels(sequelize: Sequelize) {
   const network_tokens = _network_tokens.initModel(sequelize);
   const networks = _networks.initModel(sequelize);
   const notifications = _notifications.initModel(sequelize);
+  const points_base = _points_base.initModel(sequelize);
+  const points_events = _points_events.initModel(sequelize);
   const proposal_distributions = _proposal_distributions.initModel(sequelize);
   const settings = _settings.initModel(sequelize);
   const tokens = _tokens.initModel(sequelize);
@@ -206,6 +218,8 @@ export function initModels(sequelize: Sequelize) {
   networks.hasMany(merge_proposals, { as: "merge_proposals", foreignKey: "network_id"});
   network_tokens.belongsTo(networks, { as: "network", foreignKey: "networkId"});
   networks.hasMany(network_tokens, { as: "network_tokens", foreignKey: "networkId"});
+  points_events.belongsTo(points_base, { as: "actionName_points_base", foreignKey: "actionName"});
+  points_base.hasMany(points_events, { as: "points_events", foreignKey: "actionName"});
   issues.belongsTo(tokens, { as: "rewardToken", foreignKey: "rewardTokenId"});
   tokens.hasMany(issues, { as: "issues", foreignKey: "rewardTokenId"});
   issues.belongsTo(tokens, { as: "transactionalToken", foreignKey: "transactionalTokenId"});
@@ -228,6 +242,8 @@ export function initModels(sequelize: Sequelize) {
   users.hasMany(kyc_sessions, { as: "kyc_sessions", foreignKey: "user_id"});
   notifications.belongsTo(users, { as: "user", foreignKey: "userId"});
   users.hasMany(notifications, { as: "notifications", foreignKey: "userId"});
+  points_events.belongsTo(users, { as: "user", foreignKey: "userId"});
+  users.hasMany(points_events, { as: "points_events", foreignKey: "userId"});
   user_settings.belongsTo(users, { as: "user", foreignKey: "userId"});
   users.hasMany(user_settings, { as: "user_settings", foreignKey: "userId"});
   users_locked_registry.belongsTo(users, { as: "user", foreignKey: "userId"});
@@ -252,6 +268,8 @@ export function initModels(sequelize: Sequelize) {
     network_tokens: network_tokens,
     networks: networks,
     notifications: notifications,
+    points_base: points_base,
+    points_events: points_events,
     proposal_distributions: proposal_distributions,
     settings: settings,
     tokens: tokens,

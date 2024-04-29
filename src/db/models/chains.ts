@@ -27,13 +27,13 @@ export interface chainsAttributes {
   networkCreationFeePercentage?: number;
   closeFeePercentage?: number;
   cancelFeePercentage?: number;
-  startBlock?: number;
   privateChainRpc?: string;
+  startBlock?: number;
 }
 
 export type chainsPk = "id";
 export type chainsId = chains[chainsPk];
-export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "color" | "createdAt" | "updatedAt" | "icon" | "lockAmountForNetworkCreation" | "networkCreationFeePercentage" | "closeFeePercentage" | "cancelFeePercentage" | "startBlock" | "privateChainRpc";
+export type chainsOptionalAttributes = "id" | "chainId" | "registryAddress" | "eventsApi" | "blockScanner" | "isDefault" | "color" | "createdAt" | "updatedAt" | "icon" | "lockAmountForNetworkCreation" | "networkCreationFeePercentage" | "closeFeePercentage" | "cancelFeePercentage" | "privateChainRpc" | "startBlock";
 export type chainsCreationAttributes = Optional<chainsAttributes, chainsOptionalAttributes>;
 
 export class chains extends Model<chainsAttributes, chainsCreationAttributes> implements chainsAttributes {
@@ -57,8 +57,8 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
   networkCreationFeePercentage?: number;
   closeFeePercentage?: number;
   cancelFeePercentage?: number;
-  startBlock?: number;
   privateChainRpc?: string;
+  startBlock?: number;
 
   // chains hasMany delegations via chainId
   delegations!: delegations[];
@@ -199,12 +199,12 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
       type: DataTypes.DOUBLE,
       allowNull: true
     },
-    startBlock: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
     privateChainRpc: {
       type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    startBlock: {
+      type: DataTypes.INTEGER,
       allowNull: true
     }
   }, {
