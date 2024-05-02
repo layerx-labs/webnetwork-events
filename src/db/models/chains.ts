@@ -201,6 +201,7 @@ export class chains extends Model<chainsAttributes, chainsCreationAttributes> im
     },
     startBlock: {
       type: DataTypes.INTEGER,
+      allowNull: true
     },
     privateChainRpc: {
       type: DataTypes.STRING(255),

@@ -20,11 +20,13 @@ export interface usersAttributes {
   isEmailConfirmed?: boolean;
   emailVerificationCode?: string;
   emailVerificationSentAt?: Date;
+  githubLink?: string;
+  linkedInLink?: string;
 }
 
 export type usersPk = "id";
 export type usersId = users[usersPk];
-export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "handle" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt";
+export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "handle" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt" | "githubLink" | "linkedInLink";
 export type usersCreationAttributes = Optional<usersAttributes, usersOptionalAttributes>;
 
 export class users extends Model<usersAttributes, usersCreationAttributes> implements usersAttributes {
@@ -38,6 +40,8 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   isEmailConfirmed?: boolean;
   emailVerificationCode?: string;
   emailVerificationSentAt?: Date;
+  githubLink?: string;
+  linkedInLink?: string;
 
   // users hasMany comments via userId
   comments!: comments[];
@@ -174,6 +178,14 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
     },
     emailVerificationSentAt: {
       type: DataTypes.DATE,
+      allowNull: true
+    },
+    githubLink: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    linkedInLink: {
+      type: DataTypes.STRING(255),
       allowNull: true
     }
   }, {
