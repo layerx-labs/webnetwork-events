@@ -6,7 +6,9 @@ import logger from "src/utils/logger-handler";
 type PointsEvents = "locked" | "delegated" | "created_marketplace" | "created_task" | "created_deliverable" | 
   "created_proposal" | "accepted_proposal";
 
-export async function savePointEvent(event: PointsEvents, participants: string[]) {
+export async function savePointEvent( event: PointsEvents, 
+                                      participantAddress: string, 
+                                      calculateFunction: (pointsPerAction: number, scalingFactor: number) => number ) {
   const pointsBase = await db.points_base.findOne({
     where: {
       actionName: event
@@ -23,53 +25,36 @@ export async function savePointEvent(event: PointsEvents, participants: string[]
     return;
   }
 
-  const users = await db.users.findAll({
+  const user = await db.users.findOne({
     where: Sequelize.where( Sequelize.fn("lower", Sequelize.col("users.address")),
-                            Op.in,
-                            Sequelize.literal(`('${(participants).map((s) => s?.toLowerCase()).join("','")}')`))
+                            Op.eq,
+                            Sequelize.literal(`'${participantAddress.toLowerCase()}'`))
   });
 
-  if (!users) {
-    logger.error(`savePointEvent: users not found for participants ${participants.join(", ")}`);
+  if (!user) {
+    logger.error(`savePointEvent: users not found for participants ${user}`);
     return;
   }
 
-  const existingPointsEvents = (await db.points_events.findAll({
-    attributes: [
-      "userId",
-      [Sequelize.literal("COUNT(id)"), "quantity"]
-    ],
-    group: ["userId"],
+  const eventsOfUser = await db.points_events.count({
     where: {
-      userId: {
-        [Op.in]: users.map(user => user.id)
-      },
+      userId: user.id,
       actionName: pointsBase.actionName
     },
-    raw: true
-  })) as unknown as { userId: number, quantity: string }[];
+  });
 
-  for (const participant of participants) {
-    const user = users.find(user => user.address?.toLowerCase() === participant.toLowerCase());
-
-    if (!user) {
-      logger.error(`savePointEvent: user not found for participant ${participant}`);
-      continue;
-    }
-
-    const eventsOfUser = existingPointsEvents.find(e => e.userId === user.id);
-
-    if (pointsBase.counter !== "N" && eventsOfUser && +eventsOfUser?.quantity >= +pointsBase.counter ) {
-      logger.error(`savePointEvent: action ${pointsBase.actionName} has a limit of ${pointsBase.counter} events and user ${participant} already has ${eventsOfUser.quantity}`);
-      continue;
-    }
-
-    await db.points_events.create({
-      userId: user.id,
-      actionName: pointsBase.actionName,
-      pointsWon: 
-    });
+  if (pointsBase.counter !== "N" && eventsOfUser && eventsOfUser>= +pointsBase.counter ) {
+    logger.error(`savePointEvent: action ${pointsBase.actionName} has a limit of ${pointsBase.counter} events and user ${participantAddress} already has ${eventsOfUser}`);
+    return;
   }
-}
 
-savePointEvent("accepted_proposal", ["0xf15CC0ccBdDA041e2508B829541917823222F364", "0x4B37DBe33E012C6707eC691cE911e2930B23474c"]);
+  const newEvent = {
+    userId: user.id,
+    actionName: pointsBase.actionName,
+    pointsWon: calculateFunction(pointsBase.pointsPerAction, pointsBase.scalingFactor || 1),
+  };
+
+  await db.points_events.create(newEvent);
+
+  logger.log(`savePointEvent: point event saved`, newEvent);
+}
