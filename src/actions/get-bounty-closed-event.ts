@@ -1,7 +1,7 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
 import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
+import {DB_BOUNTY_ALREADY_CLOSED, DB_BOUNTY_NOT_FOUND, NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {updateCuratorProposalParams} from "src/modules/handle-curators";
 import {updateLeaderboardBounties, updateLeaderboardNfts, updateLeaderboardProposals} from "src/modules/leaderboard";
 import {DecodedLog} from "../interfaces/block-sniffer";
@@ -12,6 +12,7 @@ import {updateBountiesHeader} from "src/modules/handle-header-information";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import updateSeoCardBounty from "src/modules/handle-seo-card";
+import { savePointEvent } from "../modules/points-system/save-point-event";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
@@ -44,6 +45,8 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   const eventsProcessed: EventsProcessed = {};
   const {returnValues: {id, proposalId}, connection, address, chainId} = block;
 
+  const transaction = await connection.eth.getTransaction(block.transactionHash);
+
   const bounty = await getBountyFromChain(connection, address, id, name);
   if (!bounty)
     return eventsProcessed;
@@ -67,6 +70,11 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     return eventsProcessed;
   }
 
+  if (dbBounty.state === "closed") {
+    logger.warn(DB_BOUNTY_ALREADY_CLOSED(name, bounty.cid, network.id))
+    return eventsProcessed;
+  }
+
   const dbProposal = await db.merge_proposals.findOne({
     where: {
       issueId: dbBounty.id,
@@ -80,7 +88,12 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     return eventsProcessed;
   }
 
-  const deliverable = await db.deliverables.findOne({ where: { id: dbProposal.deliverableId }});
+  const deliverable = await db.deliverables.findOne({ 
+    where: { id: dbProposal.deliverableId },
+    include: [
+      { association: "user" }
+    ]
+  });
   if (!deliverable) {
     logger.debug(`mergeProposal() has no deliverable on database`);
     return eventsProcessed;
@@ -102,7 +115,9 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   updateLeaderboardProposals("accepted");
   updateBountiesHeader();
   updateSeoCardBounty(dbBounty.id, name);
-
+  savePointEvent("accepted_proposal", transaction.from);
+  savePointEvent("created_proposal", dbProposal.creator!);
+  savePointEvent("created_deliverable", deliverable.user.address!);
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
