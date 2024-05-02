@@ -48,6 +48,16 @@ export async function action(block: DecodedLog<OraclesTransferEvent['returnValue
       curators.push(curator?.address)  
   }
 
+  const currentCurators = await db.curators.findAll({
+    where: {
+      isCurrentlyCurator: true,
+      networkId: dbNetwork.id
+    }
+  });
+
+  dbNetwork.councilMembers = currentCurators.map(({ address }) => address);
+  await dbNetwork.save();
+
   eventsProcessed[dbNetwork.name!] = curators
 
   Push.event(AnalyticEventName.DELEGATE_UNDELEGATE, {
