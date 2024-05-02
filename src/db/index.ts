@@ -34,13 +34,13 @@ if (NEXT_DB_SSL === "true")
     },
   };
 
-const con = new Sequelize(
+export const sequelizeConnection = new Sequelize(
   options.database!,
   options.username!,
   options.password!,
   options
 );
 
-const modules = initModels(con);
+const modules = initModels(sequelizeConnection);
 
 export default modules;
