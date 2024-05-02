@@ -10,6 +10,9 @@ import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import updateSeoCardBounty from "src/modules/handle-seo-card";
+import { getCoinPrice } from "../services/coingecko";
+import { savePointEvent } from "../modules/points-system/save-point-event";
+import { getOrUpdateLastTokenPrice } from "../modules/tokens";
 
 export const name = "get-bounty-moved-to-open";
 export const schedule = "*/1 * * * *";
@@ -17,7 +20,10 @@ export const description =
   "move to 'OPEN' all 'DRAFT' bounties that have Draft Time finished as set at the block chain";
 export const author = "clarkjoao";
 
-const {NEXT_WALLET_PRIVATE_KEY: privateKey} = process.env;
+const {
+  NEXT_WALLET_PRIVATE_KEY: privateKey,
+  NEXT_PUBLIC_CURRENCY_MAIN: currency = "eur",
+} = process.env;
 
 export async function action(query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
@@ -62,7 +68,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
               network_id,
               state: "draft"
             },
-            include: [{association: "network"}]
+            include: [{association: "network"}, {association: "user"}]
           });
 
         logger.info(`${name} found ${bounties.length} draft bounties on ${networkAddress}`);
@@ -75,9 +81,15 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
           dbBounty.state = "open";
           await dbBounty.save();
-          sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
+          sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state!, dbBounty));
 
           updateSeoCardBounty(dbBounty.id, name);
+
+          const tokenPrice = await getOrUpdateLastTokenPrice(dbBounty.transactionalTokenId!, currency);
+
+          await savePointEvent( "created_task", 
+                                dbBounty.user.address!,
+                                (pointsPerAction, scalingFactor) => pointsPerAction * scalingFactor * +dbBounty.amount! * tokenPrice);
 
           eventsProcessed[networkName!] = {
             ...eventsProcessed[networkName!],
