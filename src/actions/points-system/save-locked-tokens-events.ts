@@ -43,5 +43,3 @@ export async function action() {
 
   logger.info(`${name} finished`);
 }
-
-action();
