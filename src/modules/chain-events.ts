@@ -25,6 +25,7 @@ import {action as UserLockedAmountChanged} from "../actions/get-user-locked-amou
 import {action as ChangedFee} from "../actions/get-changed-fee";
 import {action as CalculateUserPoints} from "../actions/points-system/calculate-user-points";
 import {action as SaveLockedTokensEvents} from "../actions/points-system/save-locked-tokens-events";
+import {action as SaveDelegatedTokensEvents} from "../actions/points-system/save-delegated-tokens-events";
 
 /**
  * These events rely on parsed-logs to function and can/will rely on Database information, as well as update it
@@ -58,6 +59,7 @@ export const MIDNIGHT_ACTIONS = {
   DeletePendingBounties,
   UpdateNetworkParams,
   SaveLockedTokensEvents,
+  SaveDelegatedTokensEvents,
   CalculateUserPoints,
 }
 
