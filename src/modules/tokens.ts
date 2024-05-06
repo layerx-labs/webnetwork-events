@@ -5,6 +5,10 @@ import {tokens} from "src/db/models/tokens";
 import loggerHandler from "../utils/logger-handler";
 import { getCoinIconByChainAndContractAddress, getCoinPrice } from "src/services/coingecko";
 
+const {
+  NEXT_PUBLIC_CURRENCY_MAIN: defaultCurrency = "eur",
+} = process.env;
+
 export async function findOrCreateToken(address: string,
                                         name: string,
                                         symbol: string,
@@ -40,7 +44,7 @@ export async function findOrCreateToken(address: string,
   }
 }
 
-export async function getOrUpdateLastTokenPrice(tokenId: number, currency: string = "eur") {
+export async function getOrUpdateLastTokenPrice(tokenId: number, currency = defaultCurrency) {
   const token = await db.tokens.findOne({
     where: {
       id: tokenId
