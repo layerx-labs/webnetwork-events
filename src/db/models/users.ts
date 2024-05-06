@@ -21,14 +21,14 @@ export interface usersAttributes {
   isEmailConfirmed?: boolean;
   emailVerificationCode?: string;
   emailVerificationSentAt?: Date;
+  totalPoints?: number;
   githubLink?: string;
   linkedInLink?: string;
-  totalPoints?: number;
 }
 
 export type usersPk = "id";
 export type usersId = users[usersPk];
-export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "handle" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt" | "githubLink" | "linkedInLink" | "totalPoints";
+export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "handle" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt" | "totalPoints" | "githubLink" | "linkedInLink";
 export type usersCreationAttributes = Optional<usersAttributes, usersOptionalAttributes>;
 
 export class users extends Model<usersAttributes, usersCreationAttributes> implements usersAttributes {
@@ -42,9 +42,9 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   isEmailConfirmed?: boolean;
   emailVerificationCode?: string;
   emailVerificationSentAt?: Date;
+  totalPoints?: number;
   githubLink?: string;
   linkedInLink?: string;
-  totalPoints?: number;
 
   // users hasMany comments via userId
   comments!: comments[];
@@ -195,6 +195,11 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
       type: DataTypes.DATE,
       allowNull: true
     },
+    totalPoints: {
+      type: DataTypes.DOUBLE,
+      allowNull: true,
+      defaultValue: 0
+    },
     githubLink: {
       type: DataTypes.STRING(255),
       allowNull: true
@@ -202,11 +207,6 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
     linkedInLink: {
       type: DataTypes.STRING(255),
       allowNull: true
-    },
-    totalPoints: {
-      type: DataTypes.DOUBLE,
-      allowNull: true,
-      defaultValue: 0
     }
   }, {
     tableName: 'users',

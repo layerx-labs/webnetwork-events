@@ -49,7 +49,7 @@ export async function action(block: DecodedLog<NetworkCreatedEvent['returnValues
 
   await network.save();
 
-  savePointEvent("created_marketplace", creator);
+  savePointEvent("created_marketplace", creator, { networkId: network.id });
 
   updateNumberOfNetworkHeader();
 

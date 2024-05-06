@@ -7,7 +7,8 @@ type PointsEvents = "locked" | "delegated" | "created_marketplace" | "created_ta
   "created_proposal" | "accepted_proposal";
 
 export async function savePointEvent( event: PointsEvents, 
-                                      participantAddress: string, 
+                                      participantAddress: string,
+                                      info = {},
                                       calculateFunction = (pointsPerAction: number, scalingFactor: number) => pointsPerAction * scalingFactor ) {
   const pointsBase = await db.points_base.findOne({
     where: {
@@ -52,6 +53,7 @@ export async function savePointEvent( event: PointsEvents,
     userId: user.id,
     actionName: pointsBase.actionName,
     pointsWon: calculateFunction(pointsBase.pointsPerAction, pointsBase.scalingFactor || 1),
+    info,
   };
 
   await db.points_events.create(newEvent);

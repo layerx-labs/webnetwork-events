@@ -11,11 +11,12 @@ export interface points_eventsAttributes {
   pointsCounted?: boolean;
   createdAt: Date;
   updatedAt: Date;
+  info?: object;
 }
 
 export type points_eventsPk = "id";
 export type points_eventsId = points_events[points_eventsPk];
-export type points_eventsOptionalAttributes = "id" | "pointsCounted" | "createdAt" | "updatedAt";
+export type points_eventsOptionalAttributes = "id" | "pointsCounted" | "createdAt" | "updatedAt" | "info";
 export type points_eventsCreationAttributes = Optional<points_eventsAttributes, points_eventsOptionalAttributes>;
 
 export class points_events extends Model<points_eventsAttributes, points_eventsCreationAttributes> implements points_eventsAttributes {
@@ -26,6 +27,7 @@ export class points_events extends Model<points_eventsAttributes, points_eventsC
   pointsCounted?: boolean;
   createdAt!: Date;
   updatedAt!: Date;
+  info?: object;
 
   // points_events belongsTo points_base via actionName
   actionName_points_base!: points_base;
@@ -70,6 +72,10 @@ export class points_events extends Model<points_eventsAttributes, points_eventsC
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: false
+    },
+    info: {
+      type: DataTypes.JSON,
+      allowNull: true
     }
   }, {
     tableName: 'points_events',
