@@ -89,7 +89,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
           await savePointEvent( "created_task", 
                                 dbBounty.user.address!, 
-                                { taskId: dbBounty.id },
+                                { taskId: dbBounty.id, taskAmount: dbBounty.amount, tokenPrice, currency },
                                 (pointsPerAction, scalingFactor) => pointsPerAction * scalingFactor * +dbBounty.amount! * tokenPrice);
 
           eventsProcessed[networkName!] = {
