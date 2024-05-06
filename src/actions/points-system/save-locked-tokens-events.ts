@@ -38,6 +38,11 @@ export async function action() {
   for (const address in totalConvertedByCurator) {
     await savePointEvent( "locked",
                           address,
+                          { 
+                            curators: curators
+                              .filter(c => c.address.toLowerCase() === address.toLowerCase())
+                              .map(({ tokensLocked, networkId }) => ({ tokensLocked, networkId })) 
+                          },
                           (pointsPerAction, scalingFActor) => pointsPerAction * scalingFActor * totalConvertedByCurator[address]);
   }
 

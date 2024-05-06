@@ -115,9 +115,19 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   updateLeaderboardProposals("accepted");
   updateBountiesHeader();
   updateSeoCardBounty(dbBounty.id, name);
-  savePointEvent("accepted_proposal", transaction.from);
-  savePointEvent("created_proposal", dbProposal.creator!);
-  savePointEvent("created_deliverable", deliverable.user.address!);
+  savePointEvent("accepted_proposal", transaction.from, { 
+    taskId: dbBounty.id, 
+    proposalId: dbProposal.id, 
+    merger: transaction.from 
+  });
+  savePointEvent("created_proposal", dbProposal.creator!, { 
+    taskId: dbBounty.id, 
+    proposalId: dbProposal.id,
+  });
+  savePointEvent("created_deliverable", deliverable.user.address!, { 
+    taskId: dbBounty.id, 
+    deliverableId: deliverable.id,
+  });
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
