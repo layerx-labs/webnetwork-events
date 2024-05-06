@@ -22,16 +22,21 @@ export async function action() {
     },
     include: [
       {
-        association: "network"
+        association: "network",
+        include: [
+          { association: "network_token_token" }
+        ]
       }
     ],
   });
 
   const totalConvertedByCurator = {};
+  const tokensPrices = {};
 
   for (const curator of curators) {
     const tokenPrice = await getOrUpdateLastTokenPrice(curator.network.network_token_id!);
     const convertedAmount = +curator.tokensLocked! * tokenPrice;
+    tokensPrices[curator.network.network_token_token.symbol] = tokenPrice;
     totalConvertedByCurator[curator.address] = (totalConvertedByCurator[curator.address] || 0) + convertedAmount;
   }
 
@@ -39,6 +44,7 @@ export async function action() {
     await savePointEvent( "locked",
                           address,
                           { 
+                            tokensPrices,
                             curators: curators
                               .filter(c => c.address.toLowerCase() === address.toLowerCase())
                               .map(({ tokensLocked, networkId }) => ({ tokensLocked, networkId })) 
