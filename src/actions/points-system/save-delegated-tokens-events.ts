@@ -33,6 +33,11 @@ export async function action() {
   for (const address in totalConvertedByCurator) {
     await savePointEvent( "delegated",
                           address,
+                          { 
+                            delegations: delegations
+                              .filter(c => c.from.toLowerCase() === address.toLowerCase())
+                              .map(({ from, to, amount, networkId }) => ({ from, to, amount, networkId })) 
+                          },
                           (pointsPerAction, scalingFActor) => pointsPerAction * scalingFActor * totalConvertedByCurator[address]);
   }
 
