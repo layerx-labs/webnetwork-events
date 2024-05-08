@@ -42,11 +42,12 @@ export interface issuesAttributes {
   type?: string;
   origin?: string;
   userId?: number;
+  privateDeliverables?: boolean;
 }
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "state" | "createdAt" | "updatedAt" | "amount" | "working" | "merged" | "title" | "body" | "seoImage" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId" | "visible" | "contractCreationDate" | "nftImage" | "ipfsUrl" | "type" | "origin" | "userId";
+export type issuesOptionalAttributes = "id" | "state" | "createdAt" | "updatedAt" | "amount" | "working" | "merged" | "title" | "body" | "seoImage" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId" | "visible" | "contractCreationDate" | "nftImage" | "ipfsUrl" | "type" | "origin" | "userId" | "privateDeliverables";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
@@ -79,6 +80,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   type?: string;
   origin?: string;
   userId?: number;
+  privateDeliverables?: boolean;
 
   // issues belongsTo chains via chain_id
   chain!: chains;
@@ -326,6 +328,11 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
         model: 'users',
         key: 'id'
       }
+    },
+    privateDeliverables: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
     }
   }, {
     tableName: 'issues',

@@ -8,6 +8,7 @@ import {DecodedLog} from "../interfaces/block-sniffer";
 import {Network_v2} from "@taikai/dappkit";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
+import { savePointEvent } from "../modules/points-system/save-point-event";
 
 export const name = "getNetworkRegisteredEvents";
 export const schedule = "*/10 * * * *";
@@ -47,6 +48,8 @@ export async function action(block: DecodedLog<NetworkCreatedEvent['returnValues
   network.isRegistered = true;
 
   await network.save();
+
+  savePointEvent("created_marketplace", creator, { networkId: network.id });
 
   updateNumberOfNetworkHeader();
 

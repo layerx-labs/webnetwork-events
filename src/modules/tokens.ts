@@ -3,7 +3,11 @@ import {Op} from "sequelize";
 import db from "src/db";
 import {tokens} from "src/db/models/tokens";
 import loggerHandler from "../utils/logger-handler";
-import { getCoinIconByChainAndContractAddress } from "src/services/coingecko";
+import { getCoinIconByChainAndContractAddress, getCoinPrice } from "src/services/coingecko";
+
+const {
+  NEXT_PUBLIC_CURRENCY_MAIN: defaultCurrency = "eur",
+} = process.env;
 
 export async function findOrCreateToken(address: string,
                                         name: string,
@@ -38,4 +42,26 @@ export async function findOrCreateToken(address: string,
 
     return undefined;
   }
+}
+
+export async function getOrUpdateLastTokenPrice(tokenId: number, currency = defaultCurrency) {
+  const token = await db.tokens.findOne({
+    where: {
+      id: tokenId
+    }
+  });
+
+  if (!token?.last_price_used?.[currency]) {
+    const currentPrice =  await getCoinPrice(token!.symbol, currency);
+
+    token!.last_price_used = {
+      ...token?.last_price_used,
+      ...currentPrice[token!.symbol.toLowerCase()],
+      updatedAt: new Date(),
+    };
+
+    await token?.save();
+  }
+
+  return token?.last_price_used?.[currency];
 }
