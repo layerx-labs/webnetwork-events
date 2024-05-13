@@ -63,5 +63,5 @@ export async function getOrUpdateLastTokenPrice(tokenId: number, currency = defa
     await token?.save();
   }
 
-  return token?.last_price_used?.[currency];
+  return token?.last_price_used?.[currency] || 0;
 }
