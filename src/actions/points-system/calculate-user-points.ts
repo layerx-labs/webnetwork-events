@@ -44,9 +44,11 @@ export async function action() {
   const updateUserPoints = Object.entries(pointsByUser).map(([id, { total }]) => ({ id, total }));
   const parsedEventsIds = Object.values(pointsByUser).map(({ eventsIds }) => eventsIds).flat();
 
+  const users = await db.users.findAll();
+
   try {
     await Promise.all(updateUserPoints.map(item => db.users.update({
-      totalPoints: item.total
+      totalPoints: item.total + (users.find(user => user.id === +item.id)?.totalPoints || 0)
     }, {
       where: {
         id: item.id
@@ -69,3 +71,5 @@ export async function action() {
     logger.error(`${name} failed to update user points`, updateUserPoints, error);
   }
 }
+
+action()
