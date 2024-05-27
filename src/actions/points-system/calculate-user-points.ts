@@ -71,5 +71,3 @@ export async function action() {
     logger.error(`${name} failed to update user points`, updateUserPoints, error);
   }
 }
-
-action()
