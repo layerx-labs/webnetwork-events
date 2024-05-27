@@ -1,5 +1,6 @@
 import { Op } from "sequelize";
-import db, { sequelizeConnection } from "src/db";
+import db from "src/db";
+import { CHAIN_IDS } from "src/utils/constants";
 import logger from "src/utils/logger-handler";
 
 export const name = "CalculatePointsDaily";
@@ -7,7 +8,14 @@ export const schedule = "0 0 * * *";
 export const description = "Calculate total points and update users' total points";
 export const author = "Vitor Hugo";
 
+const { EVENTS_CHAIN_ID } = process.env;
+
 export async function action() {
+  if (!!EVENTS_CHAIN_ID && +EVENTS_CHAIN_ID !== CHAIN_IDS.polygon) {
+    logger.info(`${name} skipped because is not events polygon instance`, EVENTS_CHAIN_ID);
+    return;
+  }
+
   logger.info(`${name} start`);
 
   const events = await db.points_events.findAll({
