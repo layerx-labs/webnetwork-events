@@ -15,10 +15,10 @@ export const author = "Vitor Hugo";
 const { EVENTS_CHAIN_ID } = process.env;
 
 export async function action() {
-  if (!!EVENTS_CHAIN_ID && +EVENTS_CHAIN_ID !== CHAIN_IDS.polygon) {
-    logger.info(`${name} skipped because is not events polygon instance`, EVENTS_CHAIN_ID);
-    return;
-  }
+  // if (!!EVENTS_CHAIN_ID && +EVENTS_CHAIN_ID !== CHAIN_IDS.polygon) {
+  //   logger.info(`${name} skipped because is not events polygon instance`, EVENTS_CHAIN_ID);
+  //   return;
+  // }
 
   logger.info(`${name} start`);
 
