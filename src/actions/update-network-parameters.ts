@@ -1,91 +1,74 @@
 import db from "src/db";
 import logger from "src/utils/logger-handler";
-import {EventsProcessed, EventsQuery,} from "src/interfaces/block-chain-service";
-import {Network_v2, Web3Connection} from "@taikai/dappkit";
-import {Op} from "sequelize";
-import {getChainsRegistryAndNetworks} from "../utils/block-process";
-import { handleCurators, updateIsCurrentlyCurator } from "src/modules/handle-curators";
+import { EventsProcessed, EventsQuery } from "src/interfaces/block-chain-service";
+import { Network_v2 } from "@taikai/dappkit";
+import { handleCurators } from "src/modules/handle-curators";
+import { DecodedLog } from "src/interfaces/block-sniffer";
+import { NetworkParamChanged } from "@taikai/dappkit/dist/src/interfaces/events/network-v2-events";
 
-export const name = "updateNetworkParameters";
+export const name = "NetworkParamChanged";
 export const schedule = "0 0 * * *";
 export const description = "update network parameters on database";
 export const author = "Vitor Hugo";
 
-const {NEXT_WALLET_PRIVATE_KEY: privateKey} = process.env;
-
-export async function action(query?: EventsQuery): Promise<EventsProcessed> {
+export async function action(block: DecodedLog<NetworkParamChanged['returnValues']>, query?: EventsQuery): Promise<EventsProcessed> {
   const eventsProcessed: EventsProcessed = {};
+  const { address: networkAddress, chainId, connection } = block;
 
   logger.info(`${name} start`);
 
-  const entries = await getChainsRegistryAndNetworks();
-  for (const [web3Host, {chainId: chain_id,}] of entries) {
-    const where = {
-      chain_id,
-      ...query?.networkName ? {name: {[Op.iLike]: query.networkName}} : {},
-    }
+  const networkOnDb = await db.networks.findOne({
+    where: {
+      networkAddress: networkAddress,
+      chain_id: chainId
+    },
+    include: [{ association: "curators", required: false }],
+  });
 
-    const networks = await db.networks.findAll({
-      where,
-      include: [{ association: "curators", required: false }],
-    });
+  if (!networkOnDb) {
+    logger.warn(`${name} network with address ${networkAddress} not found for chain ${chainId}`);
+    return eventsProcessed;
+  }
 
-    try {
+  try {
+    const networkContract = new Network_v2(connection, networkOnDb.networkAddress);
+    await networkContract.start();
+    const councilAmount = await networkContract.councilAmount();
+    const needsToUpdateCurators = councilAmount !== networkOnDb.councilAmount;
 
-      if (!networks || !networks.length) {
-        logger.warn(`${name} found no networks`);
-        return eventsProcessed;
-      }
+    networkOnDb.councilAmount = councilAmount;
+    networkOnDb.disputableTime = (await networkContract.disputableTime()) / 1000;
+    networkOnDb.draftTime = (await networkContract.draftTime()) / 1000;
+    networkOnDb.oracleExchangeRate = await networkContract.oracleExchangeRate();
+    networkOnDb.mergeCreatorFeeShare = await networkContract.mergeCreatorFeeShare();
+    networkOnDb.percentageNeededForDispute = await networkContract.percentageNeededForDispute();
+    networkOnDb.cancelableTime = (await networkContract.cancelableTime()) / 1000;
+    networkOnDb.proposerFeeShare = await networkContract.proposerFeeShare();
 
-      const web3Connection = new Web3Connection({web3Host, privateKey});
-      await web3Connection.start();
+    await networkOnDb.save();
 
-      for (const network of networks) {
-        try {
-          const networkContract = new Network_v2(web3Connection, network.networkAddress);
-          await networkContract.start();
-          const councilAmount = await networkContract.councilAmount();
-          const needsToUpdateCurators = councilAmount !== network.councilAmount;
+    if (needsToUpdateCurators) {
+      await Promise.all(networkOnDb.curators.map(async (curator) => {
+        const actorVotesResume = await networkContract.getOraclesResume(curator.address);
+        await handleCurators(curator.address, actorVotesResume, councilAmount, networkOnDb.id);
+      }));
 
-          network.councilAmount = councilAmount;
-          network.disputableTime = (await networkContract.disputableTime()) / 1000;
-          network.draftTime = (await networkContract.draftTime()) / 1000;
-          network.oracleExchangeRate = await networkContract.oracleExchangeRate();
-          network.mergeCreatorFeeShare = await networkContract.mergeCreatorFeeShare();
-          network.percentageNeededForDispute = await networkContract.percentageNeededForDispute();
-          network.cancelableTime = (await networkContract.cancelableTime()) / 1000;
-          network.proposerFeeShare = await networkContract.proposerFeeShare();
-
-          await network.save();
-
-          if (needsToUpdateCurators) {
-            await Promise.all(network.curators.map(async (curator) => {
-              const actorVotesResume = await networkContract.getOraclesResume(curator.address);
-              await handleCurators(curator.address, actorVotesResume, councilAmount, network.id);
-            }));
-
-            const currentCurators = await db.curators.findAll({
-              where: {
-                isCurrentlyCurator: true,
-                networkId: network.id
-              }
-            });
-
-            network.councilMembers = currentCurators.map(({ address }) => address);
-            await network.save();
-          }
-
-          eventsProcessed[network.name!] = ["updated"];
-
-          logger.info(`${name} parameters saved ${network.name} ${network.networkAddress}`);
-        } catch (error: any) {
-          logger.error(`${name} Failed to save parameters of ${network.name} ${network.networkAddress}`, error?.message || error.toString());
+      const currentCurators = await db.curators.findAll({
+        where: {
+          isCurrentlyCurator: true,
+          networkId: networkOnDb.id
         }
-      }
-    } catch (err: any) {
-      logger.error(`${name} Error`, err?.message || err.toString());
+      });
+
+      networkOnDb.councilMembers = currentCurators.map(({ address }) => address);
+      await networkOnDb.save();
     }
 
+    eventsProcessed[networkOnDb.name!] = ["updated"];
+
+    logger.info(`${name} parameters saved ${networkOnDb.name} ${networkOnDb.networkAddress}`);
+  } catch (error: any) {
+    logger.error(`${name} Failed to save parameters of ${networkOnDb.name} ${networkOnDb.networkAddress}`, error?.message || error.toString());
   }
 
   return eventsProcessed;
