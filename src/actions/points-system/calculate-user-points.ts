@@ -1,5 +1,6 @@
 import { Op } from "sequelize";
-import db, { sequelizeConnection } from "src/db";
+import db from "src/db";
+import { CHAIN_IDS } from "src/utils/constants";
 import logger from "src/utils/logger-handler";
 
 export const name = "CalculatePointsDaily";
@@ -7,7 +8,14 @@ export const schedule = "0 0 * * *";
 export const description = "Calculate total points and update users' total points";
 export const author = "Vitor Hugo";
 
+const { EVENTS_CHAIN_ID } = process.env;
+
 export async function action() {
+  if (!!EVENTS_CHAIN_ID && +EVENTS_CHAIN_ID !== CHAIN_IDS.polygon) {
+    logger.info(`${name} skipped because is not events polygon instance`, EVENTS_CHAIN_ID);
+    return;
+  }
+
   logger.info(`${name} start`);
 
   const events = await db.points_events.findAll({
@@ -36,9 +44,11 @@ export async function action() {
   const updateUserPoints = Object.entries(pointsByUser).map(([id, { total }]) => ({ id, total }));
   const parsedEventsIds = Object.values(pointsByUser).map(({ eventsIds }) => eventsIds).flat();
 
+  const users = await db.users.findAll();
+
   try {
     await Promise.all(updateUserPoints.map(item => db.users.update({
-      totalPoints: item.total
+      totalPoints: item.total + (users.find(user => user.id === +item.id)?.totalPoints || 0)
     }, {
       where: {
         id: item.id
