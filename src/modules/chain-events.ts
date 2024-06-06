@@ -17,7 +17,8 @@ import {action as OraclesTransfer} from "../actions/get-oracles-transfer-events"
 import {action as UpdateBountiesToDraft} from "../actions/update-bounties-to-draft";
 import {action as DeletePendingNetworks} from "../actions/delete-pending-networks";
 import {action as DeletePendingBounties} from "../actions/delete-pending-bounties";
-import {action as UpdateNetworkParams} from "../actions/update-network-parameters";
+import {action as NetworkParamChanged} from "../actions/get-network-param-changed";
+import {action as UpdateNetworkParameters} from "../actions/update-network-parameters";
 import {action as BountyWithdrawReward} from "../actions/get-bounty-reward-withdraw";
 import {action as UpdateHeaders} from "../actions/get-prices-header-information";
 import {action as GenerateNftImage} from "../actions/generate-nft-images";
@@ -45,7 +46,7 @@ export const REGISTRY_EVENTS = {
 export const NETWORK_EVENTS = {
   BountyCreated, BountyCanceled, BountyFunded, BountyClosed, BountyPullRequestCreated, BountyPullRequestReadyForReview,
   BountyPullRequestCanceled, BountyProposalCreated, BountyProposalDisputed, BountyProposalRefused, BountyAmountUpdated,
-  OraclesChanged, OraclesTransfer,
+  OraclesChanged, OraclesTransfer, NetworkParamChanged,
 }
 
 /**
@@ -57,10 +58,10 @@ export const MIDNIGHT_ACTIONS = {
   UpdateBountiesToDraft,
   DeletePendingNetworks,
   DeletePendingBounties,
-  UpdateNetworkParams,
   SaveLockedTokensEvents,
   SaveDelegatedTokensEvents,
   CalculateUserPoints,
+  UpdateNetworkParameters,
 }
 
 export const MINUTE_ACTIONS = {
