@@ -17,12 +17,12 @@ export async function savePointEvent( event: PointsEvents,
   });
 
   if (!pointsBase) {
-    logger.error(`savePointEvent: points_base not found for ${event} event`);
+    logger.error(`savePointEvent: points_base not found for ${event} event`, { event, participantAddress, info });
     return;
   }
 
   if (pointsBase.counter === "0") {
-    logger.error(`savePointEvent: points_base has counter 0 and is disabled`);
+    logger.error(`savePointEvent: points_base has counter 0 and is disabled`, { event, participantAddress, info });
     return;
   }
 
@@ -33,7 +33,7 @@ export async function savePointEvent( event: PointsEvents,
   });
 
   if (!user) {
-    logger.error(`savePointEvent: users not found for participants ${user}`);
+    logger.error(`savePointEvent: users not found for participants ${user}`, { event, participantAddress, info });
     return;
   }
 
@@ -45,7 +45,7 @@ export async function savePointEvent( event: PointsEvents,
   });
 
   if (pointsBase.counter !== "N" && eventsOfUser && eventsOfUser>= +pointsBase.counter ) {
-    logger.error(`savePointEvent: action ${pointsBase.actionName} has a limit of ${pointsBase.counter} events and user ${participantAddress} already has ${eventsOfUser}`);
+    logger.error(`savePointEvent: action ${pointsBase.actionName} has a limit of ${pointsBase.counter} events and user ${participantAddress} already has ${eventsOfUser}`, { event, participantAddress, info });
     return;
   }
 
@@ -58,5 +58,5 @@ export async function savePointEvent( event: PointsEvents,
 
   await db.points_events.create(newEvent);
 
-  logger.log(`savePointEvent: point event saved`, newEvent);
+  logger.log(`savePointEvent: point event saved`, newEvent, { event, participantAddress, info });
 }
