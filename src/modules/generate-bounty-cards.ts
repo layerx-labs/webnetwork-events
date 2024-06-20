@@ -7,7 +7,7 @@ import { issuesAttributes } from "src/db/models/issues";
 
 export const lessThenWei = (number: number | string) => number!== 0 && BigNumber(number).isLessThan(0.0001) ? '< 0.0001' : number;
 
-function image2base64(imagePathName: string) {
+export function image2base64(imagePathName: string) {
   return new Promise((resolve) => {
     const filePath = path.resolve("src", "assets", "images", imagePathName);
     const file = fs.readFileSync(filePath);
@@ -16,7 +16,7 @@ function image2base64(imagePathName: string) {
   });
 }
 
-function font2base64(fontPathName: string) {
+export function font2base64(fontPathName: string) {
   return new Promise((resolve) => {
     const filePath = path.resolve("src", "assets", "fonts", fontPathName);
     const file = fs.readFileSync(filePath);
@@ -25,7 +25,7 @@ function font2base64(fontPathName: string) {
   });
 }
 
-function importHtml(htmlPathName: string) {
+export function importHtml(htmlPathName: string) {
   return new Promise((resolve) => {
     const filePath = path.resolve("src", "assets", "templates", htmlPathName);
     const file = fs.readFileSync(filePath, { encoding: "utf8" });
