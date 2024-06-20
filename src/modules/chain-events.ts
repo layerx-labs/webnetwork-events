@@ -27,6 +27,7 @@ import {action as ChangedFee} from "../actions/get-changed-fee";
 import {action as CalculateUserPoints} from "../actions/points-system/calculate-user-points";
 import {action as SaveLockedTokensEvents} from "../actions/points-system/save-locked-tokens-events";
 import {action as SaveDelegatedTokensEvents} from "../actions/points-system/save-delegated-tokens-events";
+import {action as UpdateUserProfileImage} from "../actions/update-user-profile-image";
 
 /**
  * These events rely on parsed-logs to function and can/will rely on Database information, as well as update it
@@ -69,4 +70,5 @@ export const MINUTE_ACTIONS = {
   BountyWithdrawReward,
   UpdateHeaders,
   GenerateNftImage,
+  UpdateUserProfileImage,
 }
