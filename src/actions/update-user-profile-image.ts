@@ -1,4 +1,4 @@
-import { Op, Sequelize } from "sequelize";
+import { Op, Sequelize, WhereOptions } from "sequelize";
 
 import models from "src/db";
 import { generateUserProfileImage } from "src/modules/generate-images/user-profile-image";
@@ -12,13 +12,20 @@ export const schedule = "*/10 * * * *";
 export const description = "Generate User profile image for OG";
 export const author = "vhcsilva";
 
-export async function action() {
+export async function action(query?: Record<string, string>) {
   if (!isIpfsEnvs) {
     logger.warn(`${name} Missing id, secret or baseURL, for IPFService`);
     return;
   }
 
-  const users = await models.users.findAll();
+  const where: WhereOptions = {};
+
+  if (query?.id)
+    where.id = +query.id;
+
+  const users = await models.users.findAll({
+    where
+  });
 
   if (!users.length) {
     logger.info(`${name} No users to be updated`);
