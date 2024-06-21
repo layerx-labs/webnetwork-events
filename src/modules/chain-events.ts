@@ -63,6 +63,7 @@ export const MIDNIGHT_ACTIONS = {
   SaveDelegatedTokensEvents,
   CalculateUserPoints,
   UpdateNetworkParameters,
+  UpdateUserProfileImage,
 }
 
 export const MINUTE_ACTIONS = {
@@ -70,5 +71,4 @@ export const MINUTE_ACTIONS = {
   BountyWithdrawReward,
   UpdateHeaders,
   GenerateNftImage,
-  UpdateUserProfileImage,
 }

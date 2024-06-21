@@ -1,4 +1,3 @@
-import { subHours } from "date-fns";
 import { Op, Sequelize } from "sequelize";
 
 import models from "src/db";
@@ -13,38 +12,13 @@ export const schedule = "*/10 * * * *";
 export const description = "Generate User profile image for OG";
 export const author = "vhcsilva";
 
-const TTL_IN_HOURS = 1; 
-
 export async function action() {
   if (!isIpfsEnvs) {
     logger.warn(`${name} Missing id, secret or baseURL, for IPFService`);
     return;
   }
 
-  const where = {
-    [Op.or]: [
-      { 
-        profileImage: {
-          [Op.eq]: null
-        } 
-      },
-      {
-        profileImageUpdatedAt: {
-          [Op.lt]: subHours(+new Date(), TTL_IN_HOURS)
-        }
-      },
-      {
-        updatedAt: {
-          [Op.gt]: Sequelize.col("users.profileImageUpdatedAt")
-        }
-      }
-    ]
-  };
-
-  const users = await models.users.findAll({
-    where,
-    limit: 5,
-  });
+  const users = await models.users.findAll();
 
   if (!users.length) {
     logger.info(`${name} No users to be updated`);
@@ -112,7 +86,7 @@ export async function action() {
 
       logger.debug(`${name} - profile image updated ${user.address}`);
     } catch(error) {
-      console.log("error", error)
+      logger.error(`${name} - failed ${user.address}`, {error});
     }
   }
 }
