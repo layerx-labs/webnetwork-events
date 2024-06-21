@@ -32,6 +32,11 @@ export async function action() {
         profileImageUpdatedAt: {
           [Op.lt]: subHours(+new Date(), TTL_IN_HOURS)
         }
+      },
+      {
+        updatedAt: {
+          [Op.gt]: Sequelize.col("users.profileImageUpdatedAt")
+        }
       }
     ]
   };
