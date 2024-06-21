@@ -17,6 +17,7 @@ interface GenerateUserProfileImageParams {
 
 const backgroundImagePath = path.resolve("src", "assets", "images", "pattern.png");
 const logoImagePath = path.resolve("src", "assets", "images", "bepro-icon.png");
+const avatarPlaceholderPath = path.resolve("src", "assets", "images", "avatar-placeholder.png");
 const fontPath = path.resolve("src", "assets", "fonts", "SpaceGrotesk.ttf");
 const template = path.resolve("src", "assets", "templates", "user-profile.hbs");
 
@@ -31,13 +32,14 @@ export async function generateUserProfileImage({
 }: GenerateUserProfileImageParams) {
   const background = await imageToBase64(backgroundImagePath);
   const logo = await imageToBase64(logoImagePath);
+  const avatarPlaceholder = await imageToBase64(avatarPlaceholderPath);
   const font = await fontToBase64(fontPath);
   const html = await loadHtml(template);
 
   const content = {
     address,
     handle,
-    avatar: avatar ? `${ipfsBase}/${avatar}` : logo,
+    avatar: avatar ? `${ipfsBase}/${avatar}` : avatarPlaceholder,
     bio,
     tasksWon,
     tasksOpened,
