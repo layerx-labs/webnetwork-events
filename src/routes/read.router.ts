@@ -7,11 +7,9 @@ import {Op} from "sequelize";
 import {MIDNIGHT_ACTIONS, MINUTE_ACTIONS, NETWORK_EVENTS, REGISTRY_EVENTS} from "../modules/chain-events";
 import {findOnABI} from "../utils/find-on-abi";
 import {ApiBlockSniffer} from "src/services/api-block-sniffer";
-import { internalApiKey } from "src/middlewares/internal-api-key";
 
 const router = Router();
 
-router.use(internalApiKey);
 router.use(eventQuery);
 
 router.get(`/:chainId/:address/:event`, async (req, res) => {
@@ -60,7 +58,7 @@ router.get(`/:chainId/:address/:event`, async (req, res) => {
     return res.status(400).json({message: `unknown network or registry ${address}`});
 
   if (_standaloneKeys.includes(event))
-    (MIDNIGHT_ACTIONS[event] || MINUTE_ACTIONS[event])({ chainId, address, ...req?.query })
+    (MIDNIGHT_ACTIONS[event] || MINUTE_ACTIONS[event])({ chainId, address })
       .then(data => {
         res.status(200).json([data]).end();
       });

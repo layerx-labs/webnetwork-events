@@ -6,16 +6,22 @@ import { isIpfsEnvs } from "src/utils/ipfs-envs-verify";
 import logger from "src/utils/logger-handler";
 import ipfsService from "src/services/ipfs-service";
 import { truncateAddress } from "src/utils/string";
+import { HttpBadRequestError } from "src/types/errors";
 
 export const name = "update-user-profile-image";
 export const schedule = "*/10 * * * *";
 export const description = "Generate User profile image for OG";
 export const author = "vhcsilva";
 
-export async function action(query?: Record<string, string>) {
+export async function action(query?: Record<string, string | boolean>) {
   if (!isIpfsEnvs) {
     logger.warn(`${name} Missing id, secret or baseURL, for IPFService`);
     return;
+  }
+
+  if (query?.fromRoute && !query?.id) {
+    logger.warn(`${name} Missing query params`, query);
+    throw new HttpBadRequestError("Missing query params");
   }
 
   const where: WhereOptions = {};
