@@ -128,12 +128,12 @@
         {{/if}}
 
         <div class="details">
-          {{#if handle}}
-            <h1>{{handle}}</h1>
-            <h3>{{address}}</h3>
-          {{else}}
-            <h1>{{address}}</h1>
+          <h1>{{primaryText}}</h1>
+
+          {{#if secondaryText}}
+            <h3>{{secondaryText}}</h3>
           {{/if}}
+
           <p>{{bio}}</p>
         </div>
       </header>
