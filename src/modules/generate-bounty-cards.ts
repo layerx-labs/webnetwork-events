@@ -1,36 +1,22 @@
-import fs from "fs";
 import nodeHtmlToImage from "node-html-to-image";
 import path from "path";
 import BigNumber from "bignumber.js";
 import { formatNumberToNScale } from "src/utils/formatNumber";
 import { issuesAttributes } from "src/db/models/issues";
+import { fontToBase64, imageToBase64, loadHtml } from "src/modules/generate-images/generate-images";
 
 export const lessThenWei = (number: number | string) => number!== 0 && BigNumber(number).isLessThan(0.0001) ? '< 0.0001' : number;
 
-function image2base64(imagePathName: string) {
-  return new Promise((resolve) => {
-    const filePath = path.resolve("src", "assets", "images", imagePathName);
-    const file = fs.readFileSync(filePath);
-    const base64 = Buffer.from(file).toString("base64");
-    resolve(`data:image/png;base64,${base64}`);
-  });
+export function image2base64(imagePathName: string) {
+  return imageToBase64(path.resolve("src", "assets", "images", imagePathName));
 }
 
-function font2base64(fontPathName: string) {
-  return new Promise((resolve) => {
-    const filePath = path.resolve("src", "assets", "fonts", fontPathName);
-    const file = fs.readFileSync(filePath);
-    const base64 = Buffer.from(file).toString("base64");
-    resolve(`data:font/ttf;base64,${base64}`);
-  });
+export function font2base64(fontPathName: string) {
+  return fontToBase64(path.resolve("src", "assets", "fonts", fontPathName));
 }
 
-function importHtml(htmlPathName: string) {
-  return new Promise((resolve) => {
-    const filePath = path.resolve("src", "assets", "templates", htmlPathName);
-    const file = fs.readFileSync(filePath, { encoding: "utf8" });
-    resolve(file);
-  });
+export function importHtml(htmlPathName: string) {
+  return loadHtml(path.resolve("src", "assets", "templates", htmlPathName));
 }
 
 async function generateImage(issue, symbol, logoName, template) {
