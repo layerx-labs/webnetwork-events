@@ -2,14 +2,13 @@ import path from "path";
 import nodeHtmlToImage from "node-html-to-image";
 
 import { fontToBase64, imageToBase64, loadHtml } from "src/modules/generate-images/generate-images";
+import { usersAttributes } from "src/db/models/users";
+import { truncateAddress } from "src/utils/string";
 
 const { NEXT_PUBLIC_IPFS_BASE: ipfsBase } = process.env;
 
 interface GenerateUserProfileImageParams {
-  address: string;
-  handle?: string;
-  avatar?: string;
-  bio?: string;
+  user: usersAttributes;
   tasksWon: number;
   tasksOpened: number;
   acceptedProposals: number;
@@ -22,10 +21,7 @@ const fontPath = path.resolve("src", "assets", "fonts", "SpaceGrotesk.ttf");
 const template = path.resolve("src", "assets", "templates", "user-profile.hbs");
 
 export async function generateUserProfileImage({
-  address,
-  handle,
-  avatar,
-  bio,
+  user,
   tasksWon,
   tasksOpened,
   acceptedProposals,
@@ -36,11 +32,24 @@ export async function generateUserProfileImage({
   const font = await fontToBase64(fontPath);
   const html = await loadHtml(template);
 
+  let primaryText = truncateAddress(user?.address);
+  let secondaryText: string | undefined = undefined;
+
+  if (user?.fullName) {
+    primaryText = user.fullName.length > 25 ? `${user.fullName.slice(0, 25)}...` : user.fullName;
+
+    if (user?.handle)
+      primaryText += ` (${user?.handle})`;
+  } else if (user?.handle) {
+    primaryText = user?.handle;
+    secondaryText = user?.address;
+  }
+
   const content = {
-    address,
-    handle,
-    avatar: avatar ? `${ipfsBase}/${avatar}` : avatarPlaceholder,
-    bio,
+    primaryText,
+    secondaryText,
+    bio: user?.about,
+    avatar: user?.avatar ? `${ipfsBase}/${user?.avatar}` : avatarPlaceholder,
     tasksWon,
     tasksOpened,
     acceptedProposals,

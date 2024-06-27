@@ -5,7 +5,6 @@ import { generateUserProfileImage } from "src/modules/generate-images/user-profi
 import { isIpfsEnvs } from "src/utils/ipfs-envs-verify";
 import logger from "src/utils/logger-handler";
 import ipfsService from "src/services/ipfs-service";
-import { truncateAddress } from "src/utils/string";
 import { HttpBadRequestError } from "src/types/errors";
 
 export const name = "update-user-profile-image";
@@ -77,10 +76,7 @@ export async function action(query?: Record<string, string | boolean>) {
       });
 
       const card = await generateUserProfileImage({
-        address: truncateAddress(user.address!),
-        handle: user.handle,
-        avatar: user.avatar,
-        bio: user.about,
+        user,
         tasksWon,
         tasksOpened,
         acceptedProposals,
