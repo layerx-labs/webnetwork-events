@@ -21,14 +21,20 @@ export interface usersAttributes {
   isEmailConfirmed?: boolean;
   emailVerificationCode?: string;
   emailVerificationSentAt?: Date;
-  totalPoints?: number;
   githubLink?: string;
   linkedInLink?: string;
+  totalPoints?: number;
+  about?: string;
+  avatar?: string;
+  twitterLink?: string;
+  profileImage?: string;
+  profileImageUpdatedAt?: Date;
+  fullName?: string;
 }
 
 export type usersPk = "id";
 export type usersId = users[usersPk];
-export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "handle" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt" | "totalPoints" | "githubLink" | "linkedInLink";
+export type usersOptionalAttributes = "id" | "address" | "createdAt" | "updatedAt" | "handle" | "resetedAt" | "email" | "isEmailConfirmed" | "emailVerificationCode" | "emailVerificationSentAt" | "githubLink" | "linkedInLink" | "totalPoints" | "about" | "twitterLink" | "avatar" | "profileImage" | "profileImageUpdatedAt" | "fullName";
 export type usersCreationAttributes = Optional<usersAttributes, usersOptionalAttributes>;
 
 export class users extends Model<usersAttributes, usersCreationAttributes> implements usersAttributes {
@@ -42,9 +48,15 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   isEmailConfirmed?: boolean;
   emailVerificationCode?: string;
   emailVerificationSentAt?: Date;
-  totalPoints?: number;
   githubLink?: string;
   linkedInLink?: string;
+  totalPoints?: number;
+  about?: string;
+  twitterLink?: string;
+  avatar?: string;
+  profileImage?: string;
+  profileImageUpdatedAt?: Date;
+  fullName?: string;
 
   // users hasMany comments via userId
   comments!: comments[];
@@ -195,16 +207,40 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
       type: DataTypes.DATE,
       allowNull: true
     },
-    totalPoints: {
-      type: DataTypes.DOUBLE,
-      allowNull: true,
-      defaultValue: 0
-    },
     githubLink: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
     linkedInLink: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    totalPoints: {
+      type: DataTypes.DOUBLE,
+      allowNull: true,
+      defaultValue: 0
+    },
+    about: {
+      type: DataTypes.STRING(512),
+      allowNull: true
+    },
+    twitterLink: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    avatar: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    profileImage: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    profileImageUpdatedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    fullName: {
       type: DataTypes.STRING(255),
       allowNull: true
     }
