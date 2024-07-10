@@ -31,8 +31,9 @@ export async function generateUserProfileImage({
   const avatarPlaceholder = await imageToBase64(avatarPlaceholderPath);
   const font = await fontToBase64(fontPath);
   const html = await loadHtml(template);
+  const truncatedAddress = truncateAddress(user?.address);
 
-  let primaryText = truncateAddress(user?.address);
+  let primaryText = truncatedAddress;
   let secondaryText: string | undefined = undefined;
 
   if (user?.fullName) {
@@ -42,7 +43,7 @@ export async function generateUserProfileImage({
       primaryText += ` (${user?.handle})`;
   } else if (user?.handle) {
     primaryText = user?.handle;
-    secondaryText = user?.address;
+    secondaryText = truncatedAddress;
   }
 
   const content = {
