@@ -36,7 +36,7 @@ async function updateUserPayments(proposal: Proposal,
   });
 
   if (!chain?.closeFeePercentage || !network.mergeCreatorFeeShare || !network.proposerFeeShare) {
-    logger.warn(`war not possible to save payments for task ${issueId} because chain ${chainId} was not found in database`);
+    logger.warn(`Not possible to save payments for ${issueId} on ${chainId} as it's missing closeFeePercentage, mergeCreatorFeeShare or proposerFeeShare`);
     return;
   }
 
