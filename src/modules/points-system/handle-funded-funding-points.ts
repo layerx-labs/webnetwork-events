@@ -65,7 +65,7 @@ export async function handleFundedFundingPoints({
       }
   
       const hasPointEvent = pointsEventsOfIssue
-        .find(({ userId, info }) => (info as FundingEventInfo).benefactorId === benefactor.id && userId === user.id);
+        .find(({ userId, info }) => (info as FundingEventInfo)?.benefactorId === benefactor.id && userId === user?.id);
   
       if (!hasPointEvent && +benefactor.amount > 0) {
         const tokenPrice = await getOrUpdateLastTokenPrice(issue.transactionalTokenId!, currency);
