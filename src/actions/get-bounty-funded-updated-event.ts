@@ -58,15 +58,13 @@ export async function action(block: DecodedLog<BountyFunded['returnValues']>, qu
 
   updateSeoCardBounty(dbBounty.id, name);
 
-  if (!["draft", "canceled", "closed"].includes(dbBounty.state!)) {
-    const _network = new Network_v2(connection, address);
-    await _network.start();
+  const _network = new Network_v2(connection, address);
+  await _network.start();
 
-    await handleFundedFundingPoints({
-      bounty: await _network.getBounty(dbBounty.contractId!),
-      issue: dbBounty
-    });
-  }
+  await handleFundedFundingPoints({
+    bounty: await _network.getBounty(dbBounty.contractId!),
+    issue: dbBounty
+  });
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}
