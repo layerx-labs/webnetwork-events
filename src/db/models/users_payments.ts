@@ -5,7 +5,7 @@ import type { issues, issuesId } from './issues';
 export interface users_paymentsAttributes {
   id: number;
   address: string;
-  ammount: number;
+  ammount?: number;
   issueId: number;
   transactionHash?: string;
   createdAt: Date;
@@ -14,13 +14,13 @@ export interface users_paymentsAttributes {
 
 export type users_paymentsPk = "id";
 export type users_paymentsId = users_payments[users_paymentsPk];
-export type users_paymentsOptionalAttributes = "id" | "transactionHash" | "createdAt" | "updatedAt";
+export type users_paymentsOptionalAttributes = "id" | "ammount" | "transactionHash" | "createdAt" | "updatedAt";
 export type users_paymentsCreationAttributes = Optional<users_paymentsAttributes, users_paymentsOptionalAttributes>;
 
 export class users_payments extends Model<users_paymentsAttributes, users_paymentsCreationAttributes> implements users_paymentsAttributes {
   id!: number;
   address!: string;
-  ammount!: number;
+  ammount?: number;
   issueId!: number;
   transactionHash?: string;
   createdAt!: Date;
@@ -45,8 +45,8 @@ export class users_payments extends Model<users_paymentsAttributes, users_paymen
       allowNull: false
     },
     ammount: {
-      type: DataTypes.INTEGER,
-      allowNull: false
+      type: DataTypes.DOUBLE,
+      allowNull: true
     },
     issueId: {
       type: DataTypes.INTEGER,
