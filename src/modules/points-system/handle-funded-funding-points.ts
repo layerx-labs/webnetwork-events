@@ -75,8 +75,20 @@ export async function handleFundedFundingPoints({
           amount: benefactor.amount,
           tokenPrice
         }, (pointsPerAction, scalingFactor) => pointsPerAction * scalingFactor * +benefactor.amount * tokenPrice);
+
+        logger.info(`handleFundedFundingPoints: point saved`, {
+          taskId: issue.id,
+          benefactorId: benefactor.id,
+          amount: benefactor.amount,
+          tokenPrice
+        });
       } else if (hasPointEvent && +benefactor.amount === 0)
         await removePointEntry(hasPointEvent.id);
+        logger.info(`handleFundedFundingPoints: point removed because fund was retracted`, {
+          taskId: issue.id,
+          benefactorId: benefactor.id,
+          amount: benefactor.amount,
+        });
     }
   } catch(error) {
     logger.error(`handleFundedFundingPoints: failed to handle funded funding points`, { error, bounty, issue });
