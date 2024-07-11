@@ -12,6 +12,8 @@ import {BOUNTY_FUNDED} from "../integrations/telegram/messages";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import updateSeoCardBounty from "src/modules/handle-seo-card";
+import { handleFundedFundingPoints } from "src/modules/points-system/handle-funded-funding-points";
+import { Network_v2 } from "@taikai/dappkit";
 
 export const name = "getBountyFundedEvents";
 export const schedule = "*/14 * * * *";
@@ -55,6 +57,14 @@ export async function action(block: DecodedLog<BountyFunded['returnValues']>, qu
   sendMessageToTelegramChannels(BOUNTY_FUNDED(`${dbBounty.amount}${dbBounty.transactionalToken.symbol}`, `${bounty.fundingAmount}${dbBounty.transactionalToken.symbol}`, dbBounty))
 
   updateSeoCardBounty(dbBounty.id, name);
+
+  const _network = new Network_v2(connection, address);
+  await _network.start();
+
+  await handleFundedFundingPoints({
+    bounty: await _network.getBounty(dbBounty.contractId!),
+    issue: dbBounty
+  });
 
   eventsProcessed[network.name!] = {
     [dbBounty.id!.toString()]: {bounty: dbBounty, eventBlock: parseLogWithContext(block)}

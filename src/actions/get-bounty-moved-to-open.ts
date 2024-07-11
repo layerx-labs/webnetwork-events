@@ -13,6 +13,7 @@ import updateSeoCardBounty from "src/modules/handle-seo-card";
 import { getCoinPrice } from "../services/coingecko";
 import { savePointEvent } from "../modules/points-system/save-point-event";
 import { getOrUpdateLastTokenPrice } from "../modules/tokens";
+import { handleFundedFundingPoints } from "src/modules/points-system/handle-funded-funding-points";
 
 export const name = "get-bounty-moved-to-open";
 export const schedule = "*/1 * * * *";
@@ -85,12 +86,19 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
 
           updateSeoCardBounty(dbBounty.id, name);
 
-          const tokenPrice = await getOrUpdateLastTokenPrice(dbBounty.transactionalTokenId!, currency);
+          if (!dbBounty.fundingAmount) {
+            const tokenPrice = await getOrUpdateLastTokenPrice(dbBounty.transactionalTokenId!, currency);
 
-          await savePointEvent( "created_task", 
-                                dbBounty.user.address!, 
-                                { taskId: dbBounty.id, taskAmount: dbBounty.amount, tokenPrice, currency },
-                                (pointsPerAction, scalingFactor) => pointsPerAction * scalingFactor * +dbBounty.amount! * tokenPrice);
+            await savePointEvent( "created_task", 
+                                  dbBounty.user.address!, 
+                                  { taskId: dbBounty.id, taskAmount: dbBounty.amount, tokenPrice, currency },
+                                  (pointsPerAction, scalingFactor) => pointsPerAction * scalingFactor * +dbBounty.amount! * tokenPrice);
+          } else {
+            await handleFundedFundingPoints({
+              bounty: await _network.getBounty(dbBounty.contractId!),
+              issue: dbBounty
+            });
+          }
 
           eventsProcessed[networkName!] = {
             ...eventsProcessed[networkName!],
