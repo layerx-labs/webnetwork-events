@@ -85,15 +85,23 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state!, dbBounty));
 
           updateSeoCardBounty(dbBounty.id, name);
+          
+          const tokenPrice = await getOrUpdateLastTokenPrice(dbBounty.transactionalTokenId!, currency);
 
           if (!dbBounty.fundingAmount) {
-            const tokenPrice = await getOrUpdateLastTokenPrice(dbBounty.transactionalTokenId!, currency);
 
             await savePointEvent( "created_task", 
                                   dbBounty.user.address!, 
                                   { taskId: dbBounty.id, taskAmount: dbBounty.amount, tokenPrice, currency },
                                   (pointsPerAction, scalingFactor) => pointsPerAction * scalingFactor * +dbBounty.amount! * tokenPrice);
           } else {
+            if (!!dbBounty.rewardAmount && +dbBounty.rewardAmount > 0) {
+              await savePointEvent( "give_funding_reward", 
+                                    dbBounty.user.address!, 
+                                    { taskId: dbBounty.id, rewardAmount: dbBounty.rewardAmount, tokenPrice, currency },
+                                    (pointsPerAction, scalingFactor) => pointsPerAction * scalingFactor * +dbBounty.rewardAmount! * tokenPrice);
+            }
+
             await handleFundedFundingPoints({
               bounty: await _network.getBounty(dbBounty.contractId!),
               issue: dbBounty

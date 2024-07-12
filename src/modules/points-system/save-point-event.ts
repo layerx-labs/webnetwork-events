@@ -4,7 +4,7 @@ import db from "src/db";
 import logger from "src/utils/logger-handler";
 
 type PointsEvents = "locked" | "delegated" | "created_marketplace" | "created_task" | "created_deliverable" | 
-  "created_proposal" | "accepted_proposal" | "funded_funding_request";
+  "created_proposal" | "accepted_proposal" | "funded_funding_request" | "give_funding_reward";
 
 export async function savePointEvent( event: PointsEvents, 
                                       participantAddress: string,

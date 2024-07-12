@@ -73,14 +73,16 @@ export async function handleFundedFundingPoints({
           taskId: issue.id,
           benefactorId: benefactor.id,
           amount: benefactor.amount,
-          tokenPrice
+          tokenPrice,
+          currency
         }, (pointsPerAction, scalingFactor) => pointsPerAction * scalingFactor * +benefactor.amount * tokenPrice);
 
         logger.info(`handleFundedFundingPoints: point saved`, {
           taskId: issue.id,
           benefactorId: benefactor.id,
           amount: benefactor.amount,
-          tokenPrice
+          tokenPrice,
+          currency
         });
       } else if (hasPointEvent && +benefactor.amount === 0)
         await removePointEntry(hasPointEvent.id);
@@ -88,6 +90,7 @@ export async function handleFundedFundingPoints({
           taskId: issue.id,
           benefactorId: benefactor.id,
           amount: benefactor.amount,
+          currency,
         });
     }
   } catch(error) {
