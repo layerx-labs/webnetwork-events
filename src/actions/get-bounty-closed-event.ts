@@ -13,19 +13,55 @@ import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import updateSeoCardBounty from "src/modules/handle-seo-card";
 import { savePointEvent } from "../modules/points-system/save-point-event";
+import calculateDistributedAmounts from "src/modules/calculate-distributed-amounts";
+import { Proposal } from "@taikai/dappkit";
+import { networksAttributes } from "src/db/models/networks";
 
 export const name = "getBountyClosedEvents";
 export const schedule = "*/12 * * * *";
 export const description = "Move to 'Closed' status the bounty";
 export const author = "clarkjoao";
 
-async function updateUserPayments(proposal, transactionHash, issueId, tokenAmount) {
-  return Promise.all(
-    proposal.details.map(async (detail) => {
+async function updateUserPayments(proposal: Proposal, 
+                                  transactionHash: string, 
+                                  issueId: number, 
+                                  tokenAmount: string | number, 
+                                  chainId: number, 
+                                  network: networksAttributes, 
+                                  merger: string) {
+  const chain = await db.chains.findOne({
+    where: {
+      chainId: chainId,
+    }
+  });
+
+  if (!chain?.closeFeePercentage || !network.mergeCreatorFeeShare || !network.proposerFeeShare) {
+    logger.warn(`Not possible to save payments for ${issueId} on ${chainId} as it's missing closeFeePercentage, mergeCreatorFeeShare or proposerFeeShare`);
+    return;
+  }
+
+  const distributedAmounts = calculateDistributedAmounts( chain.closeFeePercentage,  
+                                                          network.mergeCreatorFeeShare, 
+                                                          network.proposerFeeShare,
+                                                          tokenAmount,
+                                                          proposal.details);
+  return Promise.all([
+    db.users_payments.create({
+      address: merger,
+      ammount: +distributedAmounts.mergerAmount.value || 0,
+      issueId,
+      transactionHash,
+    }),
+    db.users_payments.create({
+      address: proposal.creator,
+      ammount: +distributedAmounts.proposerAmount.value || 0,
+      issueId,
+      transactionHash,
+    }),
+    ...distributedAmounts.proposals.map(async (distributed) => {
       const payment = {
-        address: detail?.["recipient"],
-        ammount:
-          Number((detail?.["percentage"] / 100) * +tokenAmount) || 0,
+        address: distributed.recipient,
+        ammount: +distributed.value || 0,
         issueId,
         transactionHash,
       }
@@ -33,7 +69,8 @@ async function updateUserPayments(proposal, transactionHash, issueId, tokenAmoun
         where: payment,
         defaults: payment
       })
-    }))
+    })
+  ]);
 }
 
 async function updateCuratorProposal(address: string, networkId: number) {
@@ -53,7 +90,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
 
   const network = await getNetwork(chainId, address);
   if (!network) {
-    logger.warn(NETWORK_NOT_FOUND(name, address))
+    logger.warn(NETWORK_NOT_FOUND(name, address));
     return eventsProcessed;
   }
 
@@ -66,12 +103,12 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   });
 
   if (!dbBounty) {
-    logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id))
+    logger.warn(DB_BOUNTY_NOT_FOUND(name, bounty.cid, network.id));
     return eventsProcessed;
   }
 
   if (dbBounty.state === "closed") {
-    logger.warn(DB_BOUNTY_ALREADY_CLOSED(name, bounty.cid, network.id))
+    logger.warn(DB_BOUNTY_ALREADY_CLOSED(name, bounty.cid, network.id));
     return eventsProcessed;
   }
 
@@ -108,7 +145,13 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
 
   sendMessageToTelegramChannels(BOUNTY_CLOSED(dbBounty, dbProposal, proposalId));
 
-  await updateUserPayments(bounty.proposals[+proposalId], block.transactionHash, dbBounty.id, bounty.tokenAmount);
+  await updateUserPayments( bounty.proposals[+proposalId], 
+                            block.transactionHash, 
+                            dbBounty.id, 
+                            bounty.tokenAmount, 
+                            chainId, 
+                            network, 
+                            transaction.from);
   await updateCuratorProposal(bounty.proposals[+proposalId].creator, network?.id)
   updateLeaderboardNfts()
   updateLeaderboardBounties("closed");
