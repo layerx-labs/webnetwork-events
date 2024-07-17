@@ -92,8 +92,7 @@ export class notification_settings extends Model<notification_settingsAttributes
     },
     subscriptions: {
       type: DataTypes.ARRAY(DataTypes.INTEGER),
-      allowNull: true,
-      defaultValue: [ARRAY[]]
+      allowNull: true
     }
   }, {
     tableName: 'notification_settings',
