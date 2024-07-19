@@ -3,11 +3,11 @@ import {error, info} from "../../utils/logger-handler";
 import {getEventTargets} from "../../utils/get-event-targets";
 import {NotificationTemplate} from "../../services/templating/notification-template";
 import {v4 as uuidv4} from "uuid";
+import { CollectEventPayloadParams } from "src/services/analytics/types/analytics";
 
 export class Notification {
-  static async create(type: string, payload: any) {
-
-    const {ids,} = await getEventTargets(payload?.targets);
+  static async create(type: string, payload: CollectEventPayloadParams) {
+    const {ids,} = await getEventTargets(type, payload);
     const template =
       new NotificationTemplate().compile({type, payload});
 

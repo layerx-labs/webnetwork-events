@@ -24,6 +24,7 @@ export const AnalyticsEvents: AnalyticEventPool = {
   [AnalyticEventName.BOUNTY_NETWORK_UPDATED]: [analytic(AnalyticTypes.ElasticSearch)],
   [AnalyticEventName.REGISTRY_UPDATED]: [analytic(AnalyticTypes.ElasticSearch)],
   [AnalyticEventName.NOTIF_TASK_CREATED]: [analytic(AnalyticTypes.CreateNotification)],
+  [AnalyticEventName.NOTIF_TASK_FUNDING_CREATED]: [analytic(AnalyticTypes.CreateNotification)],
   [AnalyticEventName.NOTIF_DELIVERABLE_CREATED]: [analytic(AnalyticTypes.CreateNotification)],
   [AnalyticEventName.NOTIF_DELIVERABLE_READY]: [analytic(AnalyticTypes.CreateNotification)],
   [AnalyticEventName.NOTIF_PROPOSAL_OPEN]: [analytic(AnalyticTypes.CreateNotification)],
