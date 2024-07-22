@@ -45,16 +45,6 @@ export async function shouldSendNotification( userId: number,
 
     const isSubscribedToTask = subscriptions.includes(taskId);
     const isNotificationTypeEnabled = enabled && notifications.includes(notificationType);
-  
-    if (userId === 1) {
-      console.log({
-        enabled,
-        subscriptions,
-        notifications,
-        isSubscribedToTask,
-        isNotificationTypeEnabled,
-      })
-    }
 
     return isSubscribedToTask || isNotificationTypeEnabled;
 
