@@ -5,6 +5,7 @@ import type { curators, curatorsId } from './curators';
 import type { deliverables, deliverablesId } from './deliverables';
 import type { issues, issuesId } from './issues';
 import type { kyc_sessions, kyc_sessionsId } from './kyc_sessions';
+import type { notification_settings, notification_settingsCreationAttributes, notification_settingsId } from './notification_settings';
 import type { notifications, notificationsId } from './notifications';
 import type { points_events, points_eventsId } from './points_events';
 import type { user_settings, user_settingsId } from './user_settings';
@@ -25,8 +26,8 @@ export interface usersAttributes {
   linkedInLink?: string;
   totalPoints?: number;
   about?: string;
-  avatar?: string;
   twitterLink?: string;
+  avatar?: string;
   profileImage?: string;
   profileImageUpdatedAt?: Date;
   fullName?: string;
@@ -118,6 +119,11 @@ export class users extends Model<usersAttributes, usersCreationAttributes> imple
   hasKyc_session!: Sequelize.HasManyHasAssociationMixin<kyc_sessions, kyc_sessionsId>;
   hasKyc_sessions!: Sequelize.HasManyHasAssociationsMixin<kyc_sessions, kyc_sessionsId>;
   countKyc_sessions!: Sequelize.HasManyCountAssociationsMixin;
+  // users hasOne notification_settings via userId
+  notification_setting!: notification_settings;
+  getNotification_setting!: Sequelize.HasOneGetAssociationMixin<notification_settings>;
+  setNotification_setting!: Sequelize.HasOneSetAssociationMixin<notification_settings, notification_settingsId>;
+  createNotification_setting!: Sequelize.HasOneCreateAssociationMixin<notification_settings>;
   // users hasMany notifications via userId
   notifications!: notifications[];
   getNotifications!: Sequelize.HasManyGetAssociationsMixin<notifications>;
