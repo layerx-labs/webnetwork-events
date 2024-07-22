@@ -29,7 +29,7 @@ export async function getEventTargets(type: string, payload: CollectEventPayload
     targets = await db.users.findAll({
       include: [
         {
-          association: "settings",
+          association: "user_settings",
           required: true,
           where: {
             notifications: true
