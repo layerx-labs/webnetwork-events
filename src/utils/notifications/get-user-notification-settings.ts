@@ -18,6 +18,13 @@ export async function getUserNotificationSettings(userId: number): Promise<GetUs
 
   const userSettings = await models.user_settings.findOne({ where });
 
+  if (!userSettings?.notifications)
+    return {
+      enabled: false,
+      subscriptions: [],
+      notifications: [],
+    };
+
   const notificationSettings = await models.notification_settings.findOne({ where, raw: true });
 
   const notifications: NotificationType[] = [];
@@ -39,11 +46,11 @@ export async function getUserNotificationSettings(userId: number): Promise<GetUs
 
 export async function shouldSendNotification( userId: number,
                                               notificationType: NotificationType,
-                                              taskId: number): Promise<boolean> {
+                                              taskId?: number): Promise<boolean> {
   try {
     const { enabled, subscriptions, notifications } = await getUserNotificationSettings(userId);
 
-    const isSubscribedToTask = subscriptions.includes(taskId);
+    const isSubscribedToTask = taskId ? subscriptions.includes(taskId) : false;
     const isNotificationTypeEnabled = enabled && notifications.includes(notificationType);
 
     return isSubscribedToTask || isNotificationTypeEnabled;

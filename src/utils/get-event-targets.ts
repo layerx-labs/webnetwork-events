@@ -26,7 +26,17 @@ export async function getEventTargets(type: string, payload: CollectEventPayload
   let targets = payload?.targets;
 
   if (!targets?.length)
-    targets = await db.users.findAll();
+    targets = await db.users.findAll({
+      include: [
+        {
+          association: "settings",
+          required: true,
+          where: {
+            notifications: true
+          }
+        }
+      ]
+    });
 
   targets = (await Promise.all(targets.map(async (target) => {
     const shouldSend = 
