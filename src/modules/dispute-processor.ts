@@ -64,6 +64,8 @@ export async function disputeProcessor(block: DecodedLog<BountyProposalDisputedE
       if (curator)
         await updateCuratorProposalParams(curator, "disputedProposals", "add");
 
+      await dbProposal.reload();
+
       const AnalyticalEvent = {
         name: AnalyticEventName.MERGE_PROPOSAL_DISPUTED,
         params: {
@@ -78,6 +80,7 @@ export async function disputeProcessor(block: DecodedLog<BountyProposalDisputedE
       const NotificationEvent = {
         name: AnalyticEventName.NOTIF_PROPOSAL_DISPUTED,
         params: {
+          bountyId: dbBounty.id,
           creator: {
             address: actorAddress,
           },

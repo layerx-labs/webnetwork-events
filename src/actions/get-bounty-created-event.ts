@@ -182,6 +182,7 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
       ? AnalyticEventName.NOTIF_TASK_FUNDING_CREATED
       : AnalyticEventName.NOTIF_TASK_CREATED,
     params: {
+      bountyId: dbBounty.id,
       creator: {
         address: dbBounty.user?.address,
         username: dbBounty.user?.handle,
