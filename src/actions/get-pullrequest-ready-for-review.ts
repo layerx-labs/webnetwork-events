@@ -10,7 +10,7 @@ import {BOUNTY_STATE_CHANGED} from "../integrations/telegram/messages";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import updateSeoCardBounty from "src/modules/handle-seo-card";
-import {Op} from "sequelize";
+import {Op, Sequelize} from "sequelize";
 
 export const name = "getBountyPullRequestReadyForReviewEvents";
 export const schedule = "*/12 * * * *";
@@ -21,7 +21,6 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
   const eventsProcessed: EventsProcessed = {};
 
   const {returnValues: {bountyId, pullRequestId}, connection, address, chainId} = block;
-
 
   const bounty = await getBountyFromChain(connection, address, bountyId, name);
   if (!bounty)
@@ -42,24 +41,22 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
     return eventsProcessed;
   }
 
-
   const pullRequest = bounty.pullRequests[pullRequestId];
 
   const dbDeliverable = await db.deliverables.findOne({
-    where: {id: pullRequest.cid},
+    where: {id: pullRequest.cid, markedReadyForReview: false},
     include: {association: 'user'}
-  })
+  });
 
   if (!dbDeliverable) {
     logger.warn(`${name} No deliverable found with "draft" and id ${pullRequest.cid}, maybe it was already parsed?`);
     return eventsProcessed;
   }
 
-  dbDeliverable.canceled = pullRequest.canceled
-  dbDeliverable.markedReadyForReview = pullRequest?.ready
+  dbDeliverable.canceled = pullRequest.canceled;
+  dbDeliverable.markedReadyForReview = pullRequest?.ready;
 
   await dbDeliverable.save();
-
 
   if (!["canceled", "closed", "proposal"].includes(dbBounty.state!)) {
     dbBounty.state = "ready";
@@ -77,12 +74,29 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
   (async () => {
     const owner = await dbBounty!.getUser({attributes: ["email", "id"], include:[{ association: "user_settings" }] });
 
-    const curators = await dbBounty!.network.getCurators({
-      include: [{association: "user", attributes: ["email", "id"], include:[{association: "user_settings"}]}],
-        where: {userId: {[Op.not]: owner.id }, isCurrentlyCurator: true}
+    const curators = await db.curators.findAll({
+      include: [
+        {
+          association: "user", 
+          required: true,
+          attributes: ["email", "id"],
+          where: {
+            id: { 
+              [Op.not]: owner.id
+            },
+          },
+          on: Sequelize.where(Sequelize.fn("lower", Sequelize.col("curators.address")),
+                              "=",
+                              Sequelize.fn("lower", Sequelize.col("user.address"))),
+        }
+      ],
+      where: {
+        networkId: dbBounty.network_id,
+        isCurrentlyCurator: true
+      }
     });
 
-    const targets = curators.map(curators => curators.user.get())
+    const targets = curators.map(curators => curators.user);
 
     const AnalyticEvent = {
       name: AnalyticEventName.PULL_REQUEST_READY,
@@ -92,12 +106,13 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
         deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
         actor: pullRequest.creator,
       }
-    }
+    };
 
     const NotificationEvent = {
       name: AnalyticEventName.NOTIF_DELIVERABLE_READY,
       params: {
         targets: [...targets, owner],
+        bountyId: dbBounty.id,
         creator: {
           address: dbDeliverable.user.address,
           id: dbDeliverable.user.id,
@@ -114,9 +129,9 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
           link: `${dbBounty.network.name}/task/${dbBounty.id}/deliverable/${dbDeliverable.id}`
         }
       }
-    }
+    };
 
-    Push.events([AnalyticEvent, NotificationEvent])
+    Push.events([AnalyticEvent, NotificationEvent]);
   })()
 
 

@@ -109,6 +109,7 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
   const NotificationEvent = {
     name: AnalyticEventName.NOTIF_PROPOSAL_OPEN,
     params: {
+      bountyId: dbBounty.id,
       creator: {
         address: createProposal.creator,
         username: createProposal.handle,
