@@ -22,6 +22,7 @@ import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import {getDeveloperAmount} from "src/modules/calculate-distributed-amounts";
 import {getCoinIconByChainAndContractAddress} from "src/services/coingecko";
+import { subscribeUserToTask } from "src/utils/notifications/subscribe-user-to-task";
 
 
 export const name = "getBountyCreatedEvents";
@@ -147,6 +148,8 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
       .catch(error => logger.warn(`Failed to validate token ${bounty.rewardToken}`, error.toString()));
 
   await dbBounty.save();
+
+  await subscribeUserToTask(dbBounty.id, dbBounty.user.address!);
 
   updateLeaderboardBounties();
   updateBountiesHeader();

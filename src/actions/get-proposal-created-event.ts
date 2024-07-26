@@ -13,6 +13,7 @@ import {NETWORK_NOT_FOUND} from "../utils/messages.const";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import updateSeoCardBounty from "src/modules/handle-seo-card";
+import { subscribeUserToTask } from "src/utils/notifications/subscribe-user-to-task";
 
 export const name = "getBountyProposalCreatedEvents";
 export const schedule = "*/13 * * * *";
@@ -87,6 +88,8 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
     await dbBounty.save();
     sendMessageToTelegramChannels(BOUNTY_STATE_CHANGED(dbBounty.state, dbBounty));
   }
+
+  await subscribeUserToTask(dbBounty.id, dbBounty.user.address!);
 
   updateLeaderboardProposals();
   updateSeoCardBounty(dbBounty.id, name);
