@@ -29,10 +29,10 @@ export interface issuesAttributes {
   fundingAmount?: string;
   fundedAmount?: string;
   fundedAt?: Date;
+  tags?: string[];
   isKyc?: boolean;
   kycTierList?: number[];
   chain_id?: number;
-  tags?: string[];
   rewardAmount?: string;
   rewardTokenId?: number;
   visible?: boolean;
@@ -43,11 +43,12 @@ export interface issuesAttributes {
   origin?: string;
   userId?: number;
   privateDeliverables?: boolean;
+  multipleWinners?: boolean;
 }
 
 export type issuesPk = "id";
 export type issuesId = issues[issuesPk];
-export type issuesOptionalAttributes = "id" | "state" | "createdAt" | "updatedAt" | "amount" | "working" | "merged" | "title" | "body" | "seoImage" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "isKyc" | "kycTierList" | "chain_id" | "tags" | "rewardAmount" | "rewardTokenId" | "visible" | "contractCreationDate" | "nftImage" | "ipfsUrl" | "type" | "origin" | "userId" | "privateDeliverables";
+export type issuesOptionalAttributes = "id" | "state" | "createdAt" | "updatedAt" | "amount" | "working" | "merged" | "title" | "body" | "seoImage" | "network_id" | "contractId" | "transactionalTokenId" | "fundingAmount" | "fundedAmount" | "fundedAt" | "tags" | "isKyc" | "kycTierList" | "chain_id" | "rewardAmount" | "rewardTokenId" | "visible" | "contractCreationDate" | "nftImage" | "ipfsUrl" | "type" | "origin" | "userId" | "privateDeliverables" | "multipleWinners";
 export type issuesCreationAttributes = Optional<issuesAttributes, issuesOptionalAttributes>;
 
 export class issues extends Model<issuesAttributes, issuesCreationAttributes> implements issuesAttributes {
@@ -67,10 +68,10 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   fundingAmount?: string;
   fundedAmount?: string;
   fundedAt?: Date;
+  tags?: string[];
   isKyc?: boolean;
   kycTierList?: number[];
   chain_id?: number;
-  tags?: string[];
   rewardAmount?: string;
   rewardTokenId?: number;
   visible?: boolean;
@@ -81,6 +82,7 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
   origin?: string;
   userId?: number;
   privateDeliverables?: boolean;
+  multipleWinners?: boolean;
 
   // issues belongsTo chains via chain_id
   chain!: chains;
@@ -263,6 +265,10 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       type: DataTypes.DATE,
       allowNull: true
     },
+    tags: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true
+    },
     isKyc: {
       type: DataTypes.BOOLEAN,
       allowNull: true
@@ -278,10 +284,6 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
         model: 'chains',
         key: 'chainId'
       }
-    },
-    tags: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: true
     },
     rewardAmount: {
       type: DataTypes.STRING(255),
@@ -333,6 +335,11 @@ export class issues extends Model<issuesAttributes, issuesCreationAttributes> im
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: false
+    },
+    multipleWinners: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: true
     }
   }, {
     tableName: 'issues',
