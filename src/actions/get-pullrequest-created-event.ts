@@ -11,6 +11,7 @@ import {DELIVERABLE_OPEN} from "../integrations/telegram/messages";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import updateSeoCardBounty from "src/modules/handle-seo-card";
+import { subscribeUserToTask } from "src/utils/notifications/subscribe-user-to-task";
 
 export const name = "getBountyPullRequestCreatedEvents";
 export const schedule = "*/10 * * * *";
@@ -33,7 +34,7 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
 
   const dbBounty = await db.issues.findOne({
     where: {contractId: bountyId, network_id: network.id},
-    include: [{association: "network"}, {association: "chain"}]
+    include: [{association: "network"}, {association: "chain"}, {association: "user"}]
   });
 
   if (!dbBounty) {
@@ -61,6 +62,8 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   dbDeliverable.bountyId = bounty.id
   await dbDeliverable.save();
 
+  await subscribeUserToTask(dbBounty.id, dbBounty.user.address!);
+
   updateSeoCardBounty(dbBounty.id, name);
 
   eventsProcessed[network.name!] = {
@@ -68,8 +71,6 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
   };
 
   sendMessageToTelegramChannels(DELIVERABLE_OPEN(dbBounty, dbDeliverable, dbDeliverable.id));
-  
-  const targets = [(await dbBounty.getUser({attributes: ["email", "id"], include:[{ association: "user_settings" }] })).get()]
 
   const AnalyticEvent = {
     name: AnalyticEventName.PULL_REQUEST_OPEN,
@@ -82,30 +83,7 @@ export async function action(block: DecodedLog<BountyPullRequestCreatedEvent['re
     }
   }
 
-  const NotificationEvent = {
-    name: AnalyticEventName.NOTIF_DELIVERABLE_CREATED,
-    params: {
-      targets,
-      creator: {
-        address: dbDeliverable.user.address,
-        id: dbDeliverable.user.id,
-        username: dbDeliverable.user.handle,
-      },
-      task: {
-        id: dbDeliverable.bountyId,
-        title: dbBounty.title,
-        network: dbBounty.network.name,
-      },
-      deliverable: {
-        title: dbDeliverable.title,
-        id: dbDeliverable.id,
-        createdAt: dbDeliverable.createdAt,
-        link: `${dbBounty.network.name}/task/${dbBounty.id}/deliverable/${dbDeliverable.id}`
-      }
-    }
-  }
-
-  Push.events([AnalyticEvent, NotificationEvent])
+  Push.events([AnalyticEvent]);
 
   return eventsProcessed;
 }

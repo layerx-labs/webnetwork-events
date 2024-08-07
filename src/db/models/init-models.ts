@@ -33,6 +33,8 @@ import { network_tokens as _network_tokens } from "./network_tokens";
 import type { network_tokensAttributes, network_tokensCreationAttributes } from "./network_tokens";
 import { networks as _networks } from "./networks";
 import type { networksAttributes, networksCreationAttributes } from "./networks";
+import { notification_settings as _notification_settings } from "./notification_settings";
+import type { notification_settingsAttributes, notification_settingsCreationAttributes } from "./notification_settings";
 import { notifications as _notifications } from "./notifications";
 import type { notificationsAttributes, notificationsCreationAttributes } from "./notifications";
 import { points_base as _points_base } from "./points_base";
@@ -72,6 +74,7 @@ export {
   _merge_proposals as merge_proposals,
   _network_tokens as network_tokens,
   _networks as networks,
+  _notification_settings as notification_settings,
   _notifications as notifications,
   _points_base as points_base,
   _points_events as points_events,
@@ -119,6 +122,8 @@ export type {
   network_tokensCreationAttributes,
   networksAttributes,
   networksCreationAttributes,
+  notification_settingsAttributes,
+  notification_settingsCreationAttributes,
   notificationsAttributes,
   notificationsCreationAttributes,
   points_baseAttributes,
@@ -159,6 +164,7 @@ export function initModels(sequelize: Sequelize) {
   const merge_proposals = _merge_proposals.initModel(sequelize);
   const network_tokens = _network_tokens.initModel(sequelize);
   const networks = _networks.initModel(sequelize);
+  const notification_settings = _notification_settings.initModel(sequelize);
   const notifications = _notifications.initModel(sequelize);
   const points_base = _points_base.initModel(sequelize);
   const points_events = _points_events.initModel(sequelize);
@@ -240,6 +246,8 @@ export function initModels(sequelize: Sequelize) {
   users.hasMany(issues, { as: "issues", foreignKey: "userId"});
   kyc_sessions.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(kyc_sessions, { as: "kyc_sessions", foreignKey: "user_id"});
+  notification_settings.belongsTo(users, { as: "user", foreignKey: "userId"});
+  users.hasOne(notification_settings, { as: "notification_setting", foreignKey: "userId"});
   notifications.belongsTo(users, { as: "user", foreignKey: "userId"});
   users.hasMany(notifications, { as: "notifications", foreignKey: "userId"});
   points_events.belongsTo(users, { as: "user", foreignKey: "userId"});
@@ -267,6 +275,7 @@ export function initModels(sequelize: Sequelize) {
     merge_proposals: merge_proposals,
     network_tokens: network_tokens,
     networks: networks,
+    notification_settings: notification_settings,
     notifications: notifications,
     points_base: points_base,
     points_events: points_events,

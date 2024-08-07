@@ -178,11 +178,6 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
 
   const {tokenAmount, fundingAmount, rewardAmount, rewardToken, transactional} = bounty;
 
-  const targets = [(await dbBounty.getUser({
-    attributes: ["email", "id"],
-    include: [{association: "user_settings"}]
-  })).get()]
-
   const AnalyticsEvent = {
     name: AnalyticEventName.BOUNTY_CLOSED,
     params: {
@@ -197,30 +192,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     }
   };
 
-  const NotificationEvent = {
-    name: AnalyticEventName.NOTIF_TASK_CLOSED,
-    params: {
-      targets,
-      task: {
-        title: dbBounty.title,
-        id: dbBounty.id,
-        createdAt: dbBounty.createdAt,
-        network: dbBounty.network.name,
-        link: `${dbBounty.network.name}/task/${dbBounty.id}`
-      },
-      proposal: {
-        id: dbProposal.id,
-        link: `${dbBounty.network.name}/task/${dbBounty.id}/proposal/${dbProposal.id}`,
-      },
-      deliverable: {
-        title: deliverable.title,
-        id: deliverable.id,
-        link: `${dbBounty.network.name}/task/${dbBounty.id}/deliverable/${dbProposal.id}`
-      },
-    }
-  }
-
-  Push.events([AnalyticsEvent, NotificationEvent]);
+  Push.events([AnalyticsEvent]);
 
   return eventsProcessed;
 }

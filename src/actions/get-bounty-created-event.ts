@@ -22,6 +22,7 @@ import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import {getDeveloperAmount} from "src/modules/calculate-distributed-amounts";
 import {getCoinIconByChainAndContractAddress} from "src/services/coingecko";
+import { subscribeUserToTask } from "src/utils/notifications/subscribe-user-to-task";
 
 
 export const name = "getBountyCreatedEvents";
@@ -148,6 +149,8 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
 
   await dbBounty.save();
 
+  await subscribeUserToTask(dbBounty.id, dbBounty.user.address!);
+
   updateLeaderboardBounties();
   updateBountiesHeader();
 
@@ -182,6 +185,7 @@ export async function action(block: DecodedLog<BountyCreatedEvent['returnValues'
       ? AnalyticEventName.NOTIF_TASK_FUNDING_CREATED
       : AnalyticEventName.NOTIF_TASK_CREATED,
     params: {
+      bountyId: dbBounty.id,
       creator: {
         address: dbBounty.user?.address,
         username: dbBounty.user?.handle,

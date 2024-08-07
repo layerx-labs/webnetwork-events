@@ -19,10 +19,10 @@ export class Push {
   static async events(payload: AnalyticEvents) {
 
     const collectedEvents: { [k in AnalyticEventName]?: { collector: Collector, events: AnalyticEvents } } = {};
-
     try {
       for (const event of payload) {
         const collectors = Push.getCollectors(event.name);
+
         for (const collector of collectors) {
           if (collector?.type)
             collectedEvents[collector.type] =
@@ -34,7 +34,7 @@ export class Push {
         }
       }
 
-      await Promise.allSettled(
+      await Promise.all(
         Object.values(collectedEvents)
           .map(({collector, events}) =>
             collector.collect(JSON.parse(JSON.stringify(events))))
