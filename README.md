@@ -84,7 +84,7 @@ See [CONTRIBUTING.md](https://github.com/bepro/webapp/CONTRIBUTING.md) for our g
 
 ## 5. Join the community
 
-- [Discord](https://discord.gg/9aUufhzhfm)
+- [Discord](https://discord.gg/layerx)
 - [Telegram](https://t.me/betprotocol)
-- [Medium](https://bepronetwork.medium.com)
+- [Blog](https://blog.bepro.network/)
 - [WebSite](https://www.bepro.network)
