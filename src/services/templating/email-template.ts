@@ -11,7 +11,7 @@ export class EmailTemplate extends Template {
 
   compile(payload: any) {
 
-    const title = format(EmailNotificationSubjects[payload.template], payload?.network?.name ?? "BEPRO");
+    const title = format(EmailNotificationSubjects[payload.type], payload?.network?.name ?? "BEPRO");
 
     const templateData = {
       pageTitle: title,
