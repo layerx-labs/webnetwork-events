@@ -3,7 +3,7 @@
 </h2>
 
 <h3 align="center">
- This project is a API service to check and process events mined at chain to keep <a href="https://github.com/bepronetwork/web-network">Web Network</a> updated.<br> Learn more <a href="https://bepronetwork.medium.com/what-is-bepro-network-6ec4054d2020">about</a>.
+ This project is a API service to check and process events mined at chain to keep <a href="https://github.com/layerx-labs/webnetwork">Web Network</a> updated.<br> Learn more <a href="https://bepronetwork.medium.com/what-is-bepro-network-6ec4054d2020">about</a>.
 </h3>
 
 <p align="center">
@@ -21,7 +21,7 @@
 
 ---
 
-This project is an API to listen events from blockchain and manage the database for keep [web-network](https://github.com/bepronetwork/web-network) updated.
+This project is an API to listen events from blockchain and manage the database for keep [web-network](https://github.com/layerx-labs/webnetwork) updated.
 
 It is able to run as `http server` and as a `cronjob`, and it's essential for running web-network correctly.
 
@@ -80,11 +80,11 @@ $ npm run start:cron
 
 ## 4. Contributing
 
-See [CONTRIBUTING.md](https://github.com/bepro/webapp/CONTRIBUTING.md) for our guide to contributing to web-network.
+See [CONTRIBUTING.md](https://github.com/layerx-labs/webnetwork/blob/master/docs/CONTRIBUTING.md) for our guide to contributing to web-network.
 
 ## 5. Join the community
 
-- [Discord](https://discord.gg/9aUufhzhfm)
+- [Discord](https://discord.gg/layerx)
 - [Telegram](https://t.me/betprotocol)
-- [Medium](https://bepronetwork.medium.com)
+- [Blog](https://blog.bepro.network/)
 - [WebSite](https://www.bepro.network)

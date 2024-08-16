@@ -88,8 +88,7 @@ export async function action(query?: EventsQuery): Promise<EventsProcessed> {
           
           const tokenPrice = await getOrUpdateLastTokenPrice(dbBounty.transactionalTokenId!, currency);
 
-          if (!dbBounty.fundingAmount) {
-
+          if (+(dbBounty.fundingAmount || 0) === 0) {
             await savePointEvent( "created_task", 
                                   dbBounty.user.address!, 
                                   { taskId: dbBounty.id, taskAmount: dbBounty.amount, tokenPrice, currency },

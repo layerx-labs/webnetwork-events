@@ -26,9 +26,9 @@ export class EmailNotification {
     for (const [index, to] of recipients.filter(e => e).entries()) {
       const uuid = uuidv4();
       await EmailService.sendEmail(
-        format(EmailNotificationSubjects[templateName]!, (this.payload as any)?.network?.name ?? "BEPRO"),
+        format(EmailNotificationSubjects[this.type]!, (this.payload as any)?.network?.name ?? "BEPRO"),
         [to],
-        new EmailTemplate().compile({...this.payload, template: templateName, uuid})
+        new EmailTemplate().compile({...this.payload, type: this.type, template: templateName, uuid})
       );
     }
   }

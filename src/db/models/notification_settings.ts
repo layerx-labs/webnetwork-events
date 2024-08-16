@@ -13,11 +13,12 @@ export interface notification_settingsAttributes {
   commentsOnDeliverables?: boolean;
   commentsOnProposals?: boolean;
   subscriptions?: number[];
+  replyOnThreads?: boolean;
 }
 
 export type notification_settingsPk = "id";
 export type notification_settingsId = notification_settings[notification_settingsPk];
-export type notification_settingsOptionalAttributes = "id" | "userId" | "taskOpen" | "deliverableReady" | "proposalCreated" | "proposalDisputed" | "commentsOnTasks" | "commentsOnDeliverables" | "commentsOnProposals" | "subscriptions";
+export type notification_settingsOptionalAttributes = "id" | "userId" | "taskOpen" | "deliverableReady" | "proposalCreated" | "proposalDisputed" | "commentsOnTasks" | "commentsOnDeliverables" | "commentsOnProposals" | "subscriptions" | "replyOnThreads";
 export type notification_settingsCreationAttributes = Optional<notification_settingsAttributes, notification_settingsOptionalAttributes>;
 
 export class notification_settings extends Model<notification_settingsAttributes, notification_settingsCreationAttributes> implements notification_settingsAttributes {
@@ -31,6 +32,7 @@ export class notification_settings extends Model<notification_settingsAttributes
   commentsOnDeliverables?: boolean;
   commentsOnProposals?: boolean;
   subscriptions?: number[];
+  replyOnThreads?: boolean;
 
   // notification_settings belongsTo users via userId
   user!: users;
@@ -93,6 +95,11 @@ export class notification_settings extends Model<notification_settingsAttributes
     subscriptions: {
       type: DataTypes.ARRAY(DataTypes.INTEGER),
       allowNull: true
+    },
+    replyOnThreads: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: true
     }
   }, {
     tableName: 'notification_settings',
