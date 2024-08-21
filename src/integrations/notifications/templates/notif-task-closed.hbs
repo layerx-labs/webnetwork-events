@@ -5,12 +5,12 @@
        Task <a href="{{task.link}}">#{{task.id}}</a> closed
    </span>
     {{#if task.title}}
-        <span class="sm-regular mb-3 text-white-50">
+        <span class="sm-regular mb-3 text-white-50 capitalize-first">
             {{task.title}}
         </span>
     {{/if}}
     <div class="d-flex gap-2 text-white-50">
-        <span class="sm-regular">{{task.network}}</span>
+        <span class="sm-regular capitalize-first">{{task.network}}</span>
         <span>•</span>
         <span class="sm-regular">%DATE%</span>
     </div>
