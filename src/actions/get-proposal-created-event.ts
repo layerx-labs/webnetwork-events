@@ -105,7 +105,8 @@ export async function action(block: DecodedLog<BountyProposalCreatedEvent['retur
       bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
       deliverableId: dbDeliverable.id, deliverableContractId: dbDeliverable.prContractId,
       proposalId: createProposal.id, proposalContractId: createProposal.contractId,
-      actor: proposal.creator
+      actor: proposal.creator,
+      title: dbBounty.title,
     }
   }
 

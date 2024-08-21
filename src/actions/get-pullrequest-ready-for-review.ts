@@ -105,6 +105,7 @@ export async function action(block: DecodedLog<BountyPullRequestReadyForReviewEv
         bountyId: dbBounty.id, bountyContractId: dbBounty.contractId,
         deliverableId: dbDeliverable.id, deliverableContractId: pullRequestId,
         actor: pullRequest.creator,
+        title: dbBounty.title,
       }
     };
 
