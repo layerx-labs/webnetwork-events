@@ -1,8 +1,7 @@
 import {readFileSync} from "node:fs";
 import {join, resolve} from "node:path";
 import process from "process";
-import {EmailNotificationSubjects} from "./templates/email-info";
-import {format} from "node:util";
+import {getEmailNotificationBodyTitle, getEmailNotificationSubject} from "./templates/email-info";
 
 export class Templater {
 
@@ -22,8 +21,8 @@ export class Templater {
   compile(payload: any) {
 
     const templateData = {
-      pageTitle: format(EmailNotificationSubjects[payload.template], payload.network.name),
-      notificationTitleHeading: format(EmailNotificationSubjects[payload.template], payload.network.name),
+      pageTitle: getEmailNotificationSubject(payload.type, payload),
+      notificationTitleHeading: getEmailNotificationBodyTitle(payload.type, payload),
       taskTitleParagraph: payload.title,
       actionHref: `https://app.bepro.network/${payload.network.name}/task/${payload.bountyId}/?fromEmail=${payload.uuid}`
     };
