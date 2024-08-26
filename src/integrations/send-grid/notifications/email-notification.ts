@@ -1,10 +1,9 @@
 import {EmailService} from "../email-service/email-service";
 import {Templates} from "./templates";
-import {EmailNotificationSubjects} from "./templates/email-info";
+import {getEmailNotificationSubject} from "./templates/email-info";
 import {EmailTemplate} from "../../../services/templating/email-template";
 import {users} from "../../../db/models/users";
 import {v4 as uuidv4} from "uuid";
-import {format} from "node:util"
 import {getEventTargets} from "../../../utils/get-event-targets";
 import { CollectEventPayloadParams } from "src/services/analytics/types/analytics";
 import { AnalyticEventName } from "src/services/analytics/types/events";
@@ -26,7 +25,7 @@ export class EmailNotification {
     for (const [index, to] of recipients.filter(e => e).entries()) {
       const uuid = uuidv4();
       await EmailService.sendEmail(
-        format(EmailNotificationSubjects[this.type]!, (this.payload as any)?.network?.name ?? "BEPRO"),
+        getEmailNotificationSubject(this.type, this.payload),
         [to],
         new EmailTemplate().compile({...this.payload, type: this.type, template: templateName, uuid})
       );
