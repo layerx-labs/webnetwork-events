@@ -1,6 +1,5 @@
 import {Client} from "@elastic/elasticsearch";
 import {LoggerPlugin} from "@taikai/scribal/dist/lib/types";
-import { stringifyArrayValues } from "./object";
 
 const {
   NEXT_ELASTIC_SEARCH_URL: node,
@@ -21,7 +20,9 @@ export const elasticLoggerMaker = (): LoggerPlugin => ({
     const params =
       (typeof _params === "string" || typeof _params === "number")
         ? {value: _params }
-        : stringifyArrayValues(_params);
+        : Array.isArray(_params)
+          ? {value_array: _params}
+          : _params;
 
     new Client({node, auth: {username, password}})
       .index({
