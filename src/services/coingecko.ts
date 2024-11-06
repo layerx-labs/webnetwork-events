@@ -16,7 +16,7 @@ export async function getCoinIconByChainAndContractAddress(address: string, chai
 
   if (!platformByChainId) return null;
 
-  const coin = await COINGECKO_API.get(`/coins/${platformByChainId.id}/contract/${address}`).then((value) => value.data);
+  const coin = await COINGECKO_API.get(`/coins/${platformByChainId.id}/contract/${address}`).then((value) => value.data).catch(() => null);
 
   if(!coin) return null;
   
