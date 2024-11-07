@@ -54,10 +54,13 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   const isHardCancel = ['open', 'ready'].includes(dbBounty?.state || '') && (fundingAmount === undefined || isFunded)
 
   if(isHardCancel) {
-    if(dbBounty?.deliverables.length > 0) 
+    if(dbBounty?.deliverables?.length > 0) 
       for (const dr of dbBounty?.deliverables) {
-        for (const comment of dr.comments)
-          await comment.destroy();
+        if (dr.comments?.length > 0) {
+          for (const comment of dr.comments)
+            await comment.destroy();
+        }
+
         await dr.destroy();
       }
   }
