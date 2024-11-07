@@ -13,6 +13,7 @@ import {updateBountiesHeader} from "src/modules/handle-header-information";
 import {Push} from "../services/analytics/push";
 import {AnalyticEventName} from "../services/analytics/types/events";
 import updateSeoCardBounty from "src/modules/handle-seo-card";
+import { Op } from "sequelize";
 
 export const name = "getBountyCanceledEvents";
 export const schedule = "*/11 * * * *";
@@ -34,10 +35,11 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   }
 
   const dbBounty = await db.issues.findOne({
-    where: {contractId: block.returnValues.id, network_id: network.id,},
+    where: {contractId: block.returnValues.id, network_id: network.id, state: { [Op.not]: 'canceled' }},
     include: [
       {association: "benefactors"},
-      {association: "network"}
+      {association: "network"},
+      {association: "deliverables"}
     ],
   });
 
@@ -49,15 +51,15 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   const fundingAmount = dbBounty?.fundingAmount !== '0' ? dbBounty?.fundingAmount : undefined
   const fundedAmount = dbBounty?.fundedAmount !== '0' ? dbBounty?.fundedAmount : undefined
   const isFunded = BigNumber(fundingAmount || 0).isEqualTo(BigNumber(fundedAmount || 1))
-  const isHardCancel = ['open', 'ready'].includes(dbBounty?.state || '') && (dbBounty.fundingAmount === ('0' || undefined) || isFunded)
+  // const isHardCancel = ['open', 'ready'].includes(dbBounty?.state || '') && (dbBounty.fundingAmount === ('0' || undefined) || isFunded)
 
-  if(isHardCancel) {
-    if(dbBounty?.deliverables.length > 0) 
-      for (const dr of dbBounty?.deliverables) {
-        await dr.destroy()
-      }
+  // if(isHardCancel) {
+  //   if(dbBounty?.deliverables.length > 0) 
+  //     for (const dr of dbBounty?.deliverables) {
+  //       await dr.destroy()
+  //     }
       
-  }
+  // }
 
   dbBounty.state = `canceled`;
 
