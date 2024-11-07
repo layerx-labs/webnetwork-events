@@ -39,7 +39,7 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
     include: [
       {association: "benefactors"},
       {association: "network"},
-      {association: "deliverables"}
+      {association: "deliverables", include: [{ association: 'comments' }]}
     ],
   });
 
@@ -51,15 +51,16 @@ export async function action(block: DecodedLog, query?: EventsQuery): Promise<Ev
   const fundingAmount = dbBounty?.fundingAmount !== '0' ? dbBounty?.fundingAmount : undefined
   const fundedAmount = dbBounty?.fundedAmount !== '0' ? dbBounty?.fundedAmount : undefined
   const isFunded = BigNumber(fundingAmount || 0).isEqualTo(BigNumber(fundedAmount || 1))
-  // const isHardCancel = ['open', 'ready'].includes(dbBounty?.state || '') && (dbBounty.fundingAmount === ('0' || undefined) || isFunded)
+  const isHardCancel = ['open', 'ready'].includes(dbBounty?.state || '') && (fundingAmount === undefined || isFunded)
 
-  // if(isHardCancel) {
-  //   if(dbBounty?.deliverables.length > 0) 
-  //     for (const dr of dbBounty?.deliverables) {
-  //       await dr.destroy()
-  //     }
-      
-  // }
+  if(isHardCancel) {
+    if(dbBounty?.deliverables.length > 0) 
+      for (const dr of dbBounty?.deliverables) {
+        for (const comment of dr.comments)
+          await comment.destroy();
+        await dr.destroy();
+      }
+  }
 
   dbBounty.state = `canceled`;
 
